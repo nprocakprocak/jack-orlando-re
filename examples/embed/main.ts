@@ -1,4 +1,5 @@
 // Minimal embed page: chosen ZIP bytes → openZip → mountPlayer.
+// What that ZIP contains: README.md.
 // Imports only published jack-orlando-browser and jack-orlando-re.
 
 import { mountPlayer, type PlayerHandle } from "jack-orlando-browser";

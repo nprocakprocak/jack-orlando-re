@@ -1,4 +1,4 @@
-// A ZIP chosen on the page, turned into GameFiles.
+// A ZIP chosen on the page, turned into GameFiles. What to pack: README.md.
 //
 // openZip inflates the whole archive in one synchronous call, and the tab
 // stops painting until that call returns. This file does the same job in two

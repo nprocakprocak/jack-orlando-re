@@ -4,6 +4,7 @@
 // The middleware exposes that directory at /game/ so main.ts can fetch
 // Global.pak without a ZIP. The directory is not inside this repository.
 // Leave the variable unset and the middleware does nothing; use the ZIP field.
+// What that ZIP contains: README.md.
 //
 // The aliases point package imports at TypeScript source. A consumer who
 // installed jack-orlando-re and jack-orlando-browser from npm does not need

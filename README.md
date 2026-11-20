@@ -1,6 +1,6 @@
-# jack-orlando-re
+# Jack Orlando Reverse Engineered
 
-An engine that plays Jack Orlando from files you supply. The name "Jack Orlando" only identifies which game those files belong to.
+An engine that plays Jack Orlando from files you supply. The name "Jack Orlando" only identifies which game those files belong to. This project has no connection with the rights holder.
 
 This repository does not contain the game. It has no archives, no executable, and no pictures of the game. The boundary is [docs/LEGAL.md](docs/LEGAL.md). Fonts are read from the user's `Resource.pak`. Menu captions and lookup tables live in the engine modules that use them. The engine does not read the executable.
 
@@ -26,7 +26,9 @@ Three ways to play from this repository:
 2. **`npm run dev:embed`** — `examples/embed`. Imports only `jack-orlando-browser` and `jack-orlando-re`. No `JO_GAME_DIR` and no query string.
 3. **`npm run play:desktop -- <directory-or.zip>`** — Electron. The main process listens on `127.0.0.1` and the page calls `mountPlayer`.
 
-The dev page loads game assets from a ZIP file you choose on the page. You can also point it at a directory with the `JO_GAME_DIR` environment variable.
+The dev page loads game assets from a ZIP file you choose on the page. Pack the game directory as it is: on this page the assets may sit in a subdirectory of the archive. The executable is not required. You can also point the page at a directory with the `JO_GAME_DIR` environment variable.
+
+A ZIP passed to `openZip`, `openZipFile`, the embed example, the desktop window, or `npm run play:node` holds the assets at the archive root. Go into the game directory and pack at least the files the engine reads. The executable is not one of them. The paths are in [Assets](docs/guide/assets.md).
 
 The browser page is the way to play, on Windows, macOS, and Linux. Set `JO_GAME_DIR` to your game directory in the same shell that starts the dev server, or leave it unset and choose a ZIP on the page. There is no default directory. A directory is matched without regard to case, so a tree copied from Windows is found on Linux. Restart the server after you change the variable.
 
@@ -66,7 +68,7 @@ npm run dev
 
 Vite opens `/` on the dev server for `examples/play`. Details are in [Getting started](docs/guide/getting-started.md) and [Assets](docs/guide/assets.md).
 
-A Node script checks that a directory or a ZIP loads, then prints the phase and the scene. It does not open a window. It builds the library first. With no path it says so and runs a stand-in archive, only to check that the built package starts.
+A Node script checks that a directory or a ZIP loads, then prints the phase and the scene. The ZIP is the one above: assets packed from inside the game directory. The script does not open a window. It builds the library first. With no path it says so and runs a stand-in archive, only to check that the built package starts.
 
 ```bash
 npm run play:node -- path/to/the/game

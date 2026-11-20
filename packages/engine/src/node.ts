@@ -62,7 +62,7 @@ export function openDirectory(dir: string): GameFiles {
   };
 }
 
-/** Game assets from a ZIP file on disk (Node only). */
+/** Game assets from a ZIP file on disk (Node only). What to pack: README.md. */
 export async function openZipFile(zipPath: string): Promise<GameFiles> {
   const bytes = new Uint8Array(await fs.promises.readFile(zipPath));
   return openZip(bytes);

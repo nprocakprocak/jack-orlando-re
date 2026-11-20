@@ -1,5 +1,6 @@
 // Desktop main process. Serves dist-www and either a game directory or a ZIP
-// on 127.0.0.1. The page is loaded over HTTP. This file does not import the engine.
+// on 127.0.0.1. What the ZIP contains: README.md. The page is loaded over HTTP.
+// This file does not import the engine.
 //
 // The port stays the same on every launch. The page stores options in localStorage
 // and saves in IndexedDB, and both are tied to the full origin, port included.

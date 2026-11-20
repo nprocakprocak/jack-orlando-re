@@ -1,4 +1,5 @@
-// Boot page. Files arrive over HTTP. The play session lives in mountPlayer.
+// Boot page. Files arrive over HTTP. A ZIP source is game assets packed from
+// inside the game directory. What to pack: README.md. The play session lives in mountPlayer.
 
 import { httpGameFiles, mountPlayer } from "jack-orlando-browser";
 import { openZip } from "jack-orlando-re";

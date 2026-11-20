@@ -14,7 +14,7 @@ if (!target) {
   console.log(
     "No game files were given, so this run uses a stand-in archive built in the script.\n" +
       "The stand-in checks that the built Node package starts: it opens a ZIP, creates PlayGame, and steps a few frames. Nothing is drawn, and this is not the game.\n" +
-      "Pass a directory or a .zip file to load your own files.",
+      "Pass a directory, or a .zip of the game's assets packed from inside the game directory, to load your own files. The executable is not required. See README.md.",
   );
 }
 

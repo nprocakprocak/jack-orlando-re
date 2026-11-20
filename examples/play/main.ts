@@ -1,8 +1,8 @@
 // Dev page for the engine.
 //
 // A canvas, a status line, and — only when the dev server has no game files —
-// a ZIP field. mountPlayer runs the game. This file only obtains files and
-// hands them over.
+// a ZIP field. What that ZIP contains: README.md. mountPlayer runs the game.
+// This file only obtains files and hands them over.
 //
 // - JO_GAME_DIR, set before `npm run dev`, is served at /game/.
 // - When that directory has no game files, zip.ts shows the ZIP field.

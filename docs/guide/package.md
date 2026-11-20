@@ -32,7 +32,7 @@ Import from `jack-orlando-re`, not from `jack-orlando-re/node`.
 
 | Export | Role |
 |---|---|
-| `openZip(bytes: Uint8Array): GameFiles` | Index a ZIP in memory. |
+| `openZip(bytes: Uint8Array): GameFiles` | Index a ZIP of game assets. Paths start at the archive root. See [Assets](assets.md). |
 | `PlayGame` | The session. `create`, `settle`, `frame`, `update`, `advance`, `view`. |
 | `GameFiles`, `PlayInput`, `PlayOptions`, `PlayView`, `Phase` | Types for those calls. |
 | `CanvasPresenter` | Draw a 640 by 480 window of a scene surface on a canvas. |
@@ -58,4 +58,4 @@ A browser bundle should not import this entry. The library build marks every `no
 
 Fonts are not compiled into the library. `JACK.FNT` and `JACKM.FNT` are read from `Resource.pak` through `Pak`, the same way as the pictures.
 
-The example page imports `mountPlayer` from `jack-orlando-browser`. It does not import `jack-orlando-re/node`. `npm run dev` serves the `examples/play` package. Aliases in `examples/play/vite.config.ts` point those package names at TypeScript source, so the page does not need `npm run build`. `examples/play/zip.ts` unpacks a chosen ZIP itself and does not call `openZip`.
+The example page imports `mountPlayer` from `jack-orlando-browser`. It does not import `jack-orlando-re/node`. `npm run dev` serves the `examples/play` package. Aliases in `examples/play/vite.config.ts` point those package names at TypeScript source, so the page does not need `npm run build`. `examples/play/zip.ts` unpacks a chosen ZIP itself and does not call `openZip`. On that page the ZIP may be the game directory packed whole, with the assets one folder down. `openZip` expects those assets at the archive root. See [Assets](assets.md).

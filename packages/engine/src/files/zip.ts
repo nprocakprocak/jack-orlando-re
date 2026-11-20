@@ -33,7 +33,7 @@ function resolveEntry(byUpper: Map<string, IndexedEntry[]>, rel: string): Indexe
   return exact ?? list[0];
 }
 
-/** Game assets from an in-memory ZIP (browser and Node). */
+/** Game assets from an in-memory ZIP (browser and Node). What to pack: README.md. */
 export function openZip(bytes: Uint8Array): GameFiles {
   const index = indexZip(bytes);
   return {

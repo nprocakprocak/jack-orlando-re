@@ -17,6 +17,8 @@ Three ways to run a full session from this repository:
 2. **`npm run dev:embed`** — `examples/embed`. Imports only `jack-orlando-browser` and `jack-orlando-re`. No `JO_GAME_DIR` and no query string.
 3. **`npm run play:desktop -- <directory-or.zip>`** — Electron. The main process listens on `127.0.0.1` and the page calls `mountPlayer`.
 
+A ZIP for `examples/play` can be the game directory packed as it is; the assets may sit one folder down. Every other ZIP is packed from inside the game directory and holds at least the files the engine reads. The executable is not one of them. The paths are in [Assets](assets.md).
+
 An outside project installs `jack-orlando-re` and `jack-orlando-browser` and calls `mountPlayer`. Node and the low-level canvas API are below. Paths inside the game tree are described in [Assets](assets.md).
 
 ## Node
@@ -36,7 +38,7 @@ await game.settle();
 Signatures:
 
 - `openDirectory(dir: string): GameFiles` reads files under `dir`. Lookup ignores case, so a directory copied from Windows works on Linux and on a case-sensitive macOS volume.
-- `openZipFile(zipPath: string): Promise<GameFiles>` reads the ZIP, then calls `openZip`.
+- `openZipFile(zipPath: string): Promise<GameFiles>` reads a ZIP of assets packed from inside the game directory, then calls `openZip`. The executable is not required.
 - `PlayGame.create(files: GameFiles, opts?: PlayOptions): Promise<PlayGame>` loads the global archives and enters the first scene. `opts.start` defaults to `SC001`.
 
 `settle()` resolves when a scene load has finished. `frame(input)` applies one frame of input. `update()` advances one logic tick. `advance(dtMs)` moves real time: the music fade, a movie, a scene film, and a dissolve between scenes. The browser host calls it with the loop's `elapsedMs`, and still calls `frame` and `update`. `view()` returns the picture, or `null` while nothing is ready. `phase` is `loading`, `playing`, `fading`, `movie`, `film`, or `finished`. `sceneName` is the current scene. `error` is set when a scene fails to load.
@@ -81,7 +83,7 @@ npm run play:node -- path/to/a/directory
 npm run play:node -- path/to/a/file.zip
 ```
 
-With no path, the script says that no game files were given and runs a stand-in archive built in the script. That stand-in checks that the built Node package starts. It is not the game. Pass a directory or a `.zip` file to load your own files.
+With no path, the script says that no game files were given and runs a stand-in archive built in the script. That stand-in checks that the built Node package starts. It is not the game. Pass a directory, or a `.zip` of assets packed from inside the game directory. The executable is not required.
 
 The script runs `npm run build`, imports `dist/node.js`, and calls `openDirectory` for a directory or `openZipFile` for a name that ends in `.zip`. It then runs:
 
@@ -119,7 +121,7 @@ const view = game.view();
 if (view) presenter.present(view.surface, view.scrollX);
 ```
 
-`openZip` takes a `Uint8Array`, not an `ArrayBuffer`. Read the file with `arrayBuffer()`, then copy it: `new Uint8Array(await file.arrayBuffer())`. `openZip` returns a `GameFiles` immediately. It does not return a promise.
+`openZip` takes a `Uint8Array`, not an `ArrayBuffer`. Read the file with `arrayBuffer()`, then copy it: `new Uint8Array(await file.arrayBuffer())`. `openZip` returns a `GameFiles` immediately. It does not return a promise. The ZIP is packed from inside the game directory, and the paths start at the archive root. The executable is not part of it. See [Assets](assets.md).
 
 `CanvasPresenter` sets the canvas to 640 by 480 and copies that window of the scene surface. `present(framebuffer, scrollX, scrollY = 0)` uses the 2D context. It does not draw the cursor or the dialogue overlays. Those are `view.cursor`, `view.cursorImage`, and `view.overlays`. The caller draws them. `mountPlayer` does that for the example page.
 
@@ -127,7 +129,7 @@ if (view) presenter.present(view.surface, view.scrollX);
 
 ### The example page
 
-The `examples/play` package is a 640 by 480 canvas and a file input that accepts a ZIP. `main.ts` obtains the files and calls `mountPlayer` from `jack-orlando-browser`. That session owns the mouse, the keyboard, the audio, the start screen, and the menu. Aliases in `examples/play/vite.config.ts` point the package names at TypeScript source, so this page does not need `npm run build`. `examples/play/zip.ts` unpacks a chosen ZIP itself, in slices, and does not call `openZip`.
+The `examples/play` package is a 640 by 480 canvas and a file input that accepts a ZIP of the game directory. The assets may sit in a subdirectory, so packing the directory without opening it is enough. The executable is not required. `main.ts` obtains the files and calls `mountPlayer` from `jack-orlando-browser`. That session owns the mouse, the keyboard, the audio, the start screen, and the menu. Aliases in `examples/play/vite.config.ts` point the package names at TypeScript source, so this page does not need `npm run build`. `examples/play/zip.ts` unpacks a chosen ZIP itself, in slices, and does not call `openZip`.
 
 ```bash
 npm run dev

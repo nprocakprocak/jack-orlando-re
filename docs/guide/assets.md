@@ -1,8 +1,12 @@
 # Assets
 
-The engine never searches for the game. You pass a directory, a ZIP, or any other `GameFiles`. This repository does not contain those files. See [docs/LEGAL.md](../LEGAL.md).
+The engine never searches for the game. You pass a directory, a ZIP of the game's assets, or any other `GameFiles`. This repository does not contain those files. See [docs/LEGAL.md](../LEGAL.md).
 
 ## A directory or a ZIP
+
+Pack the ZIP from inside the game directory. Include at least the paths in the table below. The executable is not read, so leave it out. `openZip` and `openZipFile` look up those paths from the archive root.
+
+`examples/play` also accepts a ZIP of the game directory itself, with the assets one folder down. Packing that directory without opening it is enough on that page.
 
 Both produce the same `GameFiles` interface:
 
