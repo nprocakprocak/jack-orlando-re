@@ -1,7 +1,7 @@
 // The item bar at the top of the screen (legacy inventory mode): the dead code of Game_Run.
 // State machine and input without DOM; the game feeds `frame()` once per frame and draws `overlays()`.
 // Description and deviations:, (the bar).
-import { decodeBm } from "../formats/bm";
+import { readBm } from "../formats/bm";
 import type { Font } from "../formats/fnt";
 import type { Pak } from "../formats/pak";
 import { ANIM_ROLLUP, NoticeStrip } from "../keys/notice";
@@ -88,14 +88,13 @@ export interface TopBarImages {
 }
 
 export function loadTopBarAssets(resource: Pak): TopBarImages {
-  const bm = (name: string) => decodeBm(resource.read(name));
   return {
-    panel: bm("TOPMGR.BM"),
-    options: bm("OPTGR.BM"),
-    left: bm("L_ARROW.BM"),
-    right: bm("R_ARROW.BM"),
-    strip: bm("BELKA.BM"),
-    frame: bm("RAMKA.BM"),
+    panel: readBm(resource, "TOPMGR.BM"),
+    options: readBm(resource, "OPTGR.BM"),
+    left: readBm(resource, "L_ARROW.BM"),
+    right: readBm(resource, "R_ARROW.BM"),
+    strip: readBm(resource, "BELKA.BM"),
+    frame: readBm(resource, "RAMKA.BM"),
   };
 }
 

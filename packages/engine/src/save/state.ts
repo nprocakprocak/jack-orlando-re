@@ -1,5 +1,6 @@
 // Engine state <-> .SAV., writer / reader / copy.
 // Pure logic, no DOM. The host fills a `SaveState` from the running game and applies a `LoadedState` back.
+import { viewOf } from "../formats/bytes";
 import {
   ITEM_PIXELS_MAX, SaveError, VAR_SLOTS, acceptedBy, copyTemp, currentHeader, cstr, encodeCstr, itemImage, itemName,
   itemSize, musicName, parseSave, savedMusic, sceneName, writeSave, type SaveGame, type SaveItem,
@@ -64,7 +65,7 @@ export function itemImageToSurface(it: SaveItem): Surface16 {
   const { width, height } = itemSize(it);
   if (width * height > ITEM_PIXELS_MAX) throw new SaveError(`${width}x${height} image does not fit in a slot`);
   const s = createSurface(width, height);
-  const v = new DataView(it.image.buffer, it.image.byteOffset, it.image.byteLength);
+  const v = viewOf(it.image);
   for (let i = 0; i < width * height; i++) s.pixels[i] = v.getUint16(4 + i * 2, true);
   return s;
 }

@@ -1,5 +1,7 @@
 // .PAK archive reader.
 
+import { viewOf } from "./bytes";
+
 export interface PakEntry {
   name: string;
   offset: number;
@@ -25,7 +27,7 @@ export class Pak {
 
   constructor(data: ArrayBuffer | Uint8Array) {
     this.bytes = data instanceof Uint8Array ? data : new Uint8Array(data);
-    const view = new DataView(this.bytes.buffer, this.bytes.byteOffset, this.bytes.byteLength);
+    const view = viewOf(this.bytes);
     if (this.bytes.length < HEADER_SIZE) throw new PakError("too short");
 
     const magic = String.fromCharCode(...this.bytes.subarray(0, 4));

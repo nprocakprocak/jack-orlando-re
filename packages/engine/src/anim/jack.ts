@@ -1,4 +1,5 @@
 // Jack's frame sets, hot spots, sprite placement and shadows.
+import { pad2 } from "../core/pad";
 import type { HotSpot } from "../formats/global";
 
 /** g_jackDir: 0 front, 1 profile, 2 back, 3 three-quarter front, 4 three-quarter back. */
@@ -58,7 +59,7 @@ export const SHADOW_OFFSET_STILL_Y = [25, 20, 15, 22, 30, 23, 15, 20] as const; 
 export const SHADOW_OFFSET_ROUND: readonly [number, number] = [55, 14];
 
 export function walkFrameFile(dir: JackDir, frame: number, uniform = false): string {
-  return uniform ? `${WALK_SERIES_UNIFORM[dir]}${String(frame + 1).padStart(2, "0")}.PBM` : `${WALK_SERIES[dir]}${frame + 1}.PBM`;
+  return uniform ? `${WALK_SERIES_UNIFORM[dir]}${pad2(frame + 1)}.PBM` : `${WALK_SERIES[dir]}${frame + 1}.PBM`;
 }
 
 export function walkHotSpotFile(dir: JackDir, uniform = false): string {
@@ -70,7 +71,7 @@ export function standFrameFile(dir: JackDir, uniform = false): string {
 }
 
 export function shadowFile(dir: JackDir, frame: number): string {
-  return `${SHADOW_SERIES[dir]}${String(frame + 1).padStart(2, "0")}.PBM`;
+  return `${SHADOW_SERIES[dir]}${pad2(frame + 1)}.PBM`;
 }
 
 /** [xRight, xLeft, y] of a standing frame of the given width. */

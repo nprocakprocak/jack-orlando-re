@@ -2,7 +2,7 @@
 // A file is either a raw sound buffer (12-byte header + PCM) or a packed one: a 24-byte
 // codec header (type 0x32..0x35), then - except for type 0x33 - the 12-byte buffer header,
 // then IMA ADPCM or GSM 6.10 (WAV49) data.
-
+import { viewOf } from "./bytes";
 /** always plays at 0x5622 Hz. */
 export const SOUND_RATE = 22050;
 
@@ -294,7 +294,7 @@ export class Sound {
   ) {
     ext = ext.toUpperCase();
     this.ext = ext;
-    const view = new DataView(data.buffer, data.byteOffset, data.byteLength);
+    const view = viewOf(data);
     if (data.length < 4) throw new SoundError("too short");
     const tag = view.getUint32(0, true);
     let pos: number;
@@ -355,7 +355,7 @@ export class Sound {
         return p.slice(0, this.size);
       case "raw16": {
         const n = this.size >> 1;
-        const v = new DataView(p.buffer, p.byteOffset, p.byteLength);
+        const v = viewOf(p);
         const out = new Int16Array(n);
         for (let i = 0; i < n; i++) out[i] = v.getInt16(2 * i, true);
         return out;

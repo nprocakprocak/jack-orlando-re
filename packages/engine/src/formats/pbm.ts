@@ -1,5 +1,6 @@
 // .PBM image reader (8-bit with palette, RLE-compressed).
-import { applyPalette, PALETTE_SIZE, viewOf, type Image16 } from "./bm";
+import { viewOf } from "./bytes";
+import { applyPalette, PALETTE_SIZE, type Image16 } from "./bm";
 
 export class PbmError extends Error {}
 

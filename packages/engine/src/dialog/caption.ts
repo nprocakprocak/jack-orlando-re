@@ -1,7 +1,10 @@
 // Caption text: word wrap, centering and placement of a spoken line.
 // Pure logic, no drawing.
 
+import { SCREEN_WIDTH } from "../core/constants";
 import { MAZOVIA } from "../formats/textcrypt";
+
+export { SCREEN_WIDTH as SCREEN_W };
 
 /** Width in pixels of a text in the caption font (Text_PrintfWidth with font 0 = JACK). */
 export type Measure = (text: string) => number;
@@ -11,7 +14,6 @@ export const MAX_LINES = 5;
 /** Height of one caption row (0x19); rows are drawn 24 px apart (`c - 1`). */
 export const LINE_HEIGHT = 25;
 export const LINE_PITCH = 24;
-export const SCREEN_W = 640;
 /** The captions keep inside y < 0x1df. */
 export const BOTTOM = 0x1df;
 
@@ -96,7 +98,7 @@ function layout(measure: Measure, text: string, boxW: number, x0: number, y: num
 function clampX(x: number, w: number, scrollX: number): { x: number; left: boolean } {
   const half = Math.trunc(w / 2);
   if (x - half < scrollX) return { x: scrollX + 1 + half, left: true };
-  if (x + half > scrollX + SCREEN_W) return { x: scrollX - half + SCREEN_W - 1, left: false };
+  if (x + half > scrollX + SCREEN_WIDTH) return { x: scrollX - half + SCREEN_WIDTH - 1, left: false };
   return { x, left: false };
 }
 

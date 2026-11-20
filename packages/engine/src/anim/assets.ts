@@ -2,7 +2,7 @@
 import { decrypt } from "../formats/textcrypt";
 import { parseIcs, parseSfb, type Ics, type IcsFrame } from "../formats/global";
 import type { Pak } from "../formats/pak";
-import { viewOf } from "../formats/bm";
+import { viewOf } from "../formats/bytes";
 import { standFrameFile, WALK_SERIES, walkHotSpotFile, type JackDir } from "./jack";
 import { AnimError, type InsertionStart, type WalkFrameSet, type WalkFrames } from "./animator";
 

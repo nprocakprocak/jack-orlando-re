@@ -1,8 +1,8 @@
 // Screen window over the work buffer and the scroll rules.
+import { SCREEN_HEIGHT, SCREEN_WIDTH } from "../core/constants";
 import { windowToRgba, type Surface16 } from "./surface";
 
-export const SCREEN_W = 640;
-export const SCREEN_H = 480;
+export { SCREEN_HEIGHT as SCREEN_H, SCREEN_WIDTH as SCREEN_W };
 /** Largest scroll position (script commands 0x2a/0x31 in): 0x178 = 1016 - 640. */
 export const MAX_SCROLL_X = 376;
 /** Pixels per game tick when the scene scrolls. */
@@ -13,7 +13,7 @@ export function presentRgba(
   framebuffer: Surface16, scrollX: number, scrollY = 0,
   out?: Uint8ClampedArray,
 ): Uint8ClampedArray {
-  return windowToRgba(framebuffer, scrollX, scrollY, SCREEN_W, SCREEN_H, out);
+  return windowToRgba(framebuffer, scrollX, scrollY, SCREEN_WIDTH, SCREEN_HEIGHT, out);
 }
 
 /** Screen point -> work buffer point (WndProc adds g_scrollX/Y to the mouse position). */

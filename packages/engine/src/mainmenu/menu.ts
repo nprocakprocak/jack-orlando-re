@@ -1,6 +1,7 @@
 // The main menu (Launcher_Run) as a time-driven state machine without DOM or Web Audio.
 // Two clocks drive it like the original: the 17 ms launcher timer (Launcher_TimerTick) and the screen
 // presents (Video_PresentIfDue -> the hook).
+import { SCREEN_HEIGHT, SCREEN_WIDTH } from "../core/constants";
 import type { Font } from "../formats/fnt";
 import { StripeWipe, WIPE_TOTAL_MS } from "../launcher/wipe";
 import type { Surface16 } from "../render/surface";
@@ -13,8 +14,7 @@ import {
 } from "./timing";
 import { BLEND_MAX, BLEND_STEP, BLEND_STEPS, BUTTON_NAMES, MenuWindow, type ButtonName } from "./window";
 
-export const SCREEN_W = 640;
-export const SCREEN_H = 480;
+export { SCREEN_HEIGHT as SCREEN_H, SCREEN_WIDTH as SCREEN_W };
 /**
  * Sprite_Set(truck, 0, 0x143): _SAMOCH1.BM, the background's truck redrawn a few pixels off (cab ~2-3 px higher);
  * shown and hidden in turn it makes the truck shake like a running engine.
@@ -102,8 +102,8 @@ export interface MainMenuOptions {
 }
 
 function copyScreen(s?: Surface16): Surface16 {
-  const out = createSurface(SCREEN_W, SCREEN_H);
-  if (s) blitCopy(s, 0, 0, Math.min(SCREEN_W, s.width), Math.min(SCREEN_H, s.height), out, 0, 0);
+  const out = createSurface(SCREEN_WIDTH, SCREEN_HEIGHT);
+  if (s) blitCopy(s, 0, 0, Math.min(SCREEN_WIDTH, s.width), Math.min(SCREEN_HEIGHT, s.height), out, 0, 0);
   return out;
 }
 
@@ -180,7 +180,7 @@ export class MainMenu {
     this.onEvent = options.onEvent;
     this.nextPresent = this.presentMs;
     this.smoke = new MenuSmoke(assets.smoke);
-    this.screen = createSurface(SCREEN_W, SCREEN_H);
+    this.screen = createSurface(SCREEN_WIDTH, SCREEN_HEIGHT);
     this.still = copyScreen(options.previous);
   }
 

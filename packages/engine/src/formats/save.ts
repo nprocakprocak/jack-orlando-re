@@ -4,6 +4,7 @@
 // 80 B header, 13 B music, 15 B scene, u16 var count, 500 x i16 variables,
 // u16 item count, items (u16 slot, 14 B name, 0xdd4 B image), 23 B tail (pose of Jack).
 
+import { viewOf } from "./bytes";
 import { MAZOVIA, decodeText } from "./textcrypt";
 
 export const HEADER_SIZE = 0x50; // g_guiStrings[9] (slot 0 description) 008a8db0
@@ -110,7 +111,7 @@ export function itemName(it: SaveItem): string {
 }
 
 export function itemSize(it: SaveItem): { width: number; height: number } {
-  const v = new DataView(it.image.buffer, it.image.byteOffset, it.image.byteLength);
+  const v = viewOf(it.image);
   return { width: v.getUint16(0, true), height: v.getUint16(2, true) };
 }
 
@@ -123,7 +124,7 @@ export function itemPixels(it: SaveItem): Uint8Array {
 
 export function parseSave(data: Uint8Array): SaveGame {
   if (data.length < EMPTY_SIZE) throw new SaveError(`too short: ${data.length} bytes, at least ${EMPTY_SIZE}`);
-  const v = new DataView(data.buffer, data.byteOffset, data.byteLength);
+  const v = viewOf(data);
   let pos = 0;
   const take = (n: number) => data.slice(pos, (pos += n));
   const header = take(HEADER_SIZE);

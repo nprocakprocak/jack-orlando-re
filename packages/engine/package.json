@@ -102,7 +102,7 @@
     "dist"
   ],
   "scripts": {
-    "check": "tsc --noEmit",
+    "check": "tsc --noEmit && node scripts/max-lines.mjs",
     "build": "vite build",
     "play:node": "node --experimental-strip-types scripts/play-node.ts",
     "test": "vitest run",

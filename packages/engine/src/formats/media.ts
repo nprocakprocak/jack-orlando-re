@@ -5,6 +5,7 @@
 // then blocks of records; each record = one FLX frame + the sound for that frame.
 // Frames are decoded one at a time (generators), so a player never holds a whole movie.
 
+import { viewOf } from "./bytes";
 import { IMA_INDEX, IMA_STEP } from "./sound";
 
 export class MediaError extends Error {}
@@ -54,16 +55,12 @@ export function frameTicks(h: FlxHeader): number {
   return h.fps ? Math.floor(200 / h.fps) : 0;
 }
 
-function view(data: Uint8Array): DataView {
-  return new DataView(data.buffer, data.byteOffset, data.byteLength);
-}
-
 export function parseFlxHeader(data: Uint8Array, pos = 0): FlxHeader {
   if (pos + FLX_HEADER_SIZE > data.length) throw new MediaError(`FLX header truncated at ${pos}`);
   if (data[pos] !== 0x46 || data[pos + 1] !== 0x4c || data[pos + 2] !== 0x58 || data[pos + 3] !== 0) {
     throw new MediaError(`bad FLX magic at ${pos}`);
   }
-  const v = view(data);
+  const v = viewOf(data);
   const h: FlxHeader = {
     frames: v.getUint16(pos + 4, true),
     width: v.getUint16(pos + 6, true),
@@ -88,7 +85,7 @@ interface Chunk {
 function readChunk(data: Uint8Array, pos: number, end: number): Chunk {
   if (pos + CHUNK_HEAD_SIZE > end) throw new MediaError(`chunk head truncated at ${pos}`);
   const type = data[pos];
-  const size = view(data).getUint32(pos + 2, true);
+  const size = viewOf(data).getUint32(pos + 2, true);
   if (size < CHUNK_HEAD_SIZE || pos + size > end) throw new MediaError(`chunk type ${type} at ${pos}: bad size ${size}`);
   return { type, size };
 }
@@ -105,7 +102,7 @@ export function unpackRle(
   out: Uint8Array = new Uint8Array(0),
 ): { buf: Uint8Array; size: number; next: number } {
   if (pos + DELTA_HEAD_SIZE > end) throw new MediaError(`packed delta head truncated at ${pos}`);
-  const size = view(data).getUint32(pos, true);
+  const size = viewOf(data).getUint32(pos, true);
   let left = size - DELTA_HEAD_SIZE;
   if (left <= 0) throw new MediaError(`packed delta at ${pos}: unpacked size ${size}`);
   if (out.length < size) {
@@ -185,7 +182,7 @@ export class FrameBuffer {
   setPalette(data: Uint8Array, pos: number, pal16: number): void {
     const pal = this.palette;
     if (pal16) {
-      const v = view(data);
+      const v = viewOf(data);
       for (let i = 0; i < 256; i++) pal[i] = v.getUint16(pos + 2 * i, true);
     } else {
       // R, G, B bytes -> RGB565
@@ -208,7 +205,7 @@ export class FrameBuffer {
  */
   applyDelta(src: Uint8Array, base = 0): number {
     if (base + DELTA_HEAD_SIZE > src.length) throw new MediaError(`delta head truncated at ${base}`);
-    const v = view(src);
+    const v = viewOf(src);
     const size = v.getUint32(base, true);
     let pos = v.getUint32(base + 4, true);
     const limit = this.capacity;
@@ -255,7 +252,7 @@ export function decodeFrame(
   allowRect = true,
 ): { frame: Frame; next: number } {
   const frame: Frame = { kind: -1, palette: false };
-  const v = view(data);
+  const v = viewOf(data);
   for (;;) {
     const { type, size } = readChunk(data, pos, end);
     const body = pos + CHUNK_HEAD_SIZE;
@@ -342,7 +339,7 @@ export interface Codec {
 }
 
 export function parseCodec(data: Uint8Array, pos: number): Codec {
-  const v = view(data);
+  const v = viewOf(data);
   return {
     type: v.getUint32(pos, true),
     packedSize: v.getUint32(pos + 4, true),
@@ -448,7 +445,7 @@ export class Avx {
   constructor(readonly data: Uint8Array) {
     const d = data;
     if (d.length < AVX_HEADER_SIZE + AVX_PREROLL) throw new MediaError("AVX shorter than header and sound preroll");
-    const v = view(d);
+    const v = viewOf(d);
     this.segments = v.getUint16(0, true);
     this.unk2 = d[2];
     this.bits = d[3];
@@ -516,7 +513,7 @@ export class Avx {
   audioChunk(rec: AvxRecord): Uint8Array {
     if (rec.audio < 0) throw new MediaError("record not decoded yet");
     if (rec.audio + 4 > rec.end) throw new MediaError(`record at ${rec.offset}: no sound chunk`);
-    const size = view(this.data).getUint32(rec.audio, true);
+    const size = viewOf(this.data).getUint32(rec.audio, true);
     if (size < 4 || rec.audio + size !== rec.end) {
       throw new MediaError(`record at ${rec.offset}: sound chunk size ${size} does not fill the record`);
     }

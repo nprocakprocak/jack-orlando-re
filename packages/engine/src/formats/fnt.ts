@@ -1,5 +1,7 @@
 // Bitmap fonts. The engine reads JACK.FNT and JACKM.FNT from Resource.pak.
 
+import { viewOf } from "./bytes";
+
 export class FntError extends Error {}
 
 const ENTRY_SIZE = 4;
@@ -27,7 +29,7 @@ export interface Font {
 
 export function parseFnt(data: Uint8Array): Font {
   if (data.length < TABLE_SIZE) throw new FntError("too short");
-  const view = new DataView(data.buffer, data.byteOffset, data.byteLength);
+  const view = viewOf(data);
   const glyphs: Glyph[] = [];
   let dataEnd = TABLE_SIZE;
   for (let code = 0; code < GLYPHS; code++) {

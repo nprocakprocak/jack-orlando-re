@@ -1,6 +1,8 @@
 // Cursor modes of the original (g_cursorMode, 008f68f6), their image sets and hotspots.
 // Description and evidence.
 
+import { pad2 } from "../core/pad";
+
 /** Verb modes 0-4 (switched from the verb menu), 5 = item in hand, 10-21 = zone/edge cursors. */
 export const CursorMode = {
   /** "POKAZANIE" - the pointing hand (default). */
@@ -78,28 +80,27 @@ export function hotspotInImage(mode: number, w: number, h: number, flag = false)
 
 /** Frame file name of a mode ("" when the mode has no animated set). Indices are 0-based frame numbers. */
 export function frameName(mode: number, frame: number): string {
-  const p2 = (n: number) => String(n).padStart(2, "0");
   switch (mode) {
-    case 0: return `WSK${p2(frame)}.BM`;
-    case 1: return `LUPA${p2(frame + 1)}.BM`;
-    case 2: return `FIS${p2(frame)}.BM`;
-    case 3: return `KOLT${p2(frame + 1)}.BM`;
-    case 4: return `HAN${p2(frame + 1)}.BM`;
-    case 10: return `LEFT0${p2(frame + 1)}.BM`;
-    case 11: return `RIGHT${p2(frame + 1)}.BM`;
-    case 13: return `STDN00${p2(frame + 1)}.BM`;
-    case 14: return `TOIN00${p2(frame + 1)}.BM`;
-    case 15: return `STUP00${p2(frame + 1)}.BM`;
-    case 17: return `TOUT00${p2(frame + 1)}.BM`;
-    case 20: return `SCLF00${p2(frame + 1)}.BM`;
-    case 21: return `SCRG00${p2(frame + 1)}.BM`;
+    case 0: return `WSK${pad2(frame)}.BM`;
+    case 1: return `LUPA${pad2(frame + 1)}.BM`;
+    case 2: return `FIS${pad2(frame)}.BM`;
+    case 3: return `KOLT${pad2(frame + 1)}.BM`;
+    case 4: return `HAN${pad2(frame + 1)}.BM`;
+    case 10: return `LEFT0${pad2(frame + 1)}.BM`;
+    case 11: return `RIGHT${pad2(frame + 1)}.BM`;
+    case 13: return `STDN00${pad2(frame + 1)}.BM`;
+    case 14: return `TOIN00${pad2(frame + 1)}.BM`;
+    case 15: return `STUP00${pad2(frame + 1)}.BM`;
+    case 17: return `TOUT00${pad2(frame + 1)}.BM`;
+    case 20: return `SCLF00${pad2(frame + 1)}.BM`;
+    case 21: return `SCRG00${pad2(frame + 1)}.BM`;
     default: return "";
   }
 }
 
 /** Magnifier "hot" frames BLIR00..BLIR04 (g_cursorLensFrame 9..13 in the original). */
 export function lensHotName(lensFrame: number): string {
-  return `BLIR${String(lensFrame - 9).padStart(2, "0")}.BM`;
+  return `BLIR${pad2(lensFrame - 9)}.BM`;
 }
 
 /**
@@ -107,7 +108,7 @@ export function lensHotName(lensFrame: number): string {
  * Game_Main) into consecutive slots and cycles the first 10 of them: CD00 CD18.
  */
 export function busyName(frame: number): string {
-  return `CD${String((((frame % 10) + 10) % 10) * 2).padStart(2, "0")}.BM`;
+  return `CD${pad2((((frame % 10) + 10) % 10) * 2)}.BM`;
 }
 
 /** Mask files of the lens (see lensMaskName in overlay.ts): MASKA01..09 for LUPA01..09, M00..M04 for BLIR00..04. */

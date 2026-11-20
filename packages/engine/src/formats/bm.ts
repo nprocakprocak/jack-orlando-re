@@ -1,5 +1,10 @@
 // .BM image reader (uncompressed: 16-bit RGB565 or 8-bit with palette).
 
+import type { Pak } from "./pak";
+import { viewOf } from "./bytes";
+
+export { viewOf };
+
 export class BmError extends Error {}
 
 export type ImageKind = "rgb565" | "pal8" | "pal8rle";
@@ -15,10 +20,6 @@ export interface Image16 {
 const HEADER_SIZE = 4;
 /** 128 RGB565 colors; pixel bytes are byte offsets into it (always even). */
 export const PALETTE_SIZE = 256;
-
-export function viewOf(data: Uint8Array): DataView {
-  return new DataView(data.buffer, data.byteOffset, data.byteLength);
-}
 
 /** Maps palette byte offsets to colors; throws on odd offsets (they would read half of two entries). */
 export function applyPalette(data: Uint8Array, indices: Uint8Array, onOdd: (offset: number) => Error): Uint16Array {
@@ -52,6 +53,11 @@ export function decodeBm(data: Uint8Array): Image16 {
     `size ${data.length} fits neither ${width}x${height} RGB565 (${HEADER_SIZE + 2 * n}) ` +
       `nor 8-bit (${HEADER_SIZE + PALETTE_SIZE + n})`,
   );
+}
+
+/** Bitmap `name` in `pak` (`Pak.read` then `decodeBm`). A missing name throws. */
+export function readBm(pak: Pak, name: string): Image16 {
+  return decodeBm(pak.read(name));
 }
 
 /** Problems found; empty means the file matches the documented format. */

@@ -1,5 +1,6 @@
 // Jack's brightness from the scene lights ([swiatlo] .CCG): (walk),
 // (insertions), (standing).
+import { viewOf } from "../formats/bytes";
 import { f32, ftol } from "./jack";
 
 /** Distance at which a light stops brightening Jack, at scale 1 (= 300.0). */
@@ -43,7 +44,7 @@ export function scaleColor(c: number, factor: number): number {
 export function brightenPbm(data: Uint8Array, factor: number): Uint8Array {
   const out = data.slice();
   if (factor >= 1 || out.length < 4 + 2 * PALETTE_ENTRIES) return out;
-  const view = new DataView(out.buffer, out.byteOffset, out.byteLength);
+  const view = viewOf(out);
   for (let i = 0; i < PALETTE_ENTRIES; i++) {
     const off = 4 + 2 * i;
     view.setUint16(off, scaleColor(view.getUint16(off, true), factor), true);

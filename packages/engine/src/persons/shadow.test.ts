@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { type Image16 } from "../formats/bm";
 import { BUNDLED_REMAP } from "../play/facewin";
+import { approximateShadowTables } from "../scene/shadow";
 import {
   darken,
   darkenPixel,
@@ -8,23 +9,9 @@ import {
   PersonShadow,
   shadowEnabledByMode,
   type ShadowInput,
-  type ShadowTables,
 } from "./shadow";
 
 const IN: ShadowInput = { x: 300, y: 400, personScale: 1, lightScale: 1, maskWidth: 100, maskHeight: 20 };
-
-/** Tables with 3 levels: level L subtracts L from the blue part, keeps green and red. */
-function tables(): ShadowTables {
-  const blue = new Uint8Array(3 * 0x80);
-  const green = new Uint16Array(3 * 64);
-  const red = new Uint16Array(3 * 64);
-  for (let l = 0; l < 3; l++) {
-    for (let i = 0; i < 32; i++) blue[l * 0x80 + i] = Math.max(i - l, 0);
-    for (let i = 0; i < 64; i++) green[l * 64 + i] = i << 5;
-    for (let i = 0; i < 32; i++) red[l * 64 + i] = i << 11;
-  }
-  return { blue, green, red };
-}
 
 function mask(width: number, height: number, set: (x: number, y: number) => boolean): Image16 {
   const pixels = new Uint16Array(width * height);
@@ -160,10 +147,11 @@ describe("shadow state and script commands", () => {
 });
 
 describe("darkening", () => {
-  const T = tables();
+  const T = approximateShadowTables();
 
   it("goes through the three colour tables of the level", () => {
-    expect(darkenPixel(0b11111_111111_00101, 2, T)).toBe(0b11111_111111_00011);
+    // stand-in level 2: blue and red lose 2, green loses 4
+    expect(darkenPixel(0b11111_111111_00101, 2, T)).toBe(0b11101_111011_00011);
     expect(darkenPixel(0x1234, 0, T)).toBe(0x1234);
   });
 

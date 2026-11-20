@@ -3,8 +3,8 @@
 // The .ICS and .FCM parsers follow the game's loaders token by token (Ics_LoadSection /
 // Scene_LoadIcs, Fcm_LoadSection / Scene_LoadFcm), so they read
 // GLOBAL.ICS/FCM and the scene copies alike. Same model as the external checker.
+import { viewOf } from "./bytes";
 import { decrypt } from "./textcrypt";
-
 /** Fixed-size name buffers in the game's tables (name + NUL). */
 export const FRAME_NAME_MAX = 13;
 export const SECTION_NAME_MAX = 29;
@@ -432,7 +432,7 @@ export const SFB_COUNTS: Record<string, number> = {
 
 export function parseSfb(data: Uint8Array): HotSpot[] {
   if (data.length === 0 || data.length % 6) throw new GlobalError(`size ${data.length} is not a multiple of 6`);
-  const dv = new DataView(data.buffer, data.byteOffset, data.byteLength);
+  const dv = viewOf(data);
   const out: HotSpot[] = [];
   for (let i = 0; i < data.length; i += 6) out.push([dv.getInt16(i, true), dv.getInt16(i + 2, true), dv.getInt16(i + 4, true)]);
   return out;
@@ -449,7 +449,7 @@ export function parseCm(name: string, data: Uint8Array): number[] {
   if (!m) throw new GlobalError(`not a CM<size>.BIN name: ${name}`);
   const d = Number(m[1]);
   if (data.length !== d) throw new GlobalError(`size ${data.length}, expected ${d} (${d >> 1} uint16 values)`);
-  const dv = new DataView(data.buffer, data.byteOffset, data.byteLength);
+  const dv = viewOf(data);
   const v = Array.from({ length: d >> 1 }, (_, i) => dv.getUint16(i * 2, true));
   for (let i = 1; i < v.length; i++) if (v[i - 1] < v[i]) throw new GlobalError("row widths are not non-increasing");
   if (v[v.length - 1] !== 0 || v[0] > d >> 1) {

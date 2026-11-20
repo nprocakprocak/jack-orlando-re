@@ -4,6 +4,7 @@
 // images stay where they were drawn until a later delta overwrites them.
 // src/video/README.md
 
+import { viewOf } from "../formats/bytes";
 import { AVX_INDEX_BUFFER, FrameBuffer } from "../formats/media";
 import type { AvxFrame } from "../formats/media";
 import type { Image16 } from "../formats/bm";
@@ -49,7 +50,7 @@ export class MovieBuffer extends FrameBuffer {
   override applyDelta(src: Uint8Array, base = 0): number {
     const stopped = super.applyDelta(src, base);
     // the same walk as FrameBuffer.applyDelta, which has already validated it
-    const v = new DataView(src.buffer, src.byteOffset, src.byteLength);
+    const v = viewOf(src);
     const end = base + v.getUint32(base, true);
     let pos = v.getUint32(base + 4, true);
     let p = base + 8;

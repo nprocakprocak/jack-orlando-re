@@ -1,7 +1,7 @@
 // Shadow sprites of the scene: composition, placement and the Jack scale flag on invented state.
 import { describe, expect, it } from "vitest";
 import type { Image16 } from "../formats/bm";
-import { darkenPixel, PersonShadow, type ShadowTables } from "../persons/shadow";
+import { darkenPixel, PersonShadow } from "../persons/shadow";
 import { approximateShadowTables, composeShadow, drawAt, flipped } from "./shadow";
 import { ScenePlayer } from "./player";
 import { jackScale } from "../walk/geometry";
@@ -12,19 +12,6 @@ const img = (width: number, height: number, f: (x: number, y: number) => number)
   kind: "rgb565",
   pixels: Uint16Array.from({ length: width * height }, (_, i) => f(i % width, Math.trunc(i / width))),
 });
-
-/** Level L subtracts L from the blue part only. */
-function tables(): ShadowTables {
-  const blue = new Uint8Array(4 * 0x80);
-  const green = new Uint16Array(4 * 64);
-  const red = new Uint16Array(4 * 64);
-  for (let l = 0; l < 4; l++) {
-    for (let i = 0; i < 32; i++) blue[l * 0x80 + i] = Math.max(i - l, 0);
-    for (let i = 0; i < 64; i++) green[l * 64 + i] = i << 5;
-    for (let i = 0; i < 32; i++) red[l * 64 + i] = i << 11;
-  }
-  return { blue, green, red };
-}
 
 describe("drawAt (synthetic)", () => {
   it("is the PersonShadow geometry for the same corner and scale", () => {
@@ -45,7 +32,7 @@ describe("composeShadow (synthetic)", () => {
 
   it("copies the backdrop under the shadow and darkens it under the non-zero mask pixels", () => {
     const d = drawAt(5, 3, 1, 4, 2, 2);
-    const out = composeShadow(back, d, mask, tables())!;
+    const out = composeShadow(back, d, mask, approximateShadowTables())!;
     expect([out.width, out.height]).toEqual([4, 2]);
     expect([...out.pixels]).toEqual([29, 29, 31, 31, 29, 29, 31, 31]); // blue 31 - level 2 under the left half
   });
@@ -53,13 +40,13 @@ describe("composeShadow (synthetic)", () => {
   it("takes the rows and columns from where the corner is, and leaves what lies off the background empty", () => {
     const b = img(20, 10, (x, y) => 0x0100 + x + y * 20); // distinct pixels, no mask darkening (mask all 0)
     const none = img(4, 2, () => 0);
-    const out = composeShadow(b, drawAt(-2, 9, 1, 4, 2, 0), none, tables())!;
+    const out = composeShadow(b, drawAt(-2, 9, 1, 4, 2, 0), none, approximateShadowTables())!;
     // row 9 exists, row 10 does not; columns -2, -1 are off the left edge
     expect([...out.pixels]).toEqual([0, 0, b.pixels[9 * 20 + 0], b.pixels[9 * 20 + 1], 0, 0, 0, 0]);
   });
 
   it("an empty shadow (width or height 0) gives no image", () => {
-    expect(composeShadow(back, drawAt(5, 3, 0, 4, 2, 2), mask, tables())).toBeNull();
+    expect(composeShadow(back, drawAt(5, 3, 0, 4, 2, 2), mask, approximateShadowTables())).toBeNull();
   });
 
   it("flipped mirrors every row", () => {

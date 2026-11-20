@@ -1,10 +1,10 @@
 // Quick save F5 / quick load F6 / autosave names and the F6 search. and 4.
 // Quirks of the original are kept on purpose (see).
 
+import { pad2 } from "../core/pad";
+
 export const QUICK_NAME_PL = "Szybki Zapis";
 export const AUTOSAVE_NAME_PL = "AUTO - ZAPIS";
-
-const pad2 = (n: number) => String(n).padStart(2, "0");
 
 /** `Save_MakeQuickName`: `<name> RRRR-MM-DD GG-MM.sav` (easy version `.svl`), local time, no seconds. */
 export function quickSaveName(now: Date, light: boolean, base = QUICK_NAME_PL): string {

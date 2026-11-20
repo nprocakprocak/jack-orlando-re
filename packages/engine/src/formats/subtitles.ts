@@ -1,5 +1,10 @@
 // Movie subtitles Movies\*.DLG.
 
+import { SCREEN_HEIGHT, SCREEN_WIDTH } from "../core/constants";
+import { viewOf } from "./bytes";
+
+export { SCREEN_HEIGHT as SCREEN_H, SCREEN_WIDTH as SCREEN_W };
+
 export class SubtitlesError extends Error {}
 
 const INTRO_HEADER = 24; // w, h, x, y, first, last, segment (u16), colour RGB, 7 bytes padding
@@ -7,8 +12,6 @@ const RGB565_HEADER = 14; // first, last, x, y, unk, w, h (u16)
 
 export const SUBS_BUFFER = 0x64000; // Media_Open: memset + read into g_movieSubs
 export const INTRO_PIXELS_MAX = 0x19000 / 2; // the mapped-picture buffer of mode 1
-export const SCREEN_W = 640;
-export const SCREEN_H = 480;
 
 const INTRO_OUTLINE = 0x0001; // palette entry 0, set by Media_DrawSubtitles
 const INTRO_BODY = 255; // palette entry 255 = the record's colour
@@ -50,7 +53,7 @@ export function parseSubtitles(data: Uint8Array, intro: boolean): Subtitle[] {
   if (data.length > SUBS_BUFFER) {
     throw new SubtitlesError(`${data.length} bytes do not fit the 0x${SUBS_BUFFER.toString(16)}-byte subtitle buffer`);
   }
-  const v = new DataView(data.buffer, data.byteOffset, data.byteLength);
+  const v = viewOf(data);
   const headSize = intro ? INTRO_HEADER : RGB565_HEADER;
   const out: Subtitle[] = [];
   let pos = 0;
@@ -174,8 +177,8 @@ export function verifySubtitles(name: string, data: Uint8Array): string[] {
     const where = `record ${i}`;
     if (s.width <= 0 || s.height <= 0) problems.push(`${where}: empty picture ${s.width}x${s.height}`);
     if (s.first >= s.last) problems.push(`${where}: first ${s.first} >= last ${s.last}`);
-    if (s.x + s.width > SCREEN_W || s.y + s.height > SCREEN_H) {
-      problems.push(`${where}: ${s.width}x${s.height} at ${s.x},${s.y} leaves the ${SCREEN_W}x${SCREEN_H} screen`);
+    if (s.x + s.width > SCREEN_WIDTH || s.y + s.height > SCREEN_HEIGHT) {
+      problems.push(`${where}: ${s.width}x${s.height} at ${s.x},${s.y} leaves the ${SCREEN_WIDTH}x${SCREEN_HEIGHT} screen`);
     }
     if (s.unk) problems.push(`${where}: unk ${s.unk} (documented as 0)`);
     if (intro && [...s.rawValues!].some((b) => b !== 0 && b !== INTRO_CLEAR && b !== INTRO_BODY)) {

@@ -5,3 +5,4 @@ export * from "./mouse";
 export * from "./loop";
 export * from "./dom";
 export * from "./display";
+export * from "./pad";

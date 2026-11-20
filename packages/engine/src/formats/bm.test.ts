@@ -1,7 +1,25 @@
 import { describe, expect, it } from "vitest";
-import { BmError, decodeBm, rgb565ToRgba, verifyBm } from "./bm";
+import { BmError, decodeBm, readBm, rgb565ToRgba, verifyBm } from "./bm";
+import { Pak, PakError } from "./pak";
 
 // --- synthetic images ---------------------------------------------------------
+
+/** One invented file in a .PAK built in the test. */
+function oneFilePak(name: string, data: Uint8Array): Pak {
+  const rawName = new TextEncoder().encode(`${name}\0`);
+  const dataStart = 16 + 12 + rawName.length;
+  const out = new Uint8Array(dataStart + data.length);
+  const view = new DataView(out.buffer);
+  out.set([0x50, 0x41, 0x4b, 0], 0);
+  view.setUint32(4, 1, true);
+  view.setUint32(8, dataStart, true);
+  view.setUint32(16, dataStart, true);
+  view.setUint32(20, data.length, true);
+  view.setUint32(24, rawName.length, true);
+  out.set(rawName, 28);
+  out.set(data, dataStart);
+  return new Pak(out);
+}
 
 function header(w: number, h: number): number[] {
   return [w & 0xff, w >> 8, h & 0xff, h >> 8];
@@ -61,6 +79,12 @@ describe("bm on synthetic data", () => {
     expect(verifyBm(new Uint8Array([...header(1, 1), ...palette([5]), 0]))).toEqual([
       "palette entry 0 is not 0 (transparent)",
     ]);
+  });
+
+  it("reads a bitmap from a pak and throws when the name is missing", () => {
+    const pak = oneFilePak("DOT.BM", new Uint8Array([...header(1, 1), ...u16([0x001f])]));
+    expect(readBm(pak, "dot.bm").pixels[0]).toBe(0x001f);
+    expect(() => readBm(pak, "NOPE.BM")).toThrow(PakError);
   });
 
   it("converts RGB565 to RGBA with bit replication and color key 0", () => {

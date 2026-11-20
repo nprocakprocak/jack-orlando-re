@@ -5,10 +5,10 @@
 
 import { gameVolumeToLevel, type Mixer } from "../audio/mixer";
 import { JACK, type Command } from "../script/compiler";
+import { SCREEN_WIDTH } from "../core/constants";
 import type { SceneSounds } from "./bank";
-
 /** Width of the screen: the pan formula of the footsteps uses it (= 640.0). */
-export const SCREEN_WIDTH = 640;
+export { SCREEN_WIDTH };
 /** Footstep volume of Jack (= 64.0), before the scale. */
 export const STEP_VOLUME = 64;
 /** SFXVol of a fresh configuration (Sys_InitConfigAndCd: 0x20), range 0..64. */

@@ -1,5 +1,6 @@
 // Jack's turning animation: which frames, in what order, how long, and what happens at the end.
 // No DOM; the walk side (when a turn starts) is walk/turn.ts.
+import { pad2 } from "../core/pad";
 import type { HotSpot } from "../formats/global";
 import { f32, ftol, type Facing } from "./jack";
 
@@ -101,8 +102,6 @@ export function turnEndWalkFrame(anim: TurnAnim, facing: Facing): number | null 
   if (!e) return null;
   return e.walkFrame ?? (facing === -1 ? 3 : 9);
 }
-
-const pad2 = (n: number): string => String(n).padStart(2, "0");
 
 /**
  * Number 1..17 of the ROTP/ROTW/SHROT image for an on-the-spot frame. 13..16 run backwards

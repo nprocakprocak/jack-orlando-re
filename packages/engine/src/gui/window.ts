@@ -1,5 +1,6 @@
 // GUI window: scene snapshot + frame, buttons, sliders, Yes/No toggles and the event-driven equivalent
 // of Gui_RunWindow.
+import { SCREEN_HEIGHT, SCREEN_WIDTH } from "../core/constants";
 import type { Font } from "../formats/fnt";
 import { textWidth } from "../formats/fnt";
 import type { Surface16 } from "../render/surface";
@@ -9,8 +10,7 @@ import {
   centerOffset, COLOR_BLUE, COLOR_WHITE, copyRect, drawButtonFrame, drawText, drawTextShadowed, drawWindowFrame,
 } from "./draw";
 
-export const SCREEN_W = 640;
-export const SCREEN_H = 480;
+export { SCREEN_HEIGHT as SCREEN_H, SCREEN_WIDTH as SCREEN_W };
 /** Slider geometry (Gui_AddSlider): the thumb travels 170 px from x + 23. */
 export const SLIDER_TRAVEL = 170;
 export const SLIDER_X0 = 23;
@@ -100,8 +100,8 @@ export class GuiWindow {
   constructor(private readonly assets: WindowAssets, scene: Surface16, x: number, y: number, w: number, h: number, center: boolean) {
     if (w % 2) w++;
     if (center) {
-      x = centerOffset(SCREEN_W, w);
-      y = centerOffset(SCREEN_H, h);
+      x = centerOffset(SCREEN_WIDTH, w);
+      y = centerOffset(SCREEN_HEIGHT, h);
     }
     this.x = x;
     this.y = y;
