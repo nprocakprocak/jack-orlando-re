@@ -1,14 +1,18 @@
 # Jack Orlando Reverse Engineered
 
-An engine that plays Jack Orlando from files you supply. The name "Jack Orlando" only identifies which game those files belong to. This project has no connection with the rights holder.
+An engine that plays Jack Orlando game from files you supply. The name "Jack Orlando" only identifies which game those files belong to. This project has no connection with the rights holder.
 
-This repository does not contain the game. It has no archives, no executable, and no pictures of the game. The boundary is [docs/LEGAL.md](docs/LEGAL.md). Fonts are read from the user's `Resource.pak`. Menu captions and lookup tables live in the engine modules that use them. The engine does not read the executable.
+Currently only Polish version is supported, sorry. Working on English version as well (in progress).
 
-The workspace publishes `jack-orlando-re` from `packages/engine` and `jack-orlando-browser` from `packages/browser` (version 0.0.0, ES modules). An outside project installs those package names and calls `mountPlayer` from `jack-orlando-browser`. `npm install` at the repository root does not install the engine, because the root is a private workspace. Depend on `jack-orlando-re` from npm or from `file:packages/engine` in a consumer `package.json`.
+Jack Orlando was developed by Toontraxx Studios and published by TopWare Interactive. The reverse engineering was made from the original Jack Orlando Director's Cut engine, sold as [Jack Orlando: Director's Cut](https://store.steampowered.com/app/253960/Jack_Orlando_Directors_Cut/).
 
-The engine's only runtime dependency is [fflate](https://github.com/101arrowz/fflate), used to read a ZIP in memory. TypeScript, Vite, and Vitest are development dependencies.
+Running this engine requires assets from a legally acquired copy of the game. Those assets are not published in this repository. It has no archives, no executable, and no pictures of the game.
+
+In order to prepare the assets, install the original game in a directory. Then provide the path to the game in `JO_GAME_DIR` environment variable (see below) and run the engine. Alternatively, you can archive the game assets into a zip file and pass it to the engine. You can simply zip all files in the game folder, however not all files are required, for example executables are not used at all. For the actual assets list, see [Assets](docs/guide/assets.md).
 
 ## Build
+
+Node.js 22.12 or newer. `npm install` installs Electron 45, which requires that version.
 
 ```bash
 npm install
@@ -16,21 +20,17 @@ npm test
 npm run build
 ```
 
-`npm test` runs the suite in `jack-orlando-re`, then in `jack-orlando-browser`. The tests build their own bytes, so they do not need the game. `npm run build` writes the engine to `packages/engine/dist/` (`packages/engine/vite.config.ts`), then builds the browser session package. `npm run check` typechecks both packages without emitting files.
-
 ## Run
 
-Three ways to play from this repository:
+There are three ways to play from this repository:
 
-1. **`npm run dev`** — dev page in `examples/play`. ZIP field, or `JO_GAME_DIR` for a directory served at `/game/`.
-2. **`npm run dev:embed`** — `examples/embed`. Imports only `jack-orlando-browser` and `jack-orlando-re`. No `JO_GAME_DIR` and no query string.
-3. **`npm run play:desktop -- <directory-or.zip>`** — Electron. The main process listens on `127.0.0.1` and the page calls `mountPlayer`.
+1. **`npm run dev`** — an example of how to embed the engine on a web page. You can provide the game directory via `JO_GAME_DIR` or assets packed to zip. You can also use query string to manipulate the engine with dev parameters.
+2. **`npm run dev:embed`** — a minimal example, you provide the zip file and play.
+3. **`npm run play:desktop -- <directory-or.zip>`** — an example of how to run the engine as a desktop application using Electron. The desktop app runs on Windows, Linux and MacOS. Provide the assets via `JO_GAME_DIR` or zip archive.
 
-The dev page loads game assets from a ZIP file you choose on the page. Pack the game directory as it is: on this page the assets may sit in a subdirectory of the archive. The executable is not required. You can also point the page at a directory with the `JO_GAME_DIR` environment variable.
+Set `JO_GAME_DIR` to your game directory in the same shell that starts the dev server, or leave it unset and choose a ZIP on the page. There is no default directory. A directory is matched without regard to case, so a folder copied from Windows works on Linux.
 
-A ZIP passed to `openZip`, `openZipFile`, the embed example, the desktop window, or `npm run play:node` holds the assets at the archive root. Go into the game directory and pack at least the files the engine reads. The executable is not one of them. The paths are in [Assets](docs/guide/assets.md).
-
-The browser page is the way to play, on Windows, macOS, and Linux. Set `JO_GAME_DIR` to your game directory in the same shell that starts the dev server, or leave it unset and choose a ZIP on the page. There is no default directory. A directory is matched without regard to case, so a tree copied from Windows is found on Linux. Restart the server after you change the variable.
+### Examples
 
 PowerShell:
 
@@ -38,12 +38,16 @@ PowerShell:
 $env:JO_GAME_DIR = "C:\path\to\the\game"
 npm run dev
 ```
+or
+
+```powershell
+npm run dev:embed # then load the zip file on the page
+```
 
 cmd:
 
 ```bat
-set JO_GAME_DIR=C:\path\to\the\game
-npm run dev
+npm run play:desktop -- C:\path\to\the\game\or\zip
 ```
 
 bash:
@@ -63,18 +67,12 @@ macOS, in Terminal (zsh):
 
 ```zsh
 export JO_GAME_DIR=/path/to/the/game
-npm run dev
-```
-
-Vite opens `/` on the dev server for `examples/play`. Details are in [Getting started](docs/guide/getting-started.md) and [Assets](docs/guide/assets.md).
-
-A Node script checks that a directory or a ZIP loads, then prints the phase and the scene. The ZIP is the one above: assets packed from inside the game directory. The script does not open a window. It builds the library first. With no path it says so and runs a stand-in archive, only to check that the built package starts.
-
-```bash
-npm run play:node -- path/to/the/game
+npm run play:desktop
 ```
 
 ## Guide
+
+More details, how assets are encoded and how the engine works:
 
 - [Getting started](docs/guide/getting-started.md) — Node, the browser page, and a canvas
 - [Assets](docs/guide/assets.md) — directory, ZIP, and the paths the engine reads
@@ -82,4 +80,4 @@ npm run play:node -- path/to/the/game
 - [Scripts](docs/guide/scripts.md) — macro language and scene configuration
 - [Package exports](docs/guide/package.md) — what a browser bundle can import
 
-People changing a parser should use [docs/dev/formats](docs/dev/formats/). Those notes are not this guide.
+People changing a parser should use [docs/dev/formats](docs/dev/formats/).
