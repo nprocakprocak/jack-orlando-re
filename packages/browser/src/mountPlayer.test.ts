@@ -1,6 +1,6 @@
 import type { GameFiles } from "jack-orlando-re/play";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { mountPlayer } from "jack-orlando-browser";
+import { httpGameFiles, mountPlayer } from "jack-orlando-browser";
 
 const files: GameFiles = {
   async read() {
@@ -77,5 +77,51 @@ describe("mountPlayer", () => {
     expect(rectSpy).not.toHaveBeenCalled();
 
     canvas.remove();
+  });
+
+  it("stop a second time resolves", async () => {
+    const canvas = document.createElement("canvas");
+    document.body.append(canvas);
+    stubCanvas2d(canvas);
+    const handle = mountPlayer({ canvas, files, audio: false });
+    await handle.stop();
+    await expect(handle.stop()).resolves.toBeUndefined();
+    canvas.remove();
+  });
+});
+
+describe("httpGameFiles", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  function reply(status: number, type: string, body: BodyInit = ""): Response {
+    return new Response(body, { status, headers: { "content-type": type } });
+  }
+
+  it("reads bytes, treats an html body as missing, and checks existence with HEAD", async () => {
+    const fetchMock = vi.spyOn(globalThis, "fetch").mockImplementation(async (input, init) => {
+      const url = String(input);
+      const method = init?.method ?? "GET";
+      if (url.endsWith("/missing.bin")) return reply(404, "text/plain");
+      if (url.endsWith("/page.bin")) return reply(200, "text/html; charset=utf-8", "<p>no</p>");
+      if (url.endsWith("/item.bin") && method === "HEAD") return reply(200, "application/octet-stream");
+      if (url.endsWith("/item.bin")) return reply(200, "application/octet-stream", new Uint8Array([7, 8]));
+      return reply(500, "text/plain");
+    });
+
+    const files = httpGameFiles("http://files/");
+    await expect(files.read("missing.bin")).rejects.toThrow(/HTTP 404/);
+    await expect(files.read("page.bin")).rejects.toThrow(/HTTP 200/);
+    expect(await files.read("item.bin")).toEqual(new Uint8Array([7, 8]));
+    expect(await files.exists("item.bin")).toBe(true);
+    expect(await files.exists("page.bin")).toBe(false);
+    expect(await files.exists("missing.bin")).toBe(false);
+    const heads = fetchMock.mock.calls.filter((c) => c[1]?.method === "HEAD").map((c) => String(c[0]));
+    expect(heads).toEqual([
+      "http://files/item.bin",
+      "http://files/page.bin",
+      "http://files/missing.bin",
+    ]);
   });
 });
