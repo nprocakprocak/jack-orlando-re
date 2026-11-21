@@ -4,9 +4,12 @@
 // Jack_PlayStep, per-step person effects in Game_Run.
 
 import { gameVolumeToLevel, type Mixer } from "../audio/mixer";
-import { JACK, type Command } from "../script/compiler";
+import type { Command } from "../script/compiler";
 import { SCREEN_WIDTH } from "../core/constants";
 import type { SceneSounds } from "./bank";
+import { command as runCommand, type SfxCommandState } from "./sfx-command";
+export { SFX_COMMANDS } from "./sfx-command";
+
 /** Width of the screen: the pan formula of the footsteps uses it (= 640.0). */
 export { SCREEN_WIDTH };
 /** Footstep volume of Jack (= 64.0), before the scale. */
@@ -74,16 +77,6 @@ export interface SfxEnv {
 
 /** Result of `command`, same words as script/interpreter CommandResult. */
 export type SfxResult = "done" | "repeat";
-
-/** Command codes handled here. MUSIC / MUSICVOLUME belong to MusicPlayer.command. */
-export const SFX_COMMANDS = {
-  EFFECT: 0x1e,
-  EFFECTVOLUME: 0x20,
-  WALKEFFECT: 0x42,
-  ANIMAEFFECT: 0x54,
-  WAITWHILEEFFECT: 0x67,
-  UNLOCKCANAL: 0x86,
-} as const;
 
 export class SfxPlayer {
   readonly options: Required<SfxOptions>;
@@ -387,51 +380,7 @@ export class SfxPlayer {
     return false;
   }
 
-  // ---- script commands ------------------------------------------------------------------
-
-  private soundRef(cmd: Command): number {
-    const ref = cmd.refs.find((r) => r[1] === "sound");
-    return ref ? (this.bank?.find(String(ref[2])) ?? -1) : -1;
-  }
-
-  /**
- * Runs one of SFX_COMMANDS; undefined for any other code. WAITWHILEEFFECT answers "repeat"
- * while the sound plays, everything else "done".
- */
   command(cmd: Command, env: SfxEnv): SfxResult | undefined {
-    switch (cmd.code) {
-      case SFX_COMMANDS.EFFECT: // EFFECT sound channel _ volume: a[0] channel, a[2] volume
-        this.effect(env.arg(0), this.soundRef(cmd), env.arg(2));
-        return "done";
-      case SFX_COMMANDS.EFFECTVOLUME: // EFFECTVOLUME sound _ volume: a[0] volume
-        this.effectVolume(this.soundRef(cmd), env.arg(0));
-        return "done";
-      case SFX_COMMANDS.WAITWHILEEFFECT:
-        return this.isEffectPlaying(this.soundRef(cmd)) ? "repeat" : "done";
-      case SFX_COMMANDS.UNLOCKCANAL:
-        this.unlockChannel(env.arg(0));
-        return "done";
-      case SFX_COMMANDS.WALKEFFECT: {
-        const sound = this.soundRef(cmd);
-        if (cmd.a[3] === JACK) this.setJackStep(env.arg(0), sound);
-        else this.setWalkEffect(env.person(cmd.n1), env.arg(0), sound, env.arg(5), env.arg(2) >= 1);
-        return "done";
-      }
-      case SFX_COMMANDS.ANIMAEFFECT: {
-        const anim = env.anim(cmd.n1);
-        if (anim >= 0) {
-          this.addAnimaEffect(anim, {
-            image: env.arg(0),
-            rec: env.arg(5),
-            channel: env.arg(1),
-            sound: this.soundRef(cmd),
-            volume: env.arg(6),
-          });
-        }
-        return "done";
-      }
-      default:
-        return undefined;
-    }
+    return runCommand.call(this as unknown as SfxCommandState, cmd, env);
   }
 }

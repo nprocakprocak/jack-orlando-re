@@ -8,7 +8,7 @@ alwaysApply: false
 
 An implementation file has at most 400 lines. A test file (`*.test.ts`) has at most 500. Count every line, including comments and blank lines.
 
-`npm run check` in `packages/engine` runs `node scripts/max-lines.mjs`. The exception list is `ALLOW` in `packages/engine/scripts/max-lines.mjs`: each file that is already over the limit, with the line count it has now. A file that is not on the list fails the check when it is over the limit. A listed file fails when it has more lines than the recorded count. When a listed file has fewer lines and is still over the limit, lower the recorded count to the new size. When a listed file is within the limit, remove its entry.
+`npm run check` in `packages/engine` runs `node scripts/max-lines.mjs`. A file over its limit fails the check.
 
 One file has one responsibility. A comment that belongs to a method moves with that method.
 

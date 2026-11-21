@@ -13,16 +13,6 @@ export const TEST_LIMIT = 500;
 
 const SKIP_DIRECTORIES = new Set(["node_modules", "dist", "dist-www"]);
 
-// Files already over the limit. The number is the line count that file has now.
-// Do not raise a number. Lower it when the file shrinks. Delete the entry at the limit.
-const ALLOW = {
-  "src/play/game.test.ts": 856,
-  "src/play/host.test.ts": 1010,
-  "src/scene/player.test.ts": 502,
-  "src/sfx/sfx.test.ts": 564,
-  "src/sfx/sfx.ts": 437,
-};
-
 /** @param {string} path */
 function normalize(path) {
   return path.split("\\").join("/");
@@ -42,47 +32,16 @@ export function limitFor(path) {
 
 /**
  * @param {{ path: string, lines: number }[]} files
- * @param {Record<string, number>} exceptions
  * @returns {string[]}
  */
-export function review(files, exceptions) {
-  /** @type {Record<string, number>} */
-  const allow = {};
-  for (const [path, lines] of Object.entries(exceptions)) allow[normalize(path)] = lines;
-
+export function review(files) {
   /** @type {string[]} */
   const errors = [];
-  const seen = new Set();
   const sorted = [...files].sort((a, b) => normalize(a.path).localeCompare(normalize(b.path)));
   for (const file of sorted) {
     const path = normalize(file.path);
-    seen.add(path);
     const limit = limitFor(path);
-    const recorded = allow[path];
-    if (recorded === undefined) {
-      if (file.lines > limit) {
-        errors.push(
-          `${path} has ${file.lines} lines, over the limit of ${limit}. A new file over the limit does not pass.`,
-        );
-      }
-      continue;
-    }
-    if (file.lines > recorded) {
-      errors.push(
-        `${path} has ${file.lines} lines. The exception list allows ${recorded}. A listed file cannot grow.`,
-      );
-    } else if (file.lines <= limit) {
-      errors.push(
-        `${path} has ${file.lines} lines, within the limit of ${limit}. Remove it from the exception list.`,
-      );
-    } else if (file.lines < recorded) {
-      errors.push(
-        `${path} has ${file.lines} lines. The exception list records ${recorded}. Lower the recorded count to ${file.lines}.`,
-      );
-    }
-  }
-  for (const path of Object.keys(allow).sort()) {
-    if (!seen.has(path)) errors.push(`${path} is on the exception list and is not in the tree. Remove it.`);
+    if (file.lines > limit) errors.push(`${path} has ${file.lines} lines, over the limit of ${limit}.`);
   }
   return errors;
 }
@@ -107,7 +66,7 @@ function collectFiles() {
 
 /** @returns {string[]} */
 export function checkPackage() {
-  return review(collectFiles(), ALLOW);
+  return review(collectFiles());
 }
 
 /**
