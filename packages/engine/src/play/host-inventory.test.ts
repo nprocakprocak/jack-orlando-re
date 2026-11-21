@@ -61,7 +61,7 @@ describe("SceneHost: the inventory commands", () => {
     s.it.start("A");
     for (let i = 0; i < 8; i++) step(s);
     expect(s.calls).toEqual(["uniform true", "uniform false", "moveBigRegion", "gun true", "gun false"]);
-    expect(s.scene.tj.uniform).toBe(false);
+    expect(s.scene.turning.uniform).toBe(false);
     expect(s.scene.jack.uniform).toBe(false);
   });
 
@@ -71,7 +71,7 @@ describe("SceneHost: the inventory commands", () => {
     s.it.start("A");
     step(s);
     expect(s.scene.jack.uniform).toBe(true);
-    expect(s.scene.tj.uniform).toBe(true);
+    expect(s.scene.turning.uniform).toBe(true);
     expect(s.it.vars.get("JACKISWOJ")).toBe(1); // Var_Set("JACKISWOJ", 1) in
     for (let i = 0; i < 2; i++) step(s);
     expect(s.it.vars.get("JACKISWOJ")).toBe(7); // the second EXTRA 6 does nothing

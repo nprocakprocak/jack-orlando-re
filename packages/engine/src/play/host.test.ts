@@ -36,8 +36,8 @@ describe("SceneHost: operations that end later", () => {
     step(s);
     step(s);
     step(s);
-    expect(s.scene.tj.pointRotate).toBe(true);
-    expect(s.scene.tj.pointRotateSaved).toBe(true);
+    expect(s.scene.turning.pointRotate).toBe(true);
+    expect(s.scene.turning.pointRotateSaved).toBe(true);
     expect(s.scene.shifty.checkDistance).toBe(true);
   });
 

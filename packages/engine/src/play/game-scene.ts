@@ -26,6 +26,22 @@ export async function settle(this: GameState): Promise<void> {
 
 /** Scene_Load + the start of Game_Run for scene `name`; the old scene (if any) fades out when REFRESHSCREEN asked for it. */
 export async function enter(this: GameState, name: string, restorePose?: SavedPose): Promise<void> {
+    const { old, fade } = leavePrevious.call(this);
+    try {
+      const loaded = await installLoaded.call(this, name, old, restorePose);
+      await startLoaded.call(this, name, old, fade, loaded.sc, loaded.it, restorePose);
+    } catch (e) {
+      this.error = `${name}: ${e instanceof Error ? e.message : String(e)}`;
+      this.addLog(`ERROR ${this.error}`);
+      this.phase = "playing";
+      throw e;
+    } finally {
+      this.cursor.busy = false;
+    }
+  }
+
+/** The previous scene lets go of the item in hand and of the fade request. */
+function leavePrevious(this: GameState): { old: ScenePlayer | null; fade: boolean } {
     this.phase = "loading";
     this.cursor.busy = true;
     const old = this.scene;
@@ -38,101 +54,102 @@ export async function enter(this: GameState, name: string, restorePose?: SavedPo
     const fade = this.fadeRequested && old !== null;
     this.fadeRequested = false;
     this.pendingScene = null;
-    try {
-      const sc = await loadScene.call(this, name);
-      this.areas.reset();
-      if (old && !restorePose) sc.inheritFacing(old.walker); // g_jackDir/g_jackFacing outlive the scene
-      this.scene = sc;
-      this.sceneName = name;
-      this.history.push(name);
-      // l. 440: the mode goes to 0 only with the pointer verb; with another verb the cursor keeps it
-      this.cursor.sceneStart(this.verbMode);
-      this.drawEnabled.sceneEnd(); // l. 4816
-      this.startNoControl(name);
-      this.bullet.close();
-      this.coatRequest = false;
-      this.jackIsMenu = this.vars.get("JACKISMENU") !== 0; //
-      this.refusal = null;
-      // Game_Run: the item in hand went back to the coat at the end of the previous scene (above), so the cursor is not mode 5
-      this.armed = true;
-      // g_cursorModeSaved is not reset at a scene start (written only)
-      this.edge = { mode: this.cursor.mode, saved: this.edge.saved, prevScrolling: false };
-      this.scrolling = false;
-      const phk = scenePak.call(this, sc);
-      const program = compileMcc(decrypt(phk.read(`${name}.MCC`)));
-      // [engine; approved deviation, ] the city map clicks exactly where a place's caption lights up
-      if (name === MAP_SCENE) sc.scene.areas = mapClickAreas(sc.scene.areas, program);
-      await loadSound.call(this, name, phk, program.commands);
-      const env: HostEnv = {
-        scene: sc,
-        areas: this.areas,
-        gotoScene: (n) => {
-          this.pendingScene = n;
-        },
-        requestFade: () => {
-          this.fadeRequested = true;
-        },
-        clickX: () => this.clickX,
-        answer: (id, asked) => (this.opts.answer ? this.opts.answer(id, asked) : 0),
-        log: (e) => onLog.call(this, e),
-        audio: this.audio,
-        runMovie: (film, scene) => {
-          this.pendingMovie = { film, scene };
-        },
-        runFilm: (film, x, y, mode, global = false) => {
-          this.bullet.close(); // RUNFILMP closes the bullet menu
-          this.pendingFilm ??= { film, x, y, mode, global };
-        },
-        items: itemPort.call(this, sc),
-        autoInc: this.autoInc,
-      };
-      const host = new SceneHost(env, this.opts.talkTicks ?? TALK_TICKS);
-      host.restoringPose = !!restorePose; // g_restoreJackPose: INIT does not place or move Jack
-      const it = new Interpreter(program, host, this.vars);
-      host.interpreter = it;
-      this.dialog = this.dialogAssets ? makeDialog.call(this, name, phk, it, host) : null;
-      env.dialog = this.dialog ?? undefined;
-      this.host = host;
-      this.interpreter = it;
-      this.logged.clear();
-      this.talkArmed = true;
-      this.wasTalking = false;
-      // `Scene_SetNumberAndMapFlag`, the scene of a loaded save: the saved track starts here, before the scene's own MUSIC commands
-      const saved = this.audio.music.pendingSavedTrack;
-      if (saved) await loadTrack.call(this, saved);
-      this.audio.music.startSaved(saved ? this.audio.track(saved) : undefined);
-      if (this.defaultMusic) {
-        // The scene loaded after a film starts the default track (fade-in step 0)
-        this.defaultMusic = false;
-        const bytes = this.audio.track(DEFAULT_TRACK);
-        if (bytes && this.audio.enabled) this.audio.music.play(DEFAULT_TRACK, bytes, 0);
-      }
-      // Game_Run, every scene before [PRE]: Var_Set("LIGHTVER", g_easyVersion ? 1: 0)
-      this.vars.set("LIGHTVER", this.opts.easy ? 1 : 0);
-      this.autoInc.sceneStart(sceneChapter(sceneNumber(name)), this.vars); // Game_Run l. 382: chapter 3 -> OCHR 0..60
-      // the three scenes with a hard-coded 0 (read at the scene start: SC002 sets LAST to its own number later; the exact point is a hypothesis)
-      this.hardNoSave = (name === "SC000C" || name === "SC002" || name === "SC005B") && this.vars.get("LAST") === 0;
-      this.jackPlaced = false; // `g_jackPlaced` = 0 at the start of a scene
-      // Game_Run: `Save_WriteState(tempjs, 1)` before PRE / INIT
-      if (this.opts.save) await this.opts.save.sceneStart(saveState.call(this)).catch((e) => this.addLog(`! tempjs: ${e instanceof Error ? e.message : String(e)}`));
-      this.resetMenuVar();
-      it.runSynchronous("PRE");
-      if (restorePose && !isNoControlScene(name)) restoreJack.call(this, sc, restorePose);
-      it.start("INIT");
-      this.autosavePending = !!this.opts.save;
-      this.error = null;
-      if (fade && old) {
-        this.transition = new SceneTransition(old.renderer.framebuffer, sc.renderer.framebuffer);
-        this.phase = "fading";
-      } else this.phase = "playing";
-    } catch (e) {
-      this.error = `${name}: ${e instanceof Error ? e.message : String(e)}`;
-      this.addLog(`ERROR ${this.error}`);
-      this.phase = "playing";
-      throw e;
-    } finally {
-      this.cursor.busy = false;
+    return { old, fade };
+  }
+
+/** The loaded scene, its program, its host and the dialog layer. */
+async function installLoaded(this: GameState, name: string, old: ScenePlayer | null, restorePose?: SavedPose): Promise<{ sc: ScenePlayer; it: Interpreter }> {
+    const sc = await loadScene.call(this, name);
+    this.areas.reset();
+    if (old && !restorePose) sc.inheritFacing(old.walker); // g_jackDir/g_jackFacing outlive the scene
+    this.scene = sc;
+    this.sceneName = name;
+    this.history.push(name);
+    // l. 440: the mode goes to 0 only with the pointer verb; with another verb the cursor keeps it
+    this.cursor.sceneStart(this.verbMode);
+    this.drawEnabled.sceneEnd(); // l. 4816
+    this.startNoControl(name);
+    this.bullet.close();
+    this.coatRequest = false;
+    this.jackIsMenu = this.vars.get("JACKISMENU") !== 0; //
+    this.refusal = null;
+    // Game_Run: the item in hand went back to the coat at the end of the previous scene (above), so the cursor is not mode 5
+    this.armed = true;
+    // g_cursorModeSaved is not reset at a scene start (written only)
+    this.edge = { mode: this.cursor.mode, saved: this.edge.saved, prevScrolling: false };
+    this.scrolling = false;
+    const phk = scenePak.call(this, sc);
+    const program = compileMcc(decrypt(phk.read(`${name}.MCC`)));
+    // [engine; approved deviation, ] the city map clicks exactly where a place's caption lights up
+    if (name === MAP_SCENE) sc.scene.areas = mapClickAreas(sc.scene.areas, program);
+    await loadSound.call(this, name, phk, program.commands);
+    const env: HostEnv = {
+      scene: sc,
+      areas: this.areas,
+      gotoScene: (n) => {
+        this.pendingScene = n;
+      },
+      requestFade: () => {
+        this.fadeRequested = true;
+      },
+      clickX: () => this.clickX,
+      answer: (id, asked) => (this.opts.answer ? this.opts.answer(id, asked) : 0),
+      log: (e) => onLog.call(this, e),
+      audio: this.audio,
+      runMovie: (film, scene) => {
+        this.pendingMovie = { film, scene };
+      },
+      runFilm: (film, x, y, mode, global = false) => {
+        this.bullet.close(); // RUNFILMP closes the bullet menu
+        this.pendingFilm ??= { film, x, y, mode, global };
+      },
+      items: itemPort.call(this, sc),
+      autoInc: this.autoInc,
+    };
+    const host = new SceneHost(env, this.opts.talkTicks ?? TALK_TICKS);
+    host.restoringPose = !!restorePose; // g_restoreJackPose: INIT does not place or move Jack
+    const it = new Interpreter(program, host, this.vars);
+    host.interpreter = it;
+    this.dialog = this.dialogAssets ? makeDialog.call(this, name, phk, it, host) : null;
+    env.dialog = this.dialog ?? undefined;
+    this.host = host;
+    this.interpreter = it;
+    this.logged.clear();
+    this.talkArmed = true;
+    this.wasTalking = false;
+    return { sc, it };
+  }
+
+/** The saved or default track, the clock, the tempjs save, then [PRE] and [INIT]. */
+async function startLoaded(this: GameState, name: string, old: ScenePlayer | null, fade: boolean, sc: ScenePlayer, it: Interpreter, restorePose?: SavedPose): Promise<void> {
+    // `Scene_SetNumberAndMapFlag`, the scene of a loaded save: the saved track starts here, before the scene's own MUSIC commands
+    const saved = this.audio.music.pendingSavedTrack;
+    if (saved) await loadTrack.call(this, saved);
+    this.audio.music.startSaved(saved ? this.audio.track(saved) : undefined);
+    if (this.defaultMusic) {
+      // The scene loaded after a film starts the default track (fade-in step 0)
+      this.defaultMusic = false;
+      const bytes = this.audio.track(DEFAULT_TRACK);
+      if (bytes && this.audio.enabled) this.audio.music.play(DEFAULT_TRACK, bytes, 0);
     }
+    // Game_Run, every scene before [PRE]: Var_Set("LIGHTVER", g_easyVersion ? 1: 0)
+    this.vars.set("LIGHTVER", this.opts.easy ? 1 : 0);
+    this.autoInc.sceneStart(sceneChapter(sceneNumber(name)), this.vars); // Game_Run l. 382: chapter 3 -> OCHR 0..60
+    // the three scenes with a hard-coded 0 (read at the scene start: SC002 sets LAST to its own number later; the exact point is a hypothesis)
+    this.hardNoSave = (name === "SC000C" || name === "SC002" || name === "SC005B") && this.vars.get("LAST") === 0;
+    this.jackPlaced = false; // `g_jackPlaced` = 0 at the start of a scene
+    // Game_Run: `Save_WriteState(tempjs, 1)` before PRE / INIT
+    if (this.opts.save) await this.opts.save.sceneStart(saveState.call(this)).catch((e) => this.addLog(`! tempjs: ${e instanceof Error ? e.message : String(e)}`));
+    this.resetMenuVar();
+    it.runSynchronous("PRE");
+    if (restorePose && !isNoControlScene(name)) restoreJack.call(this, sc, restorePose);
+    it.start("INIT");
+    this.autosavePending = !!this.opts.save;
+    this.error = null;
+    if (fade && old) {
+      this.transition = new SceneTransition(old.renderer.framebuffer, sc.renderer.framebuffer);
+      this.phase = "fading";
+    } else this.phase = "playing";
   }
 
 /** The scene's sound list and the tracks its MUSIC commands name (read ahead: a command cannot wait for a file). */
@@ -173,7 +190,7 @@ export async function loadScene(this: GameState, name: string): Promise<ScenePla
       { scripted: true, walkSpeed: this.settings.walkSpeed, shadowTables: this.dialogAssets?.remap },
     );
     // g_jackUniform and the loaded frame set (write the same buffers) outlive scenes
-    sc.tj.uniform = sc.jack.uniform = this.dialog?.jackUniform ?? this.jackUniform;
+    sc.turning.uniform = sc.jack.uniform = this.dialog?.jackUniform ?? this.jackUniform;
     this.scenePhk.set(sc, phk);
     return sc;
   }

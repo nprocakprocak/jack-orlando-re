@@ -113,8 +113,14 @@ export function frame(this: GameState, rawInput: PlayInput): void {
     }
     if (this.notice.shown) this.notice.auto ? this.notice.tickAuto() : this.notice.tickAnim();
     if (keyFrame.call(this)) return;
-    const sc = this.scene;
-    const it = this.interpreter;
+    const input = dialogFrame.call(this, rawInput);
+    if (hotspotFrame.call(this, input) === "verb") return;
+    pendingFrame.call(this);
+  }
+
+/** The answer menu, and a click that ends the line being spoken. The click may be cleared for the rest of the frame. */
+function dialogFrame(this: GameState, rawInput: PlayInput): PlayInput {
+    const sc = this.scene!;
     let input = rawInput;
     const d = this.dialog;
     answerMenuCursor.call(this, !!d?.menu);
@@ -152,6 +158,15 @@ export function frame(this: GameState, rawInput: PlayInput): void {
         refusalFrame.call(this);
       }
     }
+    return input;
+  }
+
+/** Hotspot, the bullet menu, and the click. `"verb"` is the verb window: the frame stops there. */
+function hotspotFrame(this: GameState, rawInput: PlayInput): "verb" | undefined {
+    const sc = this.scene!;
+    const it = this.interpreter!;
+    let input = rawInput;
+    const d = this.dialog;
     this.audio.sfx.tick();
     const world = { x: input.x + sc.scrollX, y: input.y };
     const locked = playerHeld.call(this);
@@ -166,7 +181,7 @@ export function frame(this: GameState, rawInput: PlayInput): void {
     // steps 12-13: the right button opens the bullet menu / the verb window, the icons are chosen by the left one
     if (locked) this.bullet.close();
     const opened = bulletFrame.call(this, input, world, locked);
-    if (opened === "verb") return;
+    if (opened === "verb") return "verb";
     if (opened === "blocked") input = { ...input, pressed: false, down: false };
     click = this.cursor.clickPoint(world.x, world.y);
     // Cursor_UpdateHotspot (Game_Run, before the macros run): the script variables MOUSEX / MOUSEY = the hotspot g_clickX/Y,
@@ -207,6 +222,11 @@ export function frame(this: GameState, rawInput: PlayInput): void {
       this.armed = r.armed;
       onClick.call(this, r.outcome, click, port);
     }
+  }
+
+/** One command of every active macro, then a pending film, a movie, or a scene change. */
+function pendingFrame(this: GameState): void {
+    const it = this.interpreter!;
     it.tick();
     firstSteps.call(this);
     if (this.pendingFilm) startFilm.call(this);
@@ -276,7 +296,7 @@ export function scrollEdge(this: GameState, input: PlayInput, locked: boolean): 
         scrolling: this.scrolling,
         cursorEnabled: !locked,
         clickArmed: input.down && this.armed,
-        jackTurning: sc.tj.turn !== null,
+        jackTurning: sc.turning.turn !== null,
         jackX: sc.walker.x,
         points: pts,
       },

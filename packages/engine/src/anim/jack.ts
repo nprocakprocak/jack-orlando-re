@@ -174,10 +174,10 @@ export interface ShadowSprite {
  * (Render_ComposeRegionNoFlag +).
  */
 export function jackShadow(r: ShadowRequest): ShadowSprite {
-  const i8 = r.dir === 16 ? 16 : shadowDirIndex(r.dir, r.facing);
+  const shadowSlot = r.dir === 16 ? 16 : shadowDirIndex(r.dir, r.facing);
   const validDir = r.dir >= 0 && r.dir <= 4;
   let file: string;
-  if (i8 === 16) file = ROUND_SHADOW;
+  if (shadowSlot === 16) file = ROUND_SHADOW;
   else if (r.walkFrame !== null) {
     // out-of-range -> SH_FR04 after a "!!!!!" debug print
     file = validDir && r.walkFrame >= 0 && r.walkFrame <= 11 ? shadowFile(r.dir as JackDir, r.walkFrame) : shadowFile(0, 3);
@@ -190,10 +190,10 @@ export function jackShadow(r: ShadowRequest): ShadowSprite {
   let dx: number;
   let dy: number;
   if (r.walkFrame === null) {
-    if (round || i8 > 7) [dx, dy] = SHADOW_OFFSET_ROUND;
-    else [dx, dy] = [SHADOW_OFFSET_STILL_X[i8], SHADOW_OFFSET_STILL_Y[i8]];
-  } else if (i8 === 16) [dx, dy] = SHADOW_OFFSET_ROUND; // bytes 16 of both walk tables
-  else [dx, dy] = [SHADOW_OFFSET_WALK_X[i8], SHADOW_OFFSET_WALK_Y[i8]];
+    if (round || shadowSlot > 7) [dx, dy] = SHADOW_OFFSET_ROUND;
+    else [dx, dy] = [SHADOW_OFFSET_STILL_X[shadowSlot], SHADOW_OFFSET_STILL_Y[shadowSlot]];
+  } else if (shadowSlot === 16) [dx, dy] = SHADOW_OFFSET_ROUND; // bytes 16 of both walk tables
+  else [dx, dy] = [SHADOW_OFFSET_WALK_X[shadowSlot], SHADOW_OFFSET_WALK_Y[shadowSlot]];
   return { index: r.index, file, round, x: ftol(r.x - dx * s), y: ftol(r.y - dy * s), scale: s, fadeBase, mirrored: r.facing < 0 };
 }
 

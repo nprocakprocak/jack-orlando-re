@@ -116,7 +116,7 @@ export interface ScenePlayerState {
   readonly renderer: Renderer;
   readonly jack: JackAnimator;
   readonly walker: Walker;
-  readonly tj: TurningJack;
+  readonly turning: TurningJack;
   readonly insertions: InsertionTable;
   readonly persons: ScenePersons;
   readonly bgWidth: number;

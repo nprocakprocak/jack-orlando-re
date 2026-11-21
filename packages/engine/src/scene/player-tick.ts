@@ -69,7 +69,7 @@ function jackPhase(this: ScenePlayerState, result: TickResult): void {
       this.turnEndedPending = false;
       this.events.push({ kind: "jackTurnEnded" });
     }
-    if (this.tj.turn && this.jack.mode !== "insertion") turnTick.call(this, result);
+    if (this.turning.turn && this.jack.mode !== "insertion") turnTick.call(this, result);
     else this.jackTick(result);
     if (result.arrived) {
       this.walker.forced = null;
@@ -112,7 +112,7 @@ export function firstSteps(this: ScenePlayerState): TickResult | null {
 
 /** Jack's frame or step of this tick when no turn runs (the walk, an insertion, nothing). */
 export function jackTick(this: ScenePlayerState, result: TickResult): void {
-    const tj = this.tj;
+    const turning = this.turning;
     const inserting = this.jack.mode === "insertion";
     // g_jackIdleIns: an idle insertion draws no shadows (the shadow step of tests it next to g_shadowsOn); the option itself is untouched
     const shadowsOn = this.jack.shadowsOn;
@@ -122,7 +122,7 @@ export function jackTick(this: ScenePlayerState, result: TickResult): void {
       // runs exactly when the animator's delay runs out, walkTick's own timer is not used.
       const w = this.walker;
       const old = { dir: w.dir, mirror: w.mirror };
-      const walking = (w.walking || tj.moving) && !tj.pointRotate && !tj.uniform;
+      const walking = (w.walking || turning.moving) && !turning.pointRotate && !turning.uniform;
       const ev = walkStep(w, this.world);
       if (this.fixedScale !== null) w.scale = this.fixedScale;
       result.stepped = true;
@@ -131,17 +131,17 @@ export function jackTick(this: ScenePlayerState, result: TickResult): void {
       if (ev.arrived) {
         result.arrived = true;
         this.jackAvoiding = false;
-        tj.pointRotate = tj.pointRotateSaved;
-        tj.moving = false;
+        turning.pointRotate = turning.pointRotateSaved;
+        turning.moving = false;
       }
       if (ev.nextPoint) {
         this.jack.delay = 0; // next segment: no movement now, step again at once
         // Game_Run: the new segment may turn Jack (a corner of the path)
         if (w.dir !== old.dir || w.mirror !== old.mirror) {
-          tj.moving = true;
+          turning.moving = true;
           const steps = turnSequence(old.dir, old.mirror, w.dir, w.mirror, walking);
           if (steps.length > 0) {
-            tj.turn = new TurnPlayer(steps, tj.uniform);
+            turning.turn = new TurnPlayer(steps, turning.uniform);
             this.turnFromScript = false; // Jack_TurnFromTo clears g_turnMacroWaits
           }
         }
@@ -151,7 +151,7 @@ export function jackTick(this: ScenePlayerState, result: TickResult): void {
     this.jack.shadowsOn = shadowsOn;
     if (r.update.insertionEnded !== undefined && r.update.insertionGlobal) this.idleIns = false; // Game_Run: the end of a global insertion
     // a turn begun by this step draws its own frames from the next tick on
-    if (!tj.turn && (!this.jackHidden || r.update.sprite)) this.apply(r.update);
+    if (!turning.turn && (!this.jackHidden || r.update.sprite)) this.apply(r.update);
     result.sounds = r.update.sounds;
     // Game_Run: after the frame of an insertion Jack is arranged against the sprites it overlaps, but with the two
     // edge tests only (no Depth_QuadAllBelow / Above). SC087: POVERE JACK GZYMS.PBM before the blow is undone by the first frame
@@ -173,11 +173,11 @@ export function jackTick(this: ScenePlayerState, result: TickResult): void {
  */
 function turnTick(this: ScenePlayerState, result: TickResult): void {
     const w = this.walker;
-    const tj = this.tj;
+    const turning = this.turning;
     const at = { x: w.x, y: w.y, scale: w.scale };
     // turningTick counts walker.timer; the game has one counter (g_jackInsDelay), kept in the animator
     w.timer = this.jack.delay;
-    const t = turningTick(tj, this.world, stepTicks(this.walkSpeedOption), turnFrameTicks(this.walkSpeedOption, this.jack.frameDelay));
+    const t = turningTick(turning, this.world, stepTicks(this.walkSpeedOption), turnFrameTicks(this.walkSpeedOption, this.jack.frameDelay));
     this.jack.delay = w.timer;
     const turn: TurnTick | null = t.turn;
     if (turn?.frame && !this.jackHidden) {
@@ -185,9 +185,9 @@ function turnTick(this: ScenePlayerState, result: TickResult): void {
       arrangeJack.call(this);
     }
     if (turn?.stepSound) result.sounds.push(turnStep.call(this, at));
-    if (tj.walkFrame !== null) {
-      this.jack.walkFrame = tj.walkFrame;
-      tj.walkFrame = null;
+    if (turning.walkFrame !== null) {
+      this.jack.walkFrame = turning.walkFrame;
+      turning.walkFrame = null;
     }
     if (turn?.done) {
       if (this.turnFromScript) this.events.push({ kind: "jackTurnEnded" });
@@ -226,11 +226,11 @@ function drawTurnFrame(this: ScenePlayerState, f: TurnFrame, at: { x: number; y:
       });
     } else {
       // SHROT mask of the frame: the anchor offsets of Jack_DrawShadow for p7 != -1 are not known, the still ones of dir 0 stand in
-      const i8 = shadowDirIndex(0, sh.facing);
+      const shadowSlot = shadowDirIndex(0, sh.facing);
       const k = Math.min(at.scale * this.jack.shadowScale, SHADOW_SCALE_MAX);
       s = {
         index: 0, file: sh.file!, round: false, scale: k, mirrored: sh.facing < 0,
-        x: Math.trunc(sh.x - SHADOW_OFFSET_STILL_X[i8] * k), y: Math.trunc(sh.y - SHADOW_OFFSET_STILL_Y[i8] * k),
+        x: Math.trunc(sh.x - SHADOW_OFFSET_STILL_X[shadowSlot] * k), y: Math.trunc(sh.y - SHADOW_OFFSET_STILL_Y[shadowSlot] * k),
       };
     }
     drawJackShadow.call(this, 0, s);

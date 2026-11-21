@@ -130,43 +130,38 @@ export interface TurningTick {
   turnStarted: boolean;
 }
 
-/**
- * One logic tick (15 ms) of Jack's timer g_jackInsDelay (walker.timer): while a turn runs it gets
- * the timer and the walk does not step (Game_Run: the turn branch, else the step).
- * `ticksPerFrame` = turnFrameTicks(), `ticksPerStep` = stepTicks(). An insertion (g_jackInsActive)
- * blocks both — the caller does not call this then. `standOnArrival`: Game_Run calls Jack_Stand on
- * arrival unless a macro holds the player, which clears.
- */
-export function turningTick(tj: TurningJack, world: WalkWorld, ticksPerStep: number, ticksPerFrame: number, standOnArrival = true): TurningTick {
+/** The turn branch of one tick. The walk does not step. Writes `out` and returns it. */
+function tickTurn(tj: TurningJack, world: WalkWorld, out: TurningTick, ticksPerFrame: number): TurningTick {
   const w = tj.walker;
-  const out: TurningTick = { walk: [], turn: null, turnStarted: false };
-  w.timer--;
-  if (tj.turn) {
-    if (w.timer > 0) return out;
-    w.timer = ticksPerFrame;
-    const r = tj.turn.step(w.walking, w.scale);
-    out.turn = r;
-    if (r.ended) {
-      if (r.ended.shift) {
-        w.x = f32(w.x + w.scale * r.ended.shift.dx * r.ended.facing);
-        w.y = f32(w.y + w.scale * r.ended.shift.dy);
-      }
-      if (r.ended.walkFrame !== null) tj.walkFrame = r.ended.walkFrame;
-      w.scale = jackScale(world.perspective, w.y);
+  if (w.timer > 0) return out;
+  w.timer = ticksPerFrame;
+  const r = tj.turn!.step(w.walking, w.scale);
+  out.turn = r;
+  if (r.ended) {
+    if (r.ended.shift) {
+      w.x = f32(w.x + w.scale * r.ended.shift.dx * r.ended.facing);
+      w.y = f32(w.y + w.scale * r.ended.shift.dy);
     }
-    if (r.done) {
-      tj.turn = null;
-      // Jack_WalkToPoint(target) again — new velocity from the shifted position, maybe another turn
-      if (w.walking) {
-        startSegmentTurning(tj, w.target);
-        // (after the call, `g_jackTurning = 0` unconditionally): a turn that this call starts is never played, only the
-        // new facing stays; Jack walks on at once and no shift of that turn is applied (SC033 LAST=63)
-        tj.turn = null;
-        out.turnStarted = false;
-      }
-    }
-    return out;
+    if (r.ended.walkFrame !== null) tj.walkFrame = r.ended.walkFrame;
+    w.scale = jackScale(world.perspective, w.y);
   }
+  if (r.done) {
+    tj.turn = null;
+    // Jack_WalkToPoint(target) again — new velocity from the shifted position, maybe another turn
+    if (w.walking) {
+      startSegmentTurning(tj, w.target);
+      // (after the call, `g_jackTurning = 0` unconditionally): a turn that this call starts is never played, only the
+      // new facing stays; Jack walks on at once and no shift of that turn is applied (SC033 LAST=63)
+      tj.turn = null;
+      out.turnStarted = false;
+    }
+  }
+  return out;
+}
+
+/** The walk branch of one tick, after the timer was decremented. Writes `out`. */
+function tickWalk(tj: TurningJack, world: WalkWorld, out: TurningTick, ticksPerStep: number, standOnArrival: boolean): void {
+  const w = tj.walker;
   while (w.walking && w.timer <= 0) {
     w.timer = ticksPerStep;
     const old: Facing = { dir: w.dir, mirror: w.mirror };
@@ -189,5 +184,20 @@ export function turningTick(tj: TurningJack, world: WalkWorld, ticksPerStep: num
       if (standOnArrival) tj.moving = false;
     }
   }
+}
+
+/**
+ * One logic tick (15 ms) of Jack's timer g_jackInsDelay (walker.timer): while a turn runs it gets
+ * the timer and the walk does not step (Game_Run: the turn branch, else the step).
+ * `ticksPerFrame` = turnFrameTicks(), `ticksPerStep` = stepTicks(). An insertion (g_jackInsActive)
+ * blocks both — the caller does not call this then. `standOnArrival`: Game_Run calls Jack_Stand on
+ * arrival unless a macro holds the player, which clears.
+ */
+export function turningTick(tj: TurningJack, world: WalkWorld, ticksPerStep: number, ticksPerFrame: number, standOnArrival = true): TurningTick {
+  const w = tj.walker;
+  const out: TurningTick = { walk: [], turn: null, turnStarted: false };
+  w.timer--;
+  if (tj.turn) return tickTurn(tj, world, out, ticksPerFrame);
+  tickWalk(tj, world, out, ticksPerStep, standOnArrival);
   return out;
 }

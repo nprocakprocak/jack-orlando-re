@@ -148,20 +148,23 @@ export class SlotWindow {
       if (e.kind === "escape") {
         if (this.editing) this.editing = null;
         else out.push({ kind: "cancel" });
-      } else if (e.kind === "press") {
-        if (e.name === "Cancel") out.push({ kind: "cancel" });
-        else if (e.name === "NewGame") out.push({ kind: "newGame" });
-        else if (e.name.startsWith("slot")) {
-          const slot = Number(e.name.slice(4));
-          if (this.mode === "load") {
-            if (this.descriptions[slot] !== null) out.push({ kind: "load", slot });
-          } else if (this.editing?.slot !== slot) {
-            this.editing = { slot, field: new TextField(this.descriptions[slot] ?? "") };
-          }
-        }
-      }
+      } else if (e.kind === "press") this.onPress(e.name, out);
     }
     return out;
+  }
+
+  private onPress(name: string, out: SlotEvent[]): void {
+    if (name === "Cancel") out.push({ kind: "cancel" });
+    else if (name === "NewGame") out.push({ kind: "newGame" });
+    else if (name.startsWith("slot")) this.onSlot(Number(name.slice(4)), out);
+  }
+
+  private onSlot(slot: number, out: SlotEvent[]): void {
+    if (this.mode === "load") {
+      if (this.descriptions[slot] !== null) out.push({ kind: "load", slot });
+    } else if (this.editing?.slot !== slot) {
+      this.editing = { slot, field: new TextField(this.descriptions[slot] ?? "") };
+    }
   }
 
   pointerDown(x: number, y: number): SlotEvent[] {

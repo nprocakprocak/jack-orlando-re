@@ -117,51 +117,44 @@ export function containDisplay(input: ContainInput): DisplayLayout {
   return { cssWidth: deviceW / dpr, cssHeight: deviceH / dpr, scale, smooth: !exact };
 }
 
-/**
- * Keeps `canvas` sized per computeDisplay: reacts to window resize, devicePixelRatio
- * changes (zoom, moving between monitors) and buffer size changes. Returns a cleanup.
- */
-export function attachDisplay(canvas: HTMLCanvasElement, options: DisplayOptions = {}): () => void {
-  const doc = canvas.ownerDocument;
-  const win = doc.defaultView ?? window;
-  const apply = (): void => {
-    const lw = canvas.width || 640;
-    const lh = canvas.height || 480;
-    const dpr = win.devicePixelRatio;
-    const margin = options.margin ?? 34;
-    const layout =
-      options.fit === "contain"
-        ? containDisplay({
-            logicalWidth: lw,
-            logicalHeight: lh,
-            availCssWidth: win.innerWidth,
-            availCssHeight: win.innerHeight,
-            dpr,
-          })
-        : computeDisplay({
-            logicalWidth: lw,
-            logicalHeight: lh,
-            targetCssWidth: options.targetCssWidth ?? lw,
-            maxCssWidth: doc.documentElement.clientWidth > margin + 64 ? doc.documentElement.clientWidth - margin : Infinity,
-            dpr,
-            mode: options.mode ?? parseScaleMode(win.location.search),
-          });
-    const st = canvas.style;
-    st.boxSizing = "content-box";
-    st.width = `${layout.cssWidth}px`;
-    st.height = `${layout.cssHeight}px`;
-    st.maxWidth = "none";
-    st.imageRendering = layout.smooth ? "auto" : "pixelated";
-    if (options.fit === "contain") {
-      st.position = "fixed";
-      st.left = "50%";
-      st.top = "50%";
-      st.transform = "translate(-50%, -50%)";
-      st.margin = "0";
-    }
-  };
-  apply();
+function layoutCanvas(canvas: HTMLCanvasElement, options: DisplayOptions, doc: Document, win: Window): void {
+  const lw = canvas.width || 640;
+  const lh = canvas.height || 480;
+  const dpr = win.devicePixelRatio;
+  const margin = options.margin ?? 34;
+  const layout =
+    options.fit === "contain"
+      ? containDisplay({
+          logicalWidth: lw,
+          logicalHeight: lh,
+          availCssWidth: win.innerWidth,
+          availCssHeight: win.innerHeight,
+          dpr,
+        })
+      : computeDisplay({
+          logicalWidth: lw,
+          logicalHeight: lh,
+          targetCssWidth: options.targetCssWidth ?? lw,
+          maxCssWidth: doc.documentElement.clientWidth > margin + 64 ? doc.documentElement.clientWidth - margin : Infinity,
+          dpr,
+          mode: options.mode ?? parseScaleMode(win.location.search),
+        });
+  const st = canvas.style;
+  st.boxSizing = "content-box";
+  st.width = `${layout.cssWidth}px`;
+  st.height = `${layout.cssHeight}px`;
+  st.maxWidth = "none";
+  st.imageRendering = layout.smooth ? "auto" : "pixelated";
+  if (options.fit === "contain") {
+    st.position = "fixed";
+    st.left = "50%";
+    st.top = "50%";
+    st.transform = "translate(-50%, -50%)";
+    st.margin = "0";
+  }
+}
 
+function watchCanvas(canvas: HTMLCanvasElement, win: Window, apply: () => void): () => void {
   const unbinds: Array<() => void> = [];
   win.addEventListener("resize", apply);
   win.addEventListener("load", apply);
@@ -186,4 +179,16 @@ export function attachDisplay(canvas: HTMLCanvasElement, options: DisplayOptions
     unbinds.push(() => mo.disconnect());
   }
   return () => unbinds.forEach((u) => u());
+}
+
+/**
+ * Keeps `canvas` sized per computeDisplay: reacts to window resize, devicePixelRatio
+ * changes (zoom, moving between monitors) and buffer size changes. Returns a cleanup.
+ */
+export function attachDisplay(canvas: HTMLCanvasElement, options: DisplayOptions = {}): () => void {
+  const doc = canvas.ownerDocument;
+  const win = doc.defaultView ?? window;
+  const apply = (): void => layoutCanvas(canvas, options, doc, win);
+  apply();
+  return watchCanvas(canvas, win, apply);
 }

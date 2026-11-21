@@ -25,7 +25,7 @@ function fakeScene() {
     scene: { areas: [], objectAnims: [{ name: "ANI" }, { name: "FLX0" }] },
     world: { walk: [], perspective: {} },
     walker: { x: 100, y: 200 },
-    tj: { pointRotate: false, pointRotateSaved: false, uniform: false },
+    turning: { pointRotate: false, pointRotateSaved: false, uniform: false },
     persons: { find: (n: string) => (n === "BOB" ? 0 : -1), get: () => undefined, persons: [] },
     speakerPoint: (p: number | null) => ({ x: p === null ? 11 : 22, y: 33 }),
     objectAnim: (n: string) => (n === "FLX0" ? flxAnim : null),

@@ -154,41 +154,10 @@ export class Cursor {
     const m = this.mode;
     switch (m) {
       case CursorMode.Point:
-        if (this.idle || this.followMouse) {
-          this.motion = motionFrame(this.motion, mouseX, this.prevMouseX);
-          this.prevMouseX = mouseX;
-        } else {
-          // over a reaction: the hand pulses 0..8
-          this.motion += this.animDir;
-          if (this.motion > 7) {
-            this.animDir = -1;
-            this.motion = 8;
-          }
-          if (this.motion < 1) {
-            this.animDir = 1;
-            this.motion = 0;
-          }
-        }
-        this.image = frameName(CursorMode.Point, this.motion % 9);
+        this.animatePoint(mouseX);
         break;
       case CursorMode.Look:
-        if (!this.idle) {
-          this.counter++;
-          if ((this.counter & 1) !== 0) this.lensFrame += this.lensDir;
-          if (this.lensFrame > 13) {
-            this.lensDir = -1;
-            this.lensFrame = 13;
-          }
-          if (this.lensFrame < 9) {
-            this.lensDir = 1;
-            this.lensFrame = 9;
-          }
-          this.image = lensHotName(this.lensFrame);
-        } else {
-          this.motion = motionFrame(this.motion, mouseX, this.prevMouseX);
-          this.prevMouseX = mouseX;
-          this.image = frameName(CursorMode.Look, this.motion % 9);
-        }
+        this.animateLook(mouseX);
         break;
       case CursorMode.Hit:
         this.rest(this.animFrame === 4, 8, 9, (c) => (c & 3) !== 0);
@@ -207,20 +176,66 @@ export class Cursor {
         break;
       case CursorMode.ZoneLeft: case CursorMode.ZoneRight: case CursorMode.ZoneDown: case CursorMode.ZoneIn:
       case CursorMode.ZoneUp: case CursorMode.ZoneOut: case CursorMode.ScrollLeft: case CursorMode.ScrollRight:
-        this.animFrame += this.animDir;
-        if (this.animFrame > 13) {
-          this.animDir = -1;
-          this.animFrame = 14;
-        }
-        if (this.animFrame < 1) {
-          this.animDir = 1;
-          this.animFrame = 0;
-        }
+        this.zonePingPong();
         this.image = frameName(m, this.animFrame);
         break;
       default:
         // modes 12, 16, 18, 19 and others have no set: the image stays as it was
         break;
+    }
+  }
+
+  /** Mode 0: the hand follows the mouse, or pulses 0..8 over a reaction. */
+  private animatePoint(mouseX: number): void {
+    if (this.idle || this.followMouse) {
+      this.motion = motionFrame(this.motion, mouseX, this.prevMouseX);
+      this.prevMouseX = mouseX;
+    } else {
+      // over a reaction: the hand pulses 0..8
+      this.motion += this.animDir;
+      if (this.motion > 7) {
+        this.animDir = -1;
+        this.motion = 8;
+      }
+      if (this.motion < 1) {
+        this.animDir = 1;
+        this.motion = 0;
+      }
+    }
+    this.image = frameName(CursorMode.Point, this.motion % 9);
+  }
+
+  /** Mode 1: the magnifier pulses over a reaction, otherwise the lens follows the mouse. */
+  private animateLook(mouseX: number): void {
+    if (!this.idle) {
+      this.counter++;
+      if ((this.counter & 1) !== 0) this.lensFrame += this.lensDir;
+      if (this.lensFrame > 13) {
+        this.lensDir = -1;
+        this.lensFrame = 13;
+      }
+      if (this.lensFrame < 9) {
+        this.lensDir = 1;
+        this.lensFrame = 9;
+      }
+      this.image = lensHotName(this.lensFrame);
+    } else {
+      this.motion = motionFrame(this.motion, mouseX, this.prevMouseX);
+      this.prevMouseX = mouseX;
+      this.image = frameName(CursorMode.Look, this.motion % 9);
+    }
+  }
+
+  /** Modes 10-21 share one ping-pong of the frame 0..14. */
+  private zonePingPong(): void {
+    this.animFrame += this.animDir;
+    if (this.animFrame > 13) {
+      this.animDir = -1;
+      this.animFrame = 14;
+    }
+    if (this.animFrame < 1) {
+      this.animDir = 1;
+      this.animFrame = 0;
     }
   }
 

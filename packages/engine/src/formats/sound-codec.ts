@@ -131,42 +131,56 @@ class GsmDecoder {
 
   frame(bits: BitReader, out: Int16Array, o: number): void {
     const lar = LAR_BITS.map((n) => bits.take(n));
-    const { dp, erp, wt } = this;
     for (let j = 0; j < 4; j++) {
       const nc = bits.take(7);
       const bc = bits.take(2);
       const mc = bits.take(2);
       const xmaxc = bits.take(6);
-      // RPE decoding
-      let exp = xmaxc > 15 ? (xmaxc >> 3) - 1 : 0;
-      let mant = xmaxc - (exp << 3);
-      if (mant === 0) {
-        exp = -4;
-        mant = 7;
-      } else {
-        while (mant <= 7) {
-          mant = (mant << 1) | 1;
-          exp--;
-        }
-        mant -= 8;
-      }
-      const fac = GSM_FAC[mant];
-      const t2 = 6 - exp;
-      const t3 = t2 > 0 ? 1 << (t2 - 1) : 0;
-      erp.fill(0);
-      for (let i = 0; i < 13; i++) {
-        const x = bits.take(3);
-        erp[mc + 3 * i] = sat(multR(fac, ((x << 1) - 7) << 12) + t3) >> t2;
-      }
-      // long-term synthesis
-      const nr = nc < 40 || nc > 120 ? this.nrp : nc;
-      this.nrp = nr;
-      const brp = GSM_QLB[bc];
-      for (let k = 0; k < 40; k++) dp[240 + k] = sat(erp[k] + multR(brp, dp[240 + k - nr]));
-      wt.set(dp.subarray(240, 280), j * 40);
-      dp.copyWithin(120, 160, 280);
+      this.rpe(bits, xmaxc, mc);
+      this.longTerm(nc, bc, j);
     }
-    // LAR decoding and interpolation
+    this.larInterpolate(lar);
+    this.deemphasis(out, o);
+  }
+
+  // RPE decoding
+  private rpe(bits: BitReader, xmaxc: number, mc: number): void {
+    const erp = this.erp;
+    let exp = xmaxc > 15 ? (xmaxc >> 3) - 1 : 0;
+    let mant = xmaxc - (exp << 3);
+    if (mant === 0) {
+      exp = -4;
+      mant = 7;
+    } else {
+      while (mant <= 7) {
+        mant = (mant << 1) | 1;
+        exp--;
+      }
+      mant -= 8;
+    }
+    const fac = GSM_FAC[mant];
+    const t2 = 6 - exp;
+    const t3 = t2 > 0 ? 1 << (t2 - 1) : 0;
+    erp.fill(0);
+    for (let i = 0; i < 13; i++) {
+      const x = bits.take(3);
+      erp[mc + 3 * i] = sat(multR(fac, ((x << 1) - 7) << 12) + t3) >> t2;
+    }
+  }
+
+  // long-term synthesis
+  private longTerm(nc: number, bc: number, j: number): void {
+    const { dp, erp, wt } = this;
+    const nr = nc < 40 || nc > 120 ? this.nrp : nc;
+    this.nrp = nr;
+    const brp = GSM_QLB[bc];
+    for (let k = 0; k < 40; k++) dp[240 + k] = sat(erp[k] + multR(brp, dp[240 + k - nr]));
+    wt.set(dp.subarray(240, 280), j * 40);
+    dp.copyWithin(120, 160, 280);
+  }
+
+  // LAR decoding and interpolation
+  private larInterpolate(lar: number[]): void {
     const cur = new Int32Array(8);
     for (let i = 0; i < 8; i++) {
       const t = sat(sat(lar[i] + GSM_MIC[i]) << 10);
@@ -186,7 +200,10 @@ class GsmDecoder {
       this.synth(larToRp(larp), a, b);
     });
     this.larpp = cur;
-    // postprocessing: deemphasis, upscaling, truncation
+  }
+
+  // postprocessing: deemphasis, upscaling, truncation
+  private deemphasis(out: Int16Array, o: number): void {
     let msr = this.msr;
     for (let k = 0; k < 160; k++) {
       msr = sat(this.sr[k] + multR(msr, 28180));

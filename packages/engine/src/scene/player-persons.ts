@@ -96,7 +96,7 @@ function checkAvoid(this: ScenePlayerState, i: number): void {
       this.jackAvoiding,
     );
     if (r.kind === "stand") {
-      if (this.tj.turn || !w.walking) return;
+      if (this.turning.turn || !w.walking) return;
       applyStand(w);
       this.standJack();
     } else if (r.kind === "walk") {

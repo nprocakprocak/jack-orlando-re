@@ -251,6 +251,46 @@ export type ClickOutcome =
   | { kind: "putBack" }
   | { kind: "nothing" };
 
+interface ClickProbe {
+  armed: boolean;
+  itemFailed: boolean;
+  itemMacro: boolean;
+  outcome: ClickOutcome;
+  done: boolean;
+}
+
+/** Area, then sprite, then a walk, while the player is not locked. A walk finishes before the refusal tail. */
+function unlockedClick(env: ClickEnv): ClickProbe {
+  let armed: boolean = env.armed;
+  let itemFailed = false;
+  let itemMacro = false;
+  let outcome: ClickOutcome = { kind: "nothing" };
+  let done = false;
+  const a = env.area();
+  itemMacro = a.itemMacroFound;
+  itemFailed = a.itemFailed;
+  if (a.handled) {
+    armed = false;
+    outcome = { kind: "macro", source: "area" };
+    done = true;
+  } else if (!a.walkArea) {
+    const r = env.sprite();
+    if (r) {
+      itemMacro = r.itemMacroFound;
+      itemFailed = itemFailed || r.itemFailed;
+      if (r.started >= 0) {
+        armed = false;
+        outcome = { kind: "macro", source: "sprite" };
+        done = true;
+      }
+    }
+  }
+  if (!done && !a.walkArea && env.walkAllowed && env.inWalkArea() && env.mode === CursorMode.Point) {
+    return { outcome: { kind: "walk" }, armed: false, itemFailed, itemMacro, done };
+  }
+  return { armed, itemFailed, itemMacro, outcome, done };
+}
+
 /**
  * The click part of Game_Run: `env.area()` first, then `env.sprite()`, then the walk. The
  * walk needs LOCKWALK off, a point inside the walk area and cursor mode 0 (so not with an item);
@@ -267,28 +307,13 @@ export function resolveClick(env: ClickEnv): { outcome: ClickOutcome; armed: boo
   let outcome: ClickOutcome = { kind: "nothing" };
   let done = false;
   if (!env.playerLocked) {
-    const a = env.area();
-    itemMacro = a.itemMacroFound;
-    itemFailed = a.itemFailed;
-    if (a.handled) {
-      armed = false;
-      outcome = { kind: "macro", source: "area" };
-      done = true;
-    } else if (!a.walkArea) {
-      const r = env.sprite();
-      if (r) {
-        itemMacro = r.itemMacroFound;
-        itemFailed = itemFailed || r.itemFailed;
-        if (r.started >= 0) {
-          armed = false;
-          outcome = { kind: "macro", source: "sprite" };
-          done = true;
-        }
-      }
-    }
-    if (!done && !a.walkArea && env.walkAllowed && env.inWalkArea() && env.mode === CursorMode.Point) {
-      return { outcome: { kind: "walk" }, armed: false };
-    }
+    const step = unlockedClick(env);
+    armed = step.armed;
+    itemFailed = step.itemFailed;
+    itemMacro = step.itemMacro;
+    outcome = step.outcome;
+    done = step.done;
+    if (outcome.kind === "walk") return { outcome, armed };
   }
   // tail: refusal / put-back
   if (itemFailed && !itemMacro) return { outcome: { kind: "refuse" }, armed };

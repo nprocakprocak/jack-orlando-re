@@ -89,41 +89,16 @@ export class GameFlow {
     if (e.type === "stop") return this.reset([{ type: "showStart" }], "start");
     switch (e.type) {
       case "begin":
-        if (this.stage !== "start") return [];
-        this.startIntro = e.intro;
-        if (e.logos) {
-          this.stage = "logos";
-          return [{ type: "playLogos" }];
-        }
-        return this.afterLogos();
+        return this.onBegin(e);
       case "direct":
         return this.reset([], "game");
       case "logosDone":
         if (this.stage !== "logos") return [];
         return this.afterLogos();
       case "wipeDone":
-        if (this.stage !== "wipe") return [];
-        if (this.introFrom === "newGame" && this.target === "newGame") {
-          // the intro of "New game" is blackened; the game follows once it is ready (the black screen stays until then)
-          this.stage = "afterIntro";
-          return this.settle();
-        }
-        return this.reset([{ type: "openMenu", previous: "black" }], "menu");
+        return this.onWipeDone();
       case "introEnded":
-        if (this.stage !== "intro") return [];
-        if (this.introFrom === "start") {
-          this.stage = "wipe";
-          return [{ type: "wipe" }];
-        }
-        if (this.introFrom === "newGame") {
-          // [engine, user request 2026-11-09, ] the same stripe blackout as after "Introduction", whether the film ended or was skipped
-          this.introDone = true;
-          this.stage = "wipe";
-          return [{ type: "wipe" }];
-        }
-        this.stage = "menu";
-        this.target = null;
-        return [{ type: "menuReturnFromIntro" }];
+        return this.onIntroEnded();
       case "menuResult":
         return this.menuResult(e.result);
       case "menuReady":
@@ -148,6 +123,43 @@ export class GameFlow {
         return this.reset([{ type: "openMenu", previous: "lastFrame" }], "menu");
     }
     return [];
+  }
+
+  private onBegin(e: { logos: boolean; intro: boolean }): FlowCommand[] {
+    if (this.stage !== "start") return [];
+    this.startIntro = e.intro;
+    if (e.logos) {
+      this.stage = "logos";
+      return [{ type: "playLogos" }];
+    }
+    return this.afterLogos();
+  }
+
+  private onWipeDone(): FlowCommand[] {
+    if (this.stage !== "wipe") return [];
+    if (this.introFrom === "newGame" && this.target === "newGame") {
+      // the intro of "New game" is blackened; the game follows once it is ready (the black screen stays until then)
+      this.stage = "afterIntro";
+      return this.settle();
+    }
+    return this.reset([{ type: "openMenu", previous: "black" }], "menu");
+  }
+
+  private onIntroEnded(): FlowCommand[] {
+    if (this.stage !== "intro") return [];
+    if (this.introFrom === "start") {
+      this.stage = "wipe";
+      return [{ type: "wipe" }];
+    }
+    if (this.introFrom === "newGame") {
+      // [engine, user request 2026-11-09, ] the same stripe blackout as after "Introduction", whether the film ended or was skipped
+      this.introDone = true;
+      this.stage = "wipe";
+      return [{ type: "wipe" }];
+    }
+    this.stage = "menu";
+    this.target = null;
+    return [{ type: "menuReturnFromIntro" }];
   }
 
   /** After the logos (or without them): the first-run intro, or the menu at once. */

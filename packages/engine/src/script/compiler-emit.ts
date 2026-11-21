@@ -52,6 +52,23 @@ class Compiler {
     return n;
   }
 
+  // Next command word. A whole token "/" or "/*" starts a comment and is skipped.
+  private nextCommandWord(): { word: string; start: number } {
+    for (;;) {
+      const start = this.t.pos;
+      const word = this.word("cmd");
+      if (word === "/") {
+        this.skipComment("cmd", "/");
+        continue;
+      }
+      if (word === "/*") {
+        this.skipComment("cmd", "*/");
+        continue;
+      }
+      return { word, start };
+    }
+  }
+
   compile(): Program {
     const t = this.t;
     if (t.len < 1) return this.result();
@@ -71,20 +88,13 @@ class Compiler {
     for (;;) {
       const macro: Macro = { name: cUpper(stripBrackets(head)), start: this.commands.length, count: 0, line: this.line(headPos) };
       this.macros.push(macro);
-      let word: string;
-      let start: number;
       for (;;) {
-        for (;;) {
-          for (;;) {
-            start = t.pos;
-            word = this.word("cmd");
-            if (word !== "/") break;
-            this.skipComment("cmd", "/");
-          }
-          if (word !== "/*") break;
-          this.skipComment("cmd", "*/");
+        const { word, start } = this.nextCommandWord();
+        if (word.startsWith("[")) {
+          head = word;
+          headPos = start;
+          break;
         }
-        if (word.startsWith("[")) break;
         this.command(cUpper(word), this.line(start));
         macro.count++;
         if (this.commands.length >= MAX_COMMANDS || this.macros.length >= MAX_MACROS) {
@@ -92,8 +102,6 @@ class Compiler {
         }
         if (t.pos >= t.len) return this.result();
       }
-      head = word;
-      headPos = start;
     }
   }
 
@@ -202,37 +210,21 @@ class Compiler {
         this.steps([["s", 0]]);
         this.depth++;
         break;
-      case 0x3f: {
-        // MUSIC NAME-x -> "NAME-22.PMS"
-        const tok = this.argToken("tmp");
-        const i = tok.indexOf("-", 1);
-        cmd.n1 = (i < 0 ? tok : tok.slice(0, i + 1)) + "22.PMS";
-        this.steps([["s", 0], ["s", 1]]);
+      case 0x3f: // MUSIC
+        this.music();
         break;
-      }
       case 0x42: // WALKEFFECT
-        this.steps(["n1", ["s", 0], "n2", ["r", 3, P, "n1"]]);
-        if (a[3] !== JACK) this.steps([["s", 1], ["s", 2], ["s", 5]]);
-        this.steps([["r", 4, S, "n2"]]);
+        this.walkEffect();
         break;
-      case 0x5b: {
-        // IFF var op value
-        this.steps(["n1", "n2", ["s", 0]]);
-        const op = ({ "<": 2, "=": 1, ">": 0 } as Record<string, number>)[cmd.n2.slice(0, 1)];
-        if (op !== undefined) a[3] = op;
-        this.steps([["r", 2, V, "n1"]]);
-        a[1] = this.depth++;
+      case 0x5b: // IFF
+        this.iff();
         break;
-      }
       case 0x84: // JACKTEMPO FREE|...
         this.steps(["n1"]);
         a[0] = cmd.n1 === "FREE" ? 0 : 1;
         break;
-      case 0x8e: // ANIMASHADOW anim person shadow|NULL n
-        this.steps(["n1", ["r", 0, A, "n1"], "n1", ["r", 1, P, "n1"], "n1"]);
-        if (cmd.n1 === "NULL") a[2] = -1;
-        else cmd.refs.push([2, "shadow", cmd.n1]);
-        this.steps([["s", 3]]);
+      case 0x8e: // ANIMASHADOW
+        this.animaShadow();
         break;
       case 0x96: // SETPOSSCROLL L|R x y
         this.steps(["n1"]);
@@ -248,6 +240,45 @@ class Compiler {
         break;
       default: // every other code reads no arguments
     }
+  }
+
+  /** MUSIC NAME-x -> "NAME-22.PMS" */
+  private music(): void {
+    const cmd = this.cmd;
+    const tok = this.argToken("tmp");
+    const i = tok.indexOf("-", 1);
+    cmd.n1 = (i < 0 ? tok : tok.slice(0, i + 1)) + "22.PMS";
+    this.steps([["s", 0], ["s", 1]]);
+  }
+
+  /** WALKEFFECT person steps sound, with the extra shorts when the person is not Jack. */
+  private walkEffect(): void {
+    const cmd = this.cmd;
+    const a = cmd.a;
+    this.steps(["n1", ["s", 0], "n2", ["r", 3, P, "n1"]]);
+    if (a[3] !== JACK) this.steps([["s", 1], ["s", 2], ["s", 5]]);
+    this.steps([["r", 4, S, "n2"]]);
+  }
+
+  /** IFF var op value */
+  private iff(): void {
+    const cmd = this.cmd;
+    const a = cmd.a;
+    this.steps(["n1", "n2", ["s", 0]]);
+    const op = ({ "<": 2, "=": 1, ">": 0 } as Record<string, number>)[cmd.n2.slice(0, 1)];
+    if (op !== undefined) a[3] = op;
+    this.steps([["r", 2, V, "n1"]]);
+    a[1] = this.depth++;
+  }
+
+  /** ANIMASHADOW anim person shadow|NULL n */
+  private animaShadow(): void {
+    const cmd = this.cmd;
+    const a = cmd.a;
+    this.steps(["n1", ["r", 0, A, "n1"], "n1", ["r", 1, P, "n1"], "n1"]);
+    if (cmd.n1 === "NULL") a[2] = -1;
+    else cmd.refs.push([2, "shadow", cmd.n1]);
+    this.steps([["s", 3]]);
   }
 }
 

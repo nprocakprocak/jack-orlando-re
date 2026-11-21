@@ -48,6 +48,65 @@ export function rgb888To565(r: number, g: number, b: number): number {
   return ((r & 0xf8) << 8) | ((g & 0xfc) << 3) | (b >> 3);
 }
 
+function readSubtitleHeader(v: DataView, data: Uint8Array, pos: number, intro: boolean): { sub: Subtitle; w: number; h: number } {
+  let sub: Subtitle;
+  let w: number;
+  let h: number;
+  if (intro) {
+    w = v.getUint16(pos, true);
+    h = v.getUint16(pos + 2, true);
+    sub = {
+      first: v.getUint16(pos + 8, true),
+      last: v.getUint16(pos + 10, true),
+      x: v.getUint16(pos + 4, true),
+      y: v.getUint16(pos + 6, true),
+      width: w,
+      height: h,
+      segment: v.getUint16(pos + 12, true),
+      color: [data[pos + 14], data[pos + 15], data[pos + 16]],
+      pixels: new Uint16Array(0),
+      unk: 0,
+      rawValues: null,
+    };
+  } else {
+    w = v.getUint16(pos + 10, true);
+    h = v.getUint16(pos + 12, true);
+    sub = {
+      first: v.getUint16(pos, true),
+      last: v.getUint16(pos + 2, true),
+      x: v.getUint16(pos + 4, true),
+      y: v.getUint16(pos + 6, true),
+      width: w,
+      height: h,
+      segment: null,
+      color: null,
+      pixels: new Uint16Array(0),
+      unk: v.getUint16(pos + 8, true),
+      rawValues: null,
+    };
+  }
+  return { sub, w, h };
+}
+
+function readSubtitlePixels(sub: Subtitle, v: DataView, data: Uint8Array, pos: number, n: number, intro: boolean): void {
+  const pixels = new Uint16Array(n);
+  if (intro) {
+    const lut = new Uint16Array(256);
+    lut[0] = INTRO_OUTLINE;
+    lut[INTRO_BODY] = rgb888To565(...sub.color!);
+    const raw = new Set<number>();
+    for (let i = 0; i < n; i++) {
+      const b = data[pos + i];
+      raw.add(b);
+      pixels[i] = lut[b];
+    }
+    sub.rawValues = raw;
+  } else {
+    for (let i = 0; i < n; i++) pixels[i] = v.getUint16(pos + 2 * i, true);
+  }
+  sub.pixels = pixels;
+}
+
 /** List of subtitles in file order. Throws SubtitlesError on truncated data. */
 export function parseSubtitles(data: Uint8Array, intro: boolean): Subtitle[] {
   if (data.length > SUBS_BUFFER) {
@@ -60,42 +119,7 @@ export function parseSubtitles(data: Uint8Array, intro: boolean): Subtitle[] {
   while (pos < data.length) {
     const at = pos;
     if (pos + headSize > data.length) throw new SubtitlesError(`record header truncated at 0x${pos.toString(16)}`);
-    let sub: Subtitle;
-    let w: number;
-    let h: number;
-    if (intro) {
-      w = v.getUint16(pos, true);
-      h = v.getUint16(pos + 2, true);
-      sub = {
-        first: v.getUint16(pos + 8, true),
-        last: v.getUint16(pos + 10, true),
-        x: v.getUint16(pos + 4, true),
-        y: v.getUint16(pos + 6, true),
-        width: w,
-        height: h,
-        segment: v.getUint16(pos + 12, true),
-        color: [data[pos + 14], data[pos + 15], data[pos + 16]],
-        pixels: new Uint16Array(0),
-        unk: 0,
-        rawValues: null,
-      };
-    } else {
-      w = v.getUint16(pos + 10, true);
-      h = v.getUint16(pos + 12, true);
-      sub = {
-        first: v.getUint16(pos, true),
-        last: v.getUint16(pos + 2, true),
-        x: v.getUint16(pos + 4, true),
-        y: v.getUint16(pos + 6, true),
-        width: w,
-        height: h,
-        segment: null,
-        color: null,
-        pixels: new Uint16Array(0),
-        unk: v.getUint16(pos + 8, true),
-        rawValues: null,
-      };
-    }
+    const { sub, w, h } = readSubtitleHeader(v, data, pos, intro);
     pos += headSize;
     const n = w * h;
     const size = intro ? n : 2 * n;
@@ -105,22 +129,7 @@ export function parseSubtitles(data: Uint8Array, intro: boolean): Subtitle[] {
     if (pos + size > data.length) {
       throw new SubtitlesError(`record at 0x${at.toString(16)}: pixels truncated (${size} bytes needed, ${data.length - pos} left)`);
     }
-    const pixels = new Uint16Array(n);
-    if (intro) {
-      const lut = new Uint16Array(256);
-      lut[0] = INTRO_OUTLINE;
-      lut[INTRO_BODY] = rgb888To565(...sub.color!);
-      const raw = new Set<number>();
-      for (let i = 0; i < n; i++) {
-        const b = data[pos + i];
-        raw.add(b);
-        pixels[i] = lut[b];
-      }
-      sub.rawValues = raw;
-    } else {
-      for (let i = 0; i < n; i++) pixels[i] = v.getUint16(pos + 2 * i, true);
-    }
-    sub.pixels = pixels;
+    readSubtitlePixels(sub, v, data, pos, n, intro);
     pos += size;
     out.push(sub);
   }

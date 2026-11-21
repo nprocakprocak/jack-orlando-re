@@ -58,10 +58,10 @@ export function run(this: HostState, cmd: Command, ctx: CommandContext): Command
         // in it): the walk/stand/turn frame sets, the stand scale, the turn table, JACKISWOJ (the script's own LET
         // follows in SC105) and g_jackUniform (the face JACKWOJ, the coat INV_M, the gestures DM/SW). The shown sprite changes
         // with Jack's next frame.
-        if (sc.tj.uniform === (a[0] === 6)) return "done"; // the case 0x24 tests g_jackUniform first
+        if (sc.turning.uniform === (a[0] === 6)) return "done"; // the case 0x24 tests g_jackUniform first
         if (this.env.dialog) this.env.dialog.jackUniform = a[0] === 6;
         this.env.items?.setUniform(a[0] === 6);
-        sc.tj.uniform = a[0] === 6;
+        sc.turning.uniform = a[0] === 6;
         if (sc.jack) sc.jack.uniform = a[0] === 6; // (the fake scenes of m3.test.ts have no animator)
         ctx.vars.set("JACKISWOJ", a[0] === 6 ? 1 : 0);
         return "done";

@@ -35,7 +35,7 @@ All 102 names below exist in `GLOBAL.ICS`.
 
 `0` is the bend, `1` is the return. Taking the bottle is `PICKUP`, then `TAKE`, then `PICKUP 1`.
 
-The column is `g_jackUniform`. The engine takes it from `tj.uniform` (`SceneHost.jackInfo`), which `EXTRA 6` and `EXTRA 8` set together with the walk and stand frame set (`JackAnimator.uniform`, [animation.md](animation.md), the uniform).
+The column is `g_jackUniform`. The engine takes it from `turning.uniform` (`SceneHost.jackInfo`), which `EXTRA 6` and `EXTRA 8` set together with the walk and stand frame set (`JackAnimator.uniform`, [animation.md](animation.md), the uniform).
 
 **`GIVE n`** (direction = `g_jackFacing`): `<phase>_<DP|DM>_<D|L|U|LD|RU>`. The phase is `DAJE_DO_WYC` when `n == 0` (reach into the pocket and hand it over), `CHOWA_WYC` when `n == 1` (put it away), `STAY_DO_WYC` when `n == 2`, and **every other** `n` is `OPUSZCZA_WYC` (lower the hand). `DP` is civilian, `DM` is the uniform.
 

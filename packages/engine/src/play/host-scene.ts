@@ -14,7 +14,7 @@ export function run(this: HostState, cmd: Command): CommandResult {
         return "done";
       case 0x6d: // POINTROTATE n
         this.pointRotate = a[0];
-        setPointRotate(this.env.scene.tj, a[0] !== 0);
+        setPointRotate(this.env.scene.turning, a[0] !== 0);
         return "done";
       case 0xa1: // SAVEABLE n
         this.saveable = a[0] !== 0;

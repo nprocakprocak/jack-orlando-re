@@ -28,7 +28,7 @@ describe("stayJack on a fake player (synthetic: Script_Stay)", () => {
       jackShown: opts.shown !== false,
       jackId: 0,
       jack: { mode: "stand", walkFrame: 0, delay: 5 },
-      tj: { moving: opts.moving ?? false, turn: null as unknown, uniform: false },
+      turning: { moving: opts.moving ?? false, turn: null as unknown, uniform: false },
       renderer: { sprite: () => ({ visible: opts.shown !== false }) },
       turnFromScript: false,
       jackFresh: false,
@@ -66,14 +66,14 @@ describe("stayJack on a fake player (synthetic: Script_Stay)", () => {
     const f = fake(0, 1, { shown: true });
     (f.self as { jackShown: boolean }).jackShown = false;
     expect(f.stay("L")).toBe(false);
-    expect(f.self.tj.turn).toBeNull();
+    expect(f.self.turning.turn).toBeNull();
     expect(f.self.stood).toBe(1);
     expect([f.self.walker.dir, f.self.walker.mirror]).toEqual([1, 1]);
     expect((f.self as { jackShown: boolean }).jackShown).toBe(true);
     // the next STAY already turns (front -> side)
     const g = fake(0, 1, { shown: true });
     expect(g.stay("L")).toBe(true);
-    expect(g.self.tj.turn).not.toBeNull();
+    expect(g.self.turning.turn).not.toBeNull();
   });
 
   it("SC003 after the ladder: facing inherited equal to `STAY RD`, g_jackShown = 0 → Jack is drawn standing (the WSKOK1 pose does not stay)", () => {
@@ -104,7 +104,7 @@ describe("stayJack on a fake player (synthetic: Script_Stay)", () => {
     for (const [name, dir, mirror] of NAMES) {
       const f = fake(dir, mirror, { moving: true });
       expect(f.stay(name)).toBe(false);
-      expect(f.self.tj.turn).toBeNull();
+      expect(f.self.turning.turn).toBeNull();
       expect(f.self.stood).toBe(1);
       expect([f.self.walker.dir, f.self.walker.mirror]).toEqual([dir, mirror]);
     }
@@ -114,7 +114,7 @@ describe("stayJack on a fake player (synthetic: Script_Stay)", () => {
     const f = fake(4, -1, { moving: true });
     expect(f.stay("LU")).toBe(false);
     expect([f.self.walker.dir, f.self.walker.mirror]).toEqual([4, -1]);
-    expect(f.self.tj.turn).toBeNull();
+    expect(f.self.turning.turn).toBeNull();
     expect(f.self.stood).toBe(1);
   });
 
@@ -127,7 +127,7 @@ describe("stayJack on a fake player (synthetic: Script_Stay)", () => {
         expect([f.self.walker.dir, f.self.walker.mirror]).toEqual([dir, mirror]);
         expect(f.self.walker.walking).toBe(false);
         // some pairs need no frames (a mirrored back view): then nobody waits and nothing is stuck
-        expect(waits).toBe(f.self.tj.turn !== null);
+        expect(waits).toBe(f.self.turning.turn !== null);
         if (waits) {
           expect(f.self.turnFromScript).toBe(true);
           expect(f.self.jack.delay).toBe(0);
@@ -140,7 +140,7 @@ describe("stayJack on a fake player (synthetic: Script_Stay)", () => {
     const f = fake(1, 1, { moving: true });
     expect(f.stay("LU*")).toBe(false);
     expect([f.self.walker.dir, f.self.walker.mirror]).toEqual([4, -1]);
-    expect(f.self.tj.turn).toBeNull();
+    expect(f.self.turning.turn).toBeNull();
     expect(f.self.stood).toBe(0);
   });
 });
@@ -234,7 +234,7 @@ describe("Jack's idle reaction on a fake player (synthetic: Game_Run)", () => {
     const self = Object.create(ScenePlayer.prototype) as ScenePlayer;
     Object.assign(self, {
       walker: { dir, mirror, walking: false },
-      tj: { moving: false, turn: null, uniform },
+      turning: { moving: false, turn: null, uniform },
       idleFrames: 0,
       idleIns: false,
       stayJack(name: string, macro = true) {
@@ -289,7 +289,7 @@ describe("Jack's idle reaction on a fake player (synthetic: Game_Run)", () => {
     const f = fake(1, 1);
     f.idle(1001);
     expect(f.check(1, 1, true)).toBeNull();
-    (f.self.tj as { turn: unknown }).turn = {};
+    (f.self.turning as { turn: unknown }).turn = {};
     expect(f.check()).toBeNull();
     expect(f.calls).toEqual([]);
     expect(f.self.idleFrames).toBe(1501.5);
@@ -379,13 +379,13 @@ describe("Jack's idle reaction on a fake player (synthetic: Game_Run)", () => {
       jackShown: true,
       jackPlaced: true,
       jack: { mode: "stand", walkFrame: 0, delay: 5 },
-      tj: { moving: false, turn: null as unknown, uniform: true },
+      turning: { moving: false, turn: null as unknown, uniform: true },
       turnFromScript: false,
       jackFresh: false,
       standJack() {},
     };
     expect(ScenePlayer.prototype.stayJack.call(self as unknown as ScenePlayer, "LD", false)).toBe(false);
-    expect(self.tj.turn).not.toBeNull();
+    expect(self.turning.turn).not.toBeNull();
     expect(self.turnFromScript).toBe(false);
     expect([self.walker.dir, self.walker.mirror]).toEqual([3, 1]);
     expect(self.jack.delay).toBe(0);
@@ -398,7 +398,7 @@ describe("Jack's idle reaction on a fake player (synthetic: Game_Run)", () => {
     let ended = false;
     Object.assign(self, {
       walker: { x: 300, y: 300, dir: 1, mirror: 1, scale: 1, walking: false },
-      tj: { moving: false, turn: null, uniform: false },
+      turning: { moving: false, turn: null, uniform: false },
       jackHidden: false,
       events: [],
       insReleaseEarly: false,

@@ -98,7 +98,7 @@ function fakeScene() {
     scene: { areas: [{ name: "DYWAN", exit: false, triangles: [[0, 0, 300, 0, 0, 300]] }] },
     world: { walk: [], perspective: {}, objects: [{ x: 100, y: 100, quad: [0, 0, 50, 0, 50, 50, 0, 50], center: [25, 25], valid: true }, { x: 300, y: 100, quad: [0, 0, 50, 0, 50, 50, 0, 50], center: [25, 25], valid: false }] },
     walker: { x: 100, y: 200, dir: 1, mirror: 1 },
-    tj: { pointRotate: false, pointRotateSaved: false, uniform: false },
+    turning: { pointRotate: false, pointRotateSaved: false, uniform: false },
     persons: { find: (n: string) => (n === "BOB" ? 0 : n === "ANN" ? 1 : -1), get: (n: string) => (n === "SHIFTY" ? shifty : undefined), persons: [] },
     jack: { uniform: false },
     pose: () => ({ x: 300.7, y: 420.2 }),

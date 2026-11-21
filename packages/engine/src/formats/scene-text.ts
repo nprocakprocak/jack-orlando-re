@@ -78,11 +78,7 @@ function readObject(t: Tokens, name: string, kind: "graphic" | "element"): Scene
   return { name, kind, type, x, y, scale: micro(scale), scaleB: micro(scaleB), quad, flx };
 }
 
-/** Scene_LoadCcg. */
-export function parseCcg(plain: Uint8Array): Ccg {
-  if (plain.length === 0) throw new SceneError("empty .CCG (game exits: 'Error dlugosci')");
-  const t = new Tokens(plain);
-  if (!t.findSection("[grafiki]")) throw new SceneError("no [grafiki] section (game exits: 'NO [graphisc] SECTION')");
+function readBackground(t: Tokens): { bg: string; wide: boolean; scroll: number } {
   let bg = t.next("name");
   let wide = false;
   let scroll = 0;
@@ -92,6 +88,10 @@ export function parseCcg(plain: Uint8Array): Ccg {
     scroll = t.short() ?? 0;
     scroll = scroll > 0x178 ? 0x178 : scroll - (scroll & 3);
   }
+  return { bg, wide, scroll };
+}
+
+function readGraphics(t: Tokens): { objects: SceneObject[]; count: number; graphics: number } {
   let objects: SceneObject[] = [];
   let count = 0;
   while (t.pos < t.len) {
@@ -109,6 +109,10 @@ export function parseCcg(plain: Uint8Array): Ccg {
   }
   const graphics = count;
   objects = objects.slice(0, count);
+  return { objects, count, graphics };
+}
+
+function readElements(t: Tokens, objects: SceneObject[], count: number): number {
   if (t.findSection("[elementy]")) {
     for (;;) {
       if (t.atEnd()) break;
@@ -119,6 +123,10 @@ export function parseCcg(plain: Uint8Array): Ccg {
       count++;
     }
   }
+  return count;
+}
+
+function readPerspective(t: Tokens): Perspective | null {
   let perspective: Perspective | null = null;
   if (t.findSection("[perspektywa]")) {
     const a = s16(cAtoi(t.next("num")));
@@ -128,6 +136,10 @@ export function parseCcg(plain: Uint8Array): Ccg {
     const refScale = t.atEnd() ? 0 : f32(cAtof(t.next("num")));
     perspective = { a, horizonY, refY, refScale: micro(refScale) };
   }
+  return perspective;
+}
+
+function readLights(t: Tokens): number[][] {
   const lights: number[][] = [];
   if (t.findSection("[swiatlo]")) {
     let tok = t.next("num");
@@ -137,6 +149,10 @@ export function parseCcg(plain: Uint8Array): Ccg {
       tok = t.next("num");
     }
   }
+  return lights;
+}
+
+function readWalk(t: Tokens): number[][] {
   const walk: number[][] = [];
   if (t.findSection("[obszar_chodu]")) {
     const n = s16(cAtoi(t.next("num")));
@@ -146,12 +162,32 @@ export function parseCcg(plain: Uint8Array): Ccg {
       walk.push(tri);
     }
   }
+  return walk;
+}
+
+function readTextColors(t: Tokens): number[] | null {
   let textColors: number[] | null = null;
   if (t.findSection("[kolor_liter]")) {
     textColors = [];
     for (let i = 0; i < 6; i++) textColors.push(t.short() ?? 0);
   }
-  return { background: cUpper(bg), wide, scroll, graphics, count, objects, perspective, lights, walk, textColors };
+  return textColors;
+}
+
+/** Scene_LoadCcg. */
+export function parseCcg(plain: Uint8Array): Ccg {
+  if (plain.length === 0) throw new SceneError("empty .CCG (game exits: 'Error dlugosci')");
+  const t = new Tokens(plain);
+  if (!t.findSection("[grafiki]")) throw new SceneError("no [grafiki] section (game exits: 'NO [graphisc] SECTION')");
+  const { bg, wide, scroll } = readBackground(t);
+  const graphicsRead = readGraphics(t);
+  const objects = graphicsRead.objects;
+  const count = readElements(t, objects, graphicsRead.count);
+  const perspective = readPerspective(t);
+  const lights = readLights(t);
+  const walk = readWalk(t);
+  const textColors = readTextColors(t);
+  return { background: cUpper(bg), wide, scroll, graphics: graphicsRead.graphics, count, objects, perspective, lights, walk, textColors };
 }
 
 // --- ACE ------------------------------------------------------------------------

@@ -105,6 +105,33 @@ class Search {
     this.found++;
   }
 
+  /** straight towards the target: where the line leaves triangle t. */
+  private exitsTowardTarget(p: Point, tv: readonly Point[]): void {
+    for (let i = 0; i < 3; i++) {
+      const q = segmentIntersection(p, this.target, tv[i], tv[(i + 1) % 3]);
+      if (q.x < 0) continue;
+      for (let s = this.tri(q); s >= 0; s = this.tri(q, s + 1)) if (!this.visited[s]) this.rec(q);
+    }
+  }
+
+  /** contact points with triangle u; the caller skips a triangle on the current branch. */
+  private contacts(p: Point, t: number, u: number, tv: readonly Point[]): void {
+    const ut = this.tris[u];
+    const uv = [0, 2, 4].map((i) => ({ x: ut[i], y: ut[i + 1] }));
+    const cands: Point[] = [];
+    for (const v of uv) if (this.tri(v, t) === t) cands.push(v);
+    for (let k = 0; k < 3; k++) {
+      if (this.tri(tv[k], u) === u) cands.push(tv[k]);
+      for (let m = 0; m < 3; m++) {
+        const q = segmentIntersection(tv[k], tv[(k + 1) % 3], uv[m], uv[(m + 1) % 3]);
+        if (q.x >= 0) cands.push(q);
+      }
+    }
+    if (!cands.length) return;
+    this.maxCandidates = Math.max(this.maxCandidates, cands.length);
+    for (const c of spreadCandidates(cands, p)) this.rec(c);
+  }
+
   rec(p: Point): void {
     this.calls++;
     if (!(this.found === 0 || this.calls <= this.budget) || this.depth >= MAX_PATH_POINTS) return;
@@ -122,29 +149,10 @@ class Search {
         }
         const tt = this.tris[t];
         const tv = [0, 2, 4].map((i) => ({ x: tt[i], y: tt[i + 1] }));
-        // straight towards the target: where the line leaves triangle t
-        for (let i = 0; i < 3; i++) {
-          const q = segmentIntersection(p, this.target, tv[i], tv[(i + 1) % 3]);
-          if (q.x < 0) continue;
-          for (let s = this.tri(q); s >= 0; s = this.tri(q, s + 1)) if (!this.visited[s]) this.rec(q);
-        }
-        // contact points with every other triangle not on the current branch
+        this.exitsTowardTarget(p, tv);
         for (let u = 0; u < this.tris.length; u++) {
           if (this.visited[u]) continue;
-          const ut = this.tris[u];
-          const uv = [0, 2, 4].map((i) => ({ x: ut[i], y: ut[i + 1] }));
-          const cands: Point[] = [];
-          for (const v of uv) if (this.tri(v, t) === t) cands.push(v);
-          for (let k = 0; k < 3; k++) {
-            if (this.tri(tv[k], u) === u) cands.push(tv[k]);
-            for (let m = 0; m < 3; m++) {
-              const q = segmentIntersection(tv[k], tv[(k + 1) % 3], uv[m], uv[(m + 1) % 3]);
-              if (q.x >= 0) cands.push(q);
-            }
-          }
-          if (!cands.length) continue;
-          this.maxCandidates = Math.max(this.maxCandidates, cands.length);
-          for (const c of spreadCandidates(cands, p)) this.rec(c);
+          this.contacts(p, t, u, tv);
         }
         this.visited[t] = false;
       }

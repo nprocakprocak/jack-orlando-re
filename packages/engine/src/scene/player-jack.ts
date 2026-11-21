@@ -77,7 +77,7 @@ export function walkPlan(this: ScenePlayerState, plan: WalkPlan, forced: number 
     const wasWalking = this.walker.walking;
     this.walker.forced = forced;
     this.jackAvoiding = false;
-    followPlanTurning(this.tj, plan);
+    followPlanTurning(this.turning, plan);
     if (!this.walker.walking) return false;
     // Jack_WalkToPoint: a new walk clears g_turnMacroWaits, the macro of a running ROTATETO / STAY is never released
     this.turnFromScript = false;
@@ -166,7 +166,7 @@ export function standJack(this: ScenePlayerState): void {
     cancelTurn.call(this);
     this.jackHidden = false;
     this.walker.walking = false;
-    this.tj.moving = false;
+    this.turning.moving = false;
     this.apply(this.jack.stand(this.pose()));
     arrangeJack.call(this);
 }
@@ -218,13 +218,13 @@ export function lookAt(this: ScenePlayerState, x: number, y: number, wait = true
       w.mirror = f.mirror;
       return false;
     }
-    const r = turnTo(this.tj, f);
+    const r = turnTo(this.turning, f);
     if (r.stand) {
       this.standJack();
       return false;
     }
     if (r.steps.length === 0) {
-      if (this.jack.mode === "stand" && !this.tj.turn) this.standJack();
+      if (this.jack.mode === "stand" && !this.turning.turn) this.standJack();
       return false;
     }
     // the walk is over: Jack keeps the pose of the last turn frame until something draws him again
@@ -258,13 +258,13 @@ export function stayJack(this: ScenePlayerState, name: string, macro = true): bo
       this.standJack();
       return false;
     }
-    const moving = this.tj.moving;
+    const moving = this.turning.moving;
     if (old.dir !== f.dir || old.mirror !== f.mirror) {
       w.walking = false;
       const steps = turnSequence(old.dir, old.mirror, f.dir, f.mirror, false);
-      if (steps.length > 0) this.tj.turn = new TurnPlayer(steps, this.tj.uniform);
+      if (steps.length > 0) this.turning.turn = new TurnPlayer(steps, this.turning.uniform);
     }
-    if (!this.tj.turn) {
+    if (!this.turning.turn) {
       if (moving) this.standJack();
       return false;
     }
@@ -298,10 +298,10 @@ export function idleInput(this: ScenePlayerState, active: boolean): void {
  * an insertion. `random` is the C library's rand(), called only where the game calls it (civilian, dir 0 / 3); `gun` is `GUN`.
  */
 export function idleCheck(this: ScenePlayerState, noControl: boolean, random: () => number, gun: () => number): IdleChoice | null {
-    if (this.idleFrames <= IDLE_LIMIT || noControl || this.tj.turn) return null;
+    if (this.idleFrames <= IDLE_LIMIT || noControl || this.turning.turn) return null;
     const w = this.walker;
     const dir = w.dir as JackDir;
-    const uniform = this.tj.uniform;
+    const uniform = this.turning.uniform;
     const rand = !uniform && (dir === 0 || dir === 3) ? random() : 0;
     const c = idleChoice(dir, w.mirror, uniform, rand, !uniform && dir === 0 && rand % 2 === 0 ? gun() : 0);
     if (c?.stay) {
@@ -316,8 +316,8 @@ export function idleCheck(this: ScenePlayerState, noControl: boolean, random: ()
 
 /** The running turn stops (STAY, HIDE, an insertion): a macro waiting for it is released at the next tick. */
 function cancelTurn(this: ScenePlayerState): void {
-    if (this.tj.turn && this.turnFromScript) this.turnEndedPending = true;
-    this.tj.turn = null;
+    if (this.turning.turn && this.turnFromScript) this.turnEndedPending = true;
+    this.turning.turn = null;
     this.turnFromScript = false;
 }
 
@@ -329,7 +329,7 @@ export function jackInsertion(this: ScenePlayerState, name: string, dir: number,
       (this.globalIcs ? globalInsertion(this.globalIcs, name, facing) : null);
     if (!ins) return false;
     cancelTurn.call(this);
-    this.tj.moving = false;
+    this.turning.moving = false;
     this.jackHidden = false;
     this.walker.walking = false;
     this.jack.startInsertion(count === undefined ? ins : { ...ins, count: Math.min(count, ins.count) });
@@ -350,7 +350,7 @@ export function startGlobalInsertion(this: ScenePlayerState, name: string, facin
     const ins = this.globalIcs ? globalInsertion(this.globalIcs, name, facing, scaleMul) : null;
     if (!ins) return false;
     cancelTurn.call(this);
-    this.tj.moving = false;
+    this.turning.moving = false;
     this.jackHidden = false;
     this.walker.walking = false;
     this.jack.startInsertion(ins);

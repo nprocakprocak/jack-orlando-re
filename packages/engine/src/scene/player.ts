@@ -61,7 +61,7 @@ export class ScenePlayer {
   readonly jack: JackAnimator;
   readonly walker: Walker;
   /** Jack's turn state: the running turning animation, POINTROTATE, the uniform */
-  readonly tj: TurningJack;
+  readonly turning: TurningJack;
   readonly insertions: InsertionTable;
   readonly persons: ScenePersons;
   readonly bgWidth: number;
@@ -233,7 +233,7 @@ export class ScenePlayer {
     // g_jackX/Y are (320, 240) after Game_Run until the scripts place Jack
     const start = this.scripted ? { x: 320, y: 240 } : jackStart(this.scene, opts.lastScene ?? null) ?? tickBody.centroid.call(this as unknown as ScenePlayerState);
     this.walker = createWalker(start.x, start.y, this.world);
-    this.tj = turningJack(this.walker);
+    this.turning = turningJack(this.walker);
     // Game_Run: the shadow sprites are added with z = 0 after the scene objects, so they lie under every object and person;
     // the depth code skips them and nothing moves them (only SHADOWONE: Sprite_MoveFront)
     this.shadowIds = [this.renderer.add(decode.BLANK, Z_SHADOW, SCALE_KEEP), this.renderer.add(decode.BLANK, Z_SHADOW, SCALE_KEEP)];

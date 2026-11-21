@@ -205,7 +205,7 @@ export class SceneHost implements ScriptHost {
   /** Jack as the gestures see him: `g_jackDir`, `g_jackFacing`, `g_jackUniform`. */
   private jackInfo(): JackInfo {
     const sc = this.env.scene;
-    return { dir: sc.walker.dir as JackInfo["dir"], facing: sc.walker.mirror as JackInfo["facing"], uniform: sc.tj.uniform };
+    return { dir: sc.walker.dir as JackInfo["dir"], facing: sc.walker.mirror as JackInfo["facing"], uniform: sc.turning.uniform };
   }
 
   /**

@@ -3,6 +3,49 @@
 import { StereoOptions } from "../settings/stereo";
 import type { AudioBackend, PreparedSound, StreamSource, Voice, VoiceParams } from "./types";
 
+interface StreamPump {
+  ctx: AudioContext;
+  source: StreamSource;
+  chunkFrames: number;
+  gain: GainNode;
+  live: Set<AudioBufferSourceNode>;
+  at: number;
+  stopped: boolean;
+  done: boolean;
+  timer: ReturnType<typeof setInterval>;
+  finish(): void;
+}
+
+function pumpStream(p: StreamPump): void {
+  if (p.stopped || p.done) return;
+  p.at = Math.max(p.at, p.ctx.currentTime);
+  while (p.at - p.ctx.currentTime < STREAM_AHEAD) {
+    const data = p.source.read(p.chunkFrames);
+    const frames = data.length ? data[0].length : 0;
+    if (frames) {
+      const buf = p.ctx.createBuffer(p.source.channels, frames, p.source.rate);
+      data.forEach((c, i) => buf.copyToChannel(c as Float32Array<ArrayBuffer>, i));
+      const node = p.ctx.createBufferSource();
+      node.buffer = buf;
+      node.connect(p.gain);
+      node.start(p.at);
+      p.live.add(node);
+      node.onended = () => {
+        p.live.delete(node);
+        node.disconnect();
+        if (p.done && !p.live.size) p.finish();
+      };
+      p.at += frames / p.source.rate;
+    }
+    if (frames < p.chunkFrames) {
+      p.done = true;
+      clearInterval(p.timer);
+      if (!p.live.size) p.finish();
+      return;
+    }
+  }
+}
+
 /** Seconds kept scheduled ahead / granularity of a refill / poll period (the exe: 4 s ring, 0.5 s, 50 ms). */
 const STREAM_AHEAD = 4;
 const STREAM_CHUNK = 0.5;
@@ -107,49 +150,28 @@ export class WebAudioBackend implements AudioBackend {
     gain.connect(pan).connect(this.musicBus);
     const chunkFrames = Math.round(STREAM_CHUNK * source.rate);
     const live = new Set<AudioBufferSourceNode>();
-    let at = ctx.currentTime;
-    let stopped = false;
-    let done = false;
-    const finish = () => {
-      clearInterval(timer);
-      if (!stopped) onEnded();
+    const state: StreamPump = {
+      ctx,
+      source,
+      chunkFrames,
+      gain,
+      live,
+      at: ctx.currentTime,
+      stopped: false,
+      done: false,
+      timer: 0 as unknown as ReturnType<typeof setInterval>,
+      finish() {
+        clearInterval(this.timer);
+        if (!this.stopped) onEnded();
+      },
     };
-    const pump = () => {
-      if (stopped || done) return;
-      at = Math.max(at, ctx.currentTime);
-      while (at - ctx.currentTime < STREAM_AHEAD) {
-        const data = source.read(chunkFrames);
-        const frames = data.length ? data[0].length : 0;
-        if (frames) {
-          const buf = ctx.createBuffer(source.channels, frames, source.rate);
-          data.forEach((c, i) => buf.copyToChannel(c as Float32Array<ArrayBuffer>, i));
-          const node = ctx.createBufferSource();
-          node.buffer = buf;
-          node.connect(gain);
-          node.start(at);
-          live.add(node);
-          node.onended = () => {
-            live.delete(node);
-            node.disconnect();
-            if (done && !live.size) finish();
-          };
-          at += frames / source.rate;
-        }
-        if (frames < chunkFrames) {
-          done = true;
-          clearInterval(timer);
-          if (!live.size) finish();
-          return;
-        }
-      }
-    };
-    const timer = setInterval(pump, STREAM_POLL_MS);
-    pump();
+    state.timer = setInterval(() => pumpStream(state), STREAM_POLL_MS);
+    pumpStream(state);
     return {
       stop: () => {
-        stopped = true;
-        clearInterval(timer);
-        for (const n of live) {
+        state.stopped = true;
+        clearInterval(state.timer);
+        for (const n of state.live) {
           n.onended = null;
           try {
             n.stop();
@@ -158,7 +180,7 @@ export class WebAudioBackend implements AudioBackend {
           }
           n.disconnect();
         }
-        live.clear();
+        state.live.clear();
         gain.disconnect();
       },
       setGain: (g) => {
