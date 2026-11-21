@@ -1,5 +1,6 @@
 // Clicks on the scene: macro names "<action>-<NAME>", the area click (Area_ClickMacro), the cursor
 // hit tests and the order in which Game_Run tries area, sprite and walk. Pure logic, no DOM.
+import { CursorMode } from "../cursor/modes";
 import type { Area } from "../formats/scene";
 import type { Interpreter } from "../script/interpreter";
 import type { Point } from "../walk/geometry";
@@ -214,7 +215,7 @@ export interface ClickEnv {
   mode: number;
   /** the click is armed - set while the left button is up, cleared by a click that did something */
   armed: boolean;
-  /** */
+  /** `g_cursorEnabled`: the click is ignored while the cursor is off */
   cursorEnabled: boolean;
   /** a running macro without UNLOCK (Interpreter.playerLocked) */
   playerLocked: boolean;
@@ -252,7 +253,7 @@ export type ClickOutcome =
  * `armed` is the new value.
  */
 export function resolveClick(env: ClickEnv): { outcome: ClickOutcome; armed: boolean } {
-  if (!env.armed || !env.cursorEnabled || env.turning || env.mode === 20 || env.mode === 21) {
+  if (!env.armed || !env.cursorEnabled || env.turning || env.mode === CursorMode.ScrollLeft || env.mode === CursorMode.ScrollRight) {
     return { outcome: { kind: "ignored" }, armed: env.armed };
   }
   let armed: boolean = env.armed;
@@ -280,7 +281,7 @@ export function resolveClick(env: ClickEnv): { outcome: ClickOutcome; armed: boo
         }
       }
     }
-    if (!done && !a.walkArea && env.walkAllowed && env.inWalkArea() && env.mode === 0) {
+    if (!done && !a.walkArea && env.walkAllowed && env.inWalkArea() && env.mode === CursorMode.Point) {
       return { outcome: { kind: "walk" }, armed: false };
     }
   }

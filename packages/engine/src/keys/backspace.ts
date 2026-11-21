@@ -92,9 +92,6 @@ export const BACKSPACE_TABLE: readonly BackspaceEntry[] = [
   { scene: 210, target: 210, file: "SC061.CCG" },
 ];
 
-/** Entries of the tables are indexed by scene number 0..0xf9 (`0xfa` slots). */
-export const BACKSPACE_SLOTS = 0xfa;
-
 /**
  * Scene number of a scene file name: `atoi` of the characters from index 2 up to the '.',
  * so `SC005B.CCG` -> 5 (atoi stops at the letter) and `SC039.CCG` -> 39. No digits -> 0.

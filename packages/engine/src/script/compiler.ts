@@ -59,12 +59,3 @@ export function problemsOf(program: Program, variables: ReadonlyMap<string, numb
   }
   return out;
 }
-
-/** Floats as millionths, without the flag token: the shape the external checker hashes. */
-export function canonicalProgram(program: Program): unknown {
-  return {
-    macros: program.macros,
-    commands: program.commands.map(({ flag: _flag, ...c }) => ({ ...c, f: c.f === null ? null : Math.floor(c.f * 1e6 + 0.5) })),
-    depth: program.depth,
-  };
-}

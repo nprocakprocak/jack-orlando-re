@@ -1,6 +1,6 @@
 // Shadows of scene persons. No DOM, no renderer: the host composes the
 // backdrop, this module decides what to draw (Person_DrawShadow) and darkens it (Blit_ShadowDarken).
-import { ROUND_SHADOW, SHADOW_OFFSET_ROUND, SHADOW_SCALE_MAX } from "../anim/jack";
+import { SHADOW_OFFSET_ROUND, SHADOW_SCALE_MAX } from "../anim/jack";
 import type { Image16 } from "../formats/bm";
 import { ftol } from "../walk/geometry";
 
@@ -10,8 +10,6 @@ const f32 = Math.fround;
 export const DEFAULT_STRENGTH = 8;
 /** `ftol(65535 / s)` splits into the integer and fractional source step (= 65535.0). */
 const STEP_BASE = 65535;
-/** The round shadow image used when the script gave the person no mask of its own (`Res_Load("CIEN1.BM")`). */
-export const PERSON_DEFAULT_MASK = ROUND_SHADOW;
 /** Anchor of the shadow image relative to the person's feet, scaled by the shadow scale (bytes). */
 export const PERSON_SHADOW_ANCHOR = SHADOW_OFFSET_ROUND;
 

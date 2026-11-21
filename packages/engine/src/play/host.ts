@@ -10,15 +10,9 @@
 import type { Speaker } from "../dialog";
 import { Gestures, type JackInfo } from "../gestures";
 import type { Command, CommandContext, CommandResult, Interpreter, LogEntry, ScriptHost } from "../script";
-import * as animBody from "./host-anim";
-import * as areaBody from "./host-areas";
-import * as filmBody from "./host-film";
-import * as itemBody from "./host-items";
-import * as objectBody from "./host-objects";
+import { NO_SCROLL_POINT } from "./edgescroll";
+import * as dispatchBody from "./host-dispatch";
 import * as personBody from "./host-persons";
-import * as sceneBody from "./host-scene";
-import * as shadowBody from "./host-shadow";
-import * as soundBody from "./host-sound";
 import type { HostEnv, HostState } from "./host-state";
 import * as talkBody from "./host-talk";
 
@@ -123,12 +117,12 @@ export class SceneHost implements ScriptHost {
   /** SAVEABLE n (1 at the scene start): the save menu is not there yet, the flag is kept for it */
   saveable = true;
   /**
- * SETPOSSCROLL L|R x y (-1000 = unset at the scene start, Game_Run): the
+ * SETPOSSCROLL L|R x y (NO_SCROLL_POINT = unset at the scene start, Game_Run): the
  * points Jack walks to when the cursor is at the left / right screen edge.
  */
   /** the view scrolled in the last tick (set by the game after the scene tick; Game_Tick14ms). */
   viewScrolling = false;
-  readonly scrollPoints: { L: { x: number; y: number }; R: { x: number; y: number } } = { L: { x: -1000, y: -1000 }, R: { x: -1000, y: -1000 } };
+  readonly scrollPoints: { L: { x: number; y: number }; R: { x: number; y: number } } = { L: { x: NO_SCROLL_POINT, y: NO_SCROLL_POINT }, R: { x: NO_SCROLL_POINT, y: NO_SCROLL_POINT } };
   /** POINTROTATE n (kept in too): 1 = Jack walks to a point without the turning animation */
   pointRotate = 0;
   /**
@@ -152,7 +146,7 @@ export class SceneHost implements ScriptHost {
   private readonly dialogsAsked = new Map<number, number>();
   constructor(private readonly env: HostEnv, private readonly talkTicks = talkBody.TALK_TICKS) {
     // The group files read these. A reference keeps the private names in use.
-    void [this.talkTicks, this.dialogsAsked, this.setJackVars, this.wait, this.waitAlways, this.fallbackTalk, this.speaker, this.noteSkipped];
+    void [this.talkTicks, this.dialogsAsked, this.setJackVars, this.wait, this.waitAlways, this.fallbackTalk, this.speaker, this.noteSkipped, this.gesture];
   }
 
   // --- ScriptHost -------------------------------------------------------------------------------
@@ -215,8 +209,8 @@ export class SceneHost implements ScriptHost {
   }
 
   /**
- * Jack's insertion ended (event `jackInsertionEnded`). A GLOBAL.ICS one (a gesture, a guard, an idle animation: Game_Run
- *, `g_jackInsFromScene == 0`) goes to the gesture state machine and no macro counter is touched; a scene
+ * Jack's insertion ended (event `jackInsertionEnded`). A GLOBAL.ICS one (a gesture, a guard, an idle animation: Game_Run,
+ * `g_jackInsFromScene == 0`) goes to the gesture state machine and no macro counter is touched; a scene
  * insertion releases the macro of the last RUNINSERTION JACK.
  */
   jackInsertionEnded(global: boolean): void {
@@ -289,112 +283,6 @@ export class SceneHost implements ScriptHost {
   }
 
   private run(cmd: Command, ctx: CommandContext): CommandResult {
-    const self = this as unknown as HostState;
-    switch (cmd.code) {
-      case 0x02: case 0x04: case 0x37: case 0x38:
-        return personBody.run.call(self, cmd, ctx);
-      case 0x07: // WALKTO person x y
-      case 0x17: // WALKTODIR person x y dir
-        return personBody.walkTo.call(self, cmd, ctx, cmd.code === 0x17 ? cmd.a[2] : null);
-      case 0x03: // INITFIRST person insertion dir
-      case 0x08: // RUNINSERTION person insertion f dir
-        return personBody.insertion.call(self, cmd, ctx);
-      case 0x0a: case 0x4a: case 0x51: case 0x27: case 0x10: case 0x6a: case 0x34: case 0x97:
-        return personBody.run.call(self, cmd, ctx);
-      case 0x13: case 0x8b: case 0x8c: case 0x8f: case 0x9a: case 0x9b: case 0x9c: case 0x9d:
-      case 0x12: case 0x8d: case 0x8e: case 0x9e:
-        return shadowBody.run.call(self, cmd);
-      case 0x61: case 0x77:
-        return personBody.run.call(self, cmd, ctx);
-      case 0x62: // GETPERSONX
-      case 0x63: // GETPERSONY
-        return personBody.getPersonCoord.call(self, cmd, ctx);
-      case 0x84: case 0x65: case 0x66:
-        return personBody.run.call(self, cmd, ctx);
-      case 0x43: case 0x44: case 0x22:
-        return itemBody.run.call(self, cmd, ctx);
-      case 0x28: // NOHAVE
-      case 0x46: // HAVETOOL object
-      case 0x47: // NOHAVETOOL name
-      case 0x89: // MOUSETOTOOL
-      case 0x9f: // ITEMPRESENT name var
-        return itemBody.itemCommand.call(self, cmd, ctx);
-      case 0x85:
-        return itemBody.run.call(self, cmd, ctx);
-      case 0x2c: // SETPOSITIONE object x y
-      case 0x70: // SETPOSITIONEV
-        return objectBody.setObjectPosition.call(self, cmd, ctx);
-      case 0x40:
-        return objectBody.run.call(self, cmd);
-      case 0x16: // PUNDERE person object
-      case 0x1d: // POVERE
-        return objectBody.placeAgainst.call(self, cmd);
-      case 0x15: case 0x3e: case 0x01:
-        return objectBody.run.call(self, cmd);
-      case 0x90: // PICKUP n
-      case 0x92: // GIVE n
-      case 0x93: // SHOOTF n
-      case 0x94: // SLAPF n
-        return this.gesture(cmd, ctx);
-      case 0x1c: case 0x68:
-        return animBody.run.call(self, cmd, ctx);
-      case 0x41:
-        return objectBody.run.call(self, cmd);
-      case 0x82:
-        return animBody.run.call(self, cmd, ctx);
-      case 0x4c:
-        return objectBody.run.call(self, cmd);
-      case 0x8a:
-        return personBody.run.call(self, cmd, ctx);
-      case 0x29: case 0x2a:
-        return objectBody.run.call(self, cmd);
-      case 0x05: case 0x06: case 0x5d: case 0x3b: case 0x3c: case 0x4d: case 0x56: case 0x7c:
-        return animBody.run.call(self, cmd, ctx);
-      case 0x96: case 0x6d: case 0xa1:
-        return sceneBody.run.call(self, cmd);
-      case 0x73:
-        return animBody.run.call(self, cmd, ctx);
-      case 0x74: // PAUSE
-        return "unhandled";
-      case 0x0b: // TALK
-      case 0x21: // TALKRANDOM
-      case 0x88: // TALKRANDOMINDEX
-        return talkBody.talk.call(self, cmd, ctx);
-      case 0x18: case 0x19: case 0x5f: case 0x3a:
-        return talkBody.run.call(self, cmd, ctx);
-      case 0x25:
-        return itemBody.run.call(self, cmd, ctx);
-      case 0x33:
-        return talkBody.run.call(self, cmd, ctx);
-      case 0x1e: // EFFECT
-      case 0x20: // EFFECTVOLUME
-      case 0x67: // WAITWHILEEFFECT
-      case 0x86: // UNLOCKCANAL
-      case 0x42: // WALKEFFECT
-      case 0x54: // ANIMAEFFECT
-        return soundBody.sound.call(self, cmd, ctx);
-      case 0x3f: case 0x91:
-        return soundBody.run.call(self, cmd, ctx);
-      case 0x23: case 0x6e: case 0x83:
-        return filmBody.run.call(self, cmd, ctx);
-      case 0x2b: case 0x2f: case 0x30: case 0x31: case 0x32: case 0x57: case 0x58: case 0x99: case 0x36:
-        return sceneBody.run.call(self, cmd);
-      case 0x55: case 0x76: case 0xa0:
-        return areaBody.apply.call(self, cmd);
-      case 0x7b: case 0x87: case 0x98:
-        return areaBody.run.call(self, cmd, ctx);
-      case 0x0c:
-        return talkBody.run.call(self, cmd, ctx);
-      case 0x81: case 0x14: case 0x78:
-        return sceneBody.run.call(self, cmd);
-      case 0x5c: {
-        // AUTOINCRANGE var min max (case 0x5b): the interpreter set `var = min`; the clock takes the range
-        const i = varIndex(this.interpreter.vars, cmd.n1);
-        if (i >= 0) this.env.autoInc?.start(i, cmd.a[0], cmd.a[1]);
-        return "done";
-      }
-      default:
-        return "unhandled";
-    }
+    return dispatchBody.run.call(this as unknown as HostState, cmd, ctx);
   }
 }

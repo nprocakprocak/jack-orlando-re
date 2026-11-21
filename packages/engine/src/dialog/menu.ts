@@ -1,7 +1,7 @@
 // The answer menu of DIALOG (builds it, handles the mouse).
 
 import type { DcnEntry } from "../formats/dialog";
-import { encodeMazovia, LINE_HEIGHT, type Measure } from "./caption";
+import { LINE_HEIGHT, type Measure } from "./caption";
 
 export const MENU_SLOTS = 8;
 export const MENU_X = 6;
@@ -50,9 +50,6 @@ export const visibleCount = (hidden: boolean[], count: number) => {
   for (let i = 0; i < count; i++) if (!hidden[i]) n++;
   return n;
 };
-
-/** Text of an option as bytes for the font. */
-export const optionBytes = (e: DcnEntry) => encodeMazovia(e.text);
 
 export interface PointerResult {
   /** row under the mouse, or -1 */

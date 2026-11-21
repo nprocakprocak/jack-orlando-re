@@ -10,7 +10,6 @@ import type { Facing, JackDir } from "../anim/jack";
 
 /** Script command codes (compiler.ts). */
 export const GESTURE_CODES = { PICKUP: 0x90, GIVE: 0x92, SHOOTF: 0x93, SLAPF: 0x94 } as const;
-export type GestureName = keyof typeof GESTURE_CODES;
 
 /** 0 = idle, 1 = insertion playing, 2 = insertion ended (seen by the next repeat),
  * 3 = SLAPF 1: the guard loop BOPRO1/BO34P1/BO34T1 restarts at every end. */

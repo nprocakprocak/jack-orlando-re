@@ -21,7 +21,7 @@ import {
 import { LOGIC_TICK_MS } from "../core/constants";
 import type { TickResult } from "../scene";
 import { findWalkTriangle, planWalk } from "../walk";
-import { edgeFrame, noControlDir } from "./edgescroll";
+import { NO_SCROLL_POINT, edgeFrame, noControlDir } from "./edgescroll";
 import { isNoControlScene } from "../map";
 import { syncJackVars } from "./host";
 import { jackClickAsksCoat } from "./predicates";
@@ -262,7 +262,7 @@ export function scrollEdge(this: GameState, input: PlayInput, locked: boolean): 
       if (dir !== null) sc.scrollDir = dir;
       return;
     }
-    const pts = this.host?.scrollPoints ?? { L: { x: -1000, y: -1000 }, R: { x: -1000, y: -1000 } };
+    const pts = this.host?.scrollPoints ?? { L: { x: NO_SCROLL_POINT, y: NO_SCROLL_POINT }, R: { x: NO_SCROLL_POINT, y: NO_SCROLL_POINT } };
     const r = edgeFrame(
       { ...this.edge, mode: this.cursor.mode },
       {

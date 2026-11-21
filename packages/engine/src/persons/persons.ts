@@ -3,6 +3,8 @@
 // start is, the script commands are cases of Script_ExecStep.
 // Pure logic, no DOM; positions are floats.
 import type { FrameSprite } from "../anim/jack";
+import { LIGHT_FAR, LIGHT_RANGE, LIGHT_Y_WEIGHT } from "../anim/light";
+import { SCREEN_WIDTH } from "../core/constants";
 import type { Person } from "../formats/scene";
 import { f32, ftol, s16 } from "../walk/geometry";
 export { ScenePerson, ScenePersons } from "./persons-actor";
@@ -109,20 +111,20 @@ export function personScale(y: number, horizon: number, refScale: number, refY: 
 
 /** Effect volumes [channel 1, channel 2] at x: panned over the visible 640 px. */
 export function effectVolumes(volume: number, scale: number, x: number, scrollX: number): [number, number] {
-  const span = scrollX + 640;
-  return [ftol((volume * scale * (640 - x + scrollX)) / span), ftol((volume * scale * x) / span)];
+  const span = scrollX + SCREEN_WIDTH;
+  return [ftol((volume * scale * (SCREEN_WIDTH - x + scrollX)) / span), ftol((volume * scale * x) / span)];
 }
 
 /** Brightness factor [i]: base + up to 1 near a light; range = trunc(scale * 300 * PCS scale). */
 export function personBrightness(x: number, y: number, lights: readonly (readonly number[])[], scale: number, lightScale: number, base: number): number {
-  let near = 1000;
+  let near = LIGHT_FAR;
   for (const [lx, ly] of lights) {
     const dx = s16(ftol(x - lx));
-    const dy = s16(ftol((y - ly) * 3));
+    const dy = s16(ftol((y - ly) * LIGHT_Y_WEIGHT));
     const d = s16(ftol(Math.sqrt(dx * dx + dy * dy)));
     if (d < near) near = d;
   }
-  const range = s16(ftol(f32(scale) * 300 * lightScale));
+  const range = s16(ftol(f32(scale) * LIGHT_RANGE * lightScale));
   return near < range ? f32((range - near) / range + base) : base;
 }
 

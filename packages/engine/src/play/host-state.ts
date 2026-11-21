@@ -85,4 +85,5 @@ export interface HostState {
   fallbackTalk(cmd: Command, ctx: CommandContext): CommandResult;
   speaker(cmd: Command): Speaker | null;
   noteSkipped(cmd: Command): void;
+  gesture(cmd: Command, ctx: CommandContext): CommandResult;
 }

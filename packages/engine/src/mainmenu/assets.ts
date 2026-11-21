@@ -12,20 +12,22 @@ export const MENU_PAK_FILES = [
   "JACK2.BM", "_SAMOCH1.BM", "D1.FLX", ...numbered("WSK", 9), ...numbered("CD", 40), "LADEN.BM",
 ] as const;
 
-/** Pictures from `menu.PAK`. The label font is `JACK.FNT` in Resource.pak. */
+/** Pictures from `menu.PAK`, read by the names in `MENU_PAK_FILES`. The label font is `JACK.FNT` in Resource.pak. */
 export function loadMainMenuAssets(menuPak: Pak, resource: Pak): MainMenuAssets {
+  const [background, truck, smoke, ...frames] = MENU_PAK_FILES;
+  const loading = frames[frames.length - 1];
   return {
-    background: readBm(menuPak, "JACK2.BM"),
-    truck: readBm(menuPak, "_SAMOCH1.BM"),
-    smoke: menuPak.read("D1.FLX"),
-    arrows: numbered("WSK", 9).map((n) => readBm(menuPak, n)),
-    discs: numbered("CD", 40).map((n) => readBm(menuPak, n)),
-    loading: readBm(menuPak, "LADEN.BM"),
+    background: readBm(menuPak, background),
+    truck: readBm(menuPak, truck),
+    smoke: menuPak.read(smoke),
+    arrows: frames.filter((name) => name.startsWith("WSK")).map((name) => readBm(menuPak, name)),
+    discs: frames.filter((name) => name.startsWith("CD")).map((name) => readBm(menuPak, name)),
+    loading: readBm(menuPak, loading),
     font: parseFnt(resource.read("JACK.FNT")),
   };
 }
 
-/** `read` is relative to the game directory, like fetchGameFile. */
+/** `read` is relative to the game directory. */
 export async function fetchMainMenuAssets(read: (rel: string) => Promise<Uint8Array>): Promise<MainMenuAssets> {
   const [menu, resource] = await Promise.all([read("menu.PAK"), read("Resource/RESOURCE.PAK")]);
   return loadMainMenuAssets(new Pak(menu), new Pak(resource));

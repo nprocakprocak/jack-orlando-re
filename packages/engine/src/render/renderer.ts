@@ -1,5 +1,6 @@
 // Dirty-rectangle sprite renderer of the original (and the Sprite_* calls).
 // Behaviour and addresses:
+import { WORK_BUFFER_HEIGHT, WORK_BUFFER_WIDTH } from "../core/constants";
 import {
   blitCopy, blitKeyed, blitScaled, createSurface, renderScaled, softenEdges,
   type Step, type Surface16,
@@ -10,8 +11,8 @@ import {
 } from "./sprites";
 
 /** Work buffer (Video_SetMode: 640x480 screen, 1024x480 offscreen). */
-export const BUFFER_W = 1024;
-export const BUFFER_H = 480;
+export const BUFFER_W = WORK_BUFFER_WIDTH;
+export const BUFFER_H = WORK_BUFFER_HEIGHT;
 /** 8-bit sprites larger than this are not edge-softened. */
 const SOFTEN_MAX_AREA = 100_000;
 

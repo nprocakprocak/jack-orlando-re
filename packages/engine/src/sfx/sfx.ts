@@ -19,8 +19,6 @@ export const DEFAULT_SFX_VOLUME = 32;
 /** Persons with a WALKEFFECT table (17 rows of 18 frames, Game_Run resets them to -1). */
 export const WALK_PERSONS = 17;
 export const WALK_FRAMES = 18;
-/** ANIMAEFFECT entries per animation (arrays of 0x1e shorts). */
-export const ANIMA_EFFECTS_MAX = 30;
 
 /** Channel order when a request asks for 1 or 3 channels, then the order for every other request. */
 const LEFT_ORDER = [1, 3, 2, 4];
@@ -263,7 +261,7 @@ export class SfxPlayer {
   /**
  * WAITWHILEEFFECT: true while the sound plays on the channel it started on and that channel
  * still carries this sound (not replaced by another one); the command then runs again on the
- * next tick (case 0x66). Always false without sound.
+ * next tick (case 0x67). Always false without sound.
  */
   isEffectPlaying(sound: number): boolean {
     if (!this.options.soundEnabled || sound < 0) return false;
@@ -286,7 +284,7 @@ export class SfxPlayer {
   }
 
   /**
- *, called once per Game_Run pass: reservations and pair marks of the channels 1..4
+ * Called once per Game_Run pass: reservations and pair marks of the channels 1..4
  * that are no longer playing are dropped.
  */
   tick(): void {

@@ -17,7 +17,6 @@ export const SHADOW_DY = 3;
 /** Last scroll row (`g_invSplit/3 - 6`) and the fixed first row of region B (`g_invSplit/3`). */
 export const MAX_SCROLL_ROW = 16;
 export const REGION_B_ROW = 22;
-export const NAME_NOTICE_Y = 400;
 /** Right part of the screen (Jack) closes the coat on a left click: mouseX >= 0xf1. */
 export const CLOSE_X = 0xf1;
 
@@ -49,11 +48,6 @@ export function cellAt(x: number, y: number): Cell | null {
   const col = Math.floor(dx / CELL_W);
   const row = Math.floor(dy / CELL_H);
   return col < COLS && row < ROWS ? { col, row } : null;
-}
-
-/** Top-left corner of an image of w*h centred in the cell (col, row). */
-export function itemOrigin(col: number, row: number, w: number, h: number): [number, number] {
-  return [CELL_CX + col * CELL_W - (w >> 1), CELL_CY + row * CELL_H - (h >> 1)];
 }
 
 /** Slot shown in cell (col, row) with the first visible row `scrollRow`. */

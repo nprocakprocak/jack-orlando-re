@@ -145,7 +145,7 @@ export function applyPerson(this: ScenePlayerState, i: number, u: PersonUpdate, 
     }
     const p = this.persons.persons[i];
     if (this.insReleaseEarly && u.sprite && p.inserting) {
-      // Game_Run: the insertion drew a frame while was set: it stops and the flag is spent
+      // Game_Run: the insertion drew a frame while `insReleaseEarly` was set: it stops and the flag is spent
       p.clearInsertion();
       this.insReleaseEarly = false;
       this.events.push({ kind: "personInsertionReleased", person: i });

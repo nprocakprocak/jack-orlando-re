@@ -1,7 +1,7 @@
 // Cursor logic of the original, separate from any canvas: the animation step (Cursor_AnimateStep),
 // the per-present decision of what to draw and where (Cursor_DrawOnPresent),
 // and the mode-switch zoom.
-import { busyName, frameName, hotspotOffset, imageOrigin, isVerbMode, lensHotName, verbName } from "./modes";
+import { CursorMode, busyName, frameName, hotspotOffset, imageOrigin, isVerbMode, lensHotName, verbName } from "./modes";
 
 /** What to draw on top of the presented frame. */
 export interface CursorDraw {
@@ -153,7 +153,7 @@ export class Cursor {
     }
     const m = this.mode;
     switch (m) {
-      case 0:
+      case CursorMode.Point:
         if (this.idle || this.followMouse) {
           this.motion = motionFrame(this.motion, mouseX, this.prevMouseX);
           this.prevMouseX = mouseX;
@@ -169,9 +169,9 @@ export class Cursor {
             this.motion = 0;
           }
         }
-        this.image = frameName(0, this.motion % 9);
+        this.image = frameName(CursorMode.Point, this.motion % 9);
         break;
-      case 1:
+      case CursorMode.Look:
         if (!this.idle) {
           this.counter++;
           if ((this.counter & 1) !== 0) this.lensFrame += this.lensDir;
@@ -187,25 +187,26 @@ export class Cursor {
         } else {
           this.motion = motionFrame(this.motion, mouseX, this.prevMouseX);
           this.prevMouseX = mouseX;
-          this.image = frameName(1, this.motion % 9);
+          this.image = frameName(CursorMode.Look, this.motion % 9);
         }
         break;
-      case 2:
+      case CursorMode.Hit:
         this.rest(this.animFrame === 4, 8, 9, (c) => (c & 3) !== 0);
-        this.image = frameName(2, this.animFrame);
+        this.image = frameName(CursorMode.Hit, this.animFrame);
         break;
-      case 3:
+      case CursorMode.Shoot:
         this.rest(this.animFrame === 0, 2, 3, (c) => c % 10 !== 0);
-        this.image = frameName(3, this.animFrame);
+        this.image = frameName(CursorMode.Shoot, this.animFrame);
         break;
-      case 4:
+      case CursorMode.Take:
         this.rest(this.animFrame === 0 && !this.takeKeepsMoving, 8, 9, (c) => (c & 3) !== 0);
-        this.image = frameName(4, this.animFrame);
+        this.image = frameName(CursorMode.Take, this.animFrame);
         break;
-      case 5:
+      case CursorMode.Item:
         this.image = "item";
         break;
-      case 10: case 11: case 13: case 14: case 15: case 17: case 20: case 21:
+      case CursorMode.ZoneLeft: case CursorMode.ZoneRight: case CursorMode.ZoneDown: case CursorMode.ZoneIn:
+      case CursorMode.ZoneUp: case CursorMode.ZoneOut: case CursorMode.ScrollLeft: case CursorMode.ScrollRight:
         this.animFrame += this.animDir;
         if (this.animFrame > 13) {
           this.animDir = -1;

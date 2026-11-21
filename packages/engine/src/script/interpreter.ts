@@ -6,13 +6,13 @@
 // host, which says whether it is done, started something that ends later, or must be
 // tried again on the next tick; commands the engine does not implement yet are "unhandled"
 // — logged and skipped, never blocking the script.
-import { ENDIF, IF_CODES, NAMES, type Command, type Program } from "./compiler";
+import { ENDIF, IF_CODES, NAMES, WORDS, type Command, type Program } from "./compiler";
 import {
-  CO_RESET, CO_START, Variables,
+  CO10_PERIOD, CO30_PERIOD, CO_RESET, CO_START, Variables,
   type CommandContext, type CommandResult, type LogEntry, type MacroState, type ScriptHost,
 } from "./interpreter-state";
 export {
-  CO_RESET, CO_START, Variables,
+  CO10_PERIOD, CO30_PERIOD, CO_RESET, CO_START, Variables,
   type CommandContext, type CommandResult, type LogEntry, type MacroState, type ScriptHost,
 } from "./interpreter-state";
 
@@ -23,7 +23,7 @@ export class Interpreter {
   readonly vars: Variables;
   /** answers of DIALOG by dialog id */
   readonly answers = new Map<number, number>();
-  /** */
+  /** `g_macroTimer`: counted down each logic tick; `tick` starts CO60 below 0, CO30 every 1000, CO10 every 300 */
   coCounter = CO_START;
   /** ACTIVEMACROAT: macro started after `frames` ticks */
   private delayed: { name: string; frames: number; counter: number } | null = null;
@@ -110,7 +110,7 @@ export class Interpreter {
     }
   }
 
-  /**, called by the click handlers (Area_ClickMacro): every
+  /** Script_InterruptOutMacros, called by the click handlers (Area_ClickMacro): every
  * running OUTMACRO macro other than `except` stops and its destructor starts — the macro
  * named by MACRODESTRUCTOR, else "~NAME". */
   interruptOutMacros(except = -1): void {
@@ -123,7 +123,7 @@ export class Interpreter {
   }
 
   /** True while a running macro has no UNLOCK: Game_Run then sets
- * and the player's clicks wait. */
+ * `g_macroPlayerLocked` and the player's clicks wait. */
   playerLocked(): boolean {
     return this.macros.some((m) => m.active && !m.unlock);
   }
@@ -140,8 +140,8 @@ export class Interpreter {
       this.start("CO60");
       this.coCounter = CO_RESET;
     }
-    if (this.coCounter % 1000 === 0) this.start("CO30");
-    if (this.coCounter % 300 === 0) this.start("CO10");
+    if (this.coCounter % CO30_PERIOD === 0) this.start("CO30");
+    if (this.coCounter % CO10_PERIOD === 0) this.start("CO10");
     if (this.delayed && ++this.delayed.counter === this.delayed.frames) {
       const name = this.delayed.name;
       this.delayed = null;
@@ -166,71 +166,71 @@ export class Interpreter {
       return;
     }
     const cmd = cmds[m.pc];
-    if (cmd.code !== ENDIF && cmd.code !== 0x1b) m.last = cmd;
+    if (cmd.code !== ENDIF && cmd.code !== WORDS.IF) m.last = cmd;
     this.running = i;
     const ctx = this.context(i, cmd);
     switch (cmd.code) {
-      case 0x0d: // ACTIVEMACRO
+      case WORDS.ACTIVEMACRO: // ACTIVEMACRO
         this.start(cmd.n1);
         break;
-      case 0x0e: // IFANSWER answer dialog
+      case WORDS.IFANSWER: // IFANSWER answer dialog
         if (cmd.a[0] !== (this.answers.get(cmd.a[2]) ?? -1)) this.skipBlock(m, true);
         break;
       case ENDIF:
         break;
-      case 0x1a: // LET var value
+      case WORDS.LET: // LET var value
         this.setVar(cmd, 1, ctx.arg(0));
         break;
-      case 0x1b: // IF var value
+      case WORDS.IF: // IF var value
         if (cmd.a[0] !== ctx.arg(2)) this.skipBlock(m, false);
         break;
-      case 0x2d: // IFMOUSEXM x: body when click x <= x
+      case WORDS.IFMOUSEXM: // IFMOUSEXM x: body when click x <= x
         if (cmd.a[0] < (this.host.clickX?.() ?? 0)) this.skipBlock(m, false);
         break;
-      case 0x2e: // IFMOUSEXW x: body when click x >= x
+      case WORDS.IFMOUSEXW: // IFMOUSEXW x: body when click x >= x
         if ((this.host.clickX?.() ?? 0) < cmd.a[0]) this.skipBlock(m, false);
         break;
-      case 0x3d: // DEACTIVESELF
+      case WORDS.DEACTIVESELF: // DEACTIVESELF
         m.active = false;
         break;
-      case 0x45: // ACTIVEMACROAT name frames
+      case WORDS.ACTIVEMACROAT: // ACTIVEMACROAT name frames
         this.delayed = { name: cmd.n1, frames: cmd.a[0], counter: 0 };
         break;
-      case 0x48: // INC var
+      case WORDS.INC: // INC var
         this.setVar(cmd, 1, ctx.arg(1) + 1);
         break;
-      case 0x49: // WAITWHILE var value
+      case WORDS.WAITWHILE: // WAITWHILE var value
         if (ctx.arg(1) === cmd.a[0]) m.pc--;
         break;
-      case 0x52: // UNLOCK
+      case WORDS.UNLOCK: // UNLOCK
         m.unlock = true;
         break;
-      case 0x59: // OUTMACRO
+      case WORDS.OUTMACRO: // OUTMACRO
         m.out = true;
         m.unlock = true;
         break;
-      case 0x5a: // NORMALMACRO
+      case WORDS.NORMALMACRO: // NORMALMACRO
         m.out = false;
         m.unlock = false;
         break;
-      case 0x5b: {
+      case WORDS.IFF: {
         // IFF var op value: op 0 ">", 1 "=", 2 "<"
         const v = ctx.arg(2), x = cmd.a[0], op = cmd.a[3];
         const ok = (op === 0 && v > x) || (op === 1 && v === x) || (op === 2 && v < x);
         if (!ok) this.skipBlock(m, false);
         break;
       }
-      case 0x5c: // AUTOINCRANGE var start ... (the range itself is the host's)
+      case WORDS.AUTOINCRANGE: // AUTOINCRANGE var start ... (the range itself is the host's)
         this.setVar(cmd, 2, cmd.a[0]);
         this.host.command(cmd, ctx);
         break;
-      case 0x5e: // LOCK
+      case WORDS.LOCK: // LOCK
         m.unlock = false;
         break;
-      case 0x64: // INCC var n
+      case WORDS.INCC: // INCC var n
         this.setVar(cmd, 1, ctx.arg(1) + cmd.a[0]);
         break;
-      case 0x6f: // DONOTHING n: wait n ticks
+      case WORDS.DONOTHING: // DONOTHING n: wait n ticks
         if (m.wait < 0) m.wait = cmd.a[0];
         if (m.wait < 1) m.wait = -1;
         else {
@@ -238,24 +238,24 @@ export class Interpreter {
           m.wait--;
         }
         break;
-      case 0x78: // MACRODESTRUCTOR name
+      case WORDS.MACRODESTRUCTOR: // MACRODESTRUCTOR name
         m.destructor = cmd.n1;
         this.host.command(cmd, ctx);
         break;
-      case 0x79: // BLOCKMACRO name|ALL
-      case 0x7a: // UNBLOCKMACRO name|ALL
-        for (const x of this.macros) if (cmd.n1 === "ALL" || x.name === cmd.n1) x.locked = cmd.code === 0x79;
+      case WORDS.BLOCKMACRO: // BLOCKMACRO name|ALL
+      case WORDS.UNBLOCKMACRO: // UNBLOCKMACRO name|ALL
+        for (const x of this.macros) if (cmd.n1 === "ALL" || x.name === cmd.n1) x.locked = cmd.code === WORDS.BLOCKMACRO;
         break;
-      case 0x7d: {
+      case WORDS.RANDOM: {
         // RANDOM var lo hi
         const r = this.host.random?.() ?? Math.floor(Math.random() * 0x8000);
         this.setVar(cmd, 0, (r % (cmd.a[2] - cmd.a[1] + 1)) + cmd.a[1]);
         break;
       }
-      case 0x7e: // DEACTIVEMACRO name
+      case WORDS.DEACTIVEMACRO: // DEACTIVEMACRO name
         for (const x of this.macros) if (x.name === cmd.n1) x.active = false;
         break;
-      case 0x95: // REACTIVESELF: again from the first command
+      case WORDS.REACTIVESELF: // REACTIVESELF: again from the first command
         m.pc = m.start - 1;
         m.pending = 0;
         break;
@@ -370,7 +370,7 @@ export class LoggingHost implements ScriptHost {
   }
 }
 
-/** Scene name of GOTOSCENE (case 0x13): the extension is cut at the last "." and
+/** Scene name of GOTOSCENE (case 0x14): the extension is cut at the last "." and
  * replaced, so "SC026.CFG" and "SC026" both mean SC026. */
 export function gotoSceneName(arg: string): string {
   const i = arg.lastIndexOf(".");

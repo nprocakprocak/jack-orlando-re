@@ -113,3 +113,7 @@ export interface MacroState {
  * Game_TimerTick decrements every logic tick (15 ms). */
 export const CO_RESET = 3000;
 export const CO_START = 2999;
+/** CO30 starts when the counter is a multiple of this. */
+export const CO30_PERIOD = 1000;
+/** CO10 starts when the counter is a multiple of this. */
+export const CO10_PERIOD = 300;

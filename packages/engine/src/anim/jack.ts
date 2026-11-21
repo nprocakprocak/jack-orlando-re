@@ -1,4 +1,5 @@
 // Jack's frame sets, hot spots, sprite placement and shadows.
+import { SCREEN_WIDTH } from "../core/constants";
 import { pad2 } from "../core/pad";
 import type { HotSpot } from "../formats/global";
 
@@ -198,13 +199,9 @@ export function jackShadow(r: ShadowRequest): ShadowSprite {
 
 /** Footstep volumes: [channel 1, channel 2], panned by Jack's x on the visible screen. */
 export function stepVolumes(scale: number, x: number, scrollX: number): [number, number] {
-  const span = scrollX + 640;
-  return [ftol((64 * scale * (640 - x + scrollX)) / span), ftol((64 * scale * x) / span)];
+  const span = scrollX + SCREEN_WIDTH;
+  return [ftol((64 * scale * (SCREEN_WIDTH - x + scrollX)) / span), ftol((64 * scale * x) / span)];
 }
-
-/** Idle counter limit in Game_Run frames and its value after an idle animation. */
-export const IDLE_FRAMES = 1500;
-export const IDLE_FRAMES_AFTER = 700;
 
 export interface IdleChoice {
   /** GLOBAL.ICS section */
@@ -217,7 +214,7 @@ export interface IdleChoice {
 }
 
 /**
- * What Jack does after IDLE_FRAMES frames without input. uniform: g_jackUniform ;
+ * What Jack does after `IDLE_LIMIT` frames without input (`player-jack.ts`). uniform: g_jackUniform ;
  * rand: one value of the C rand(); koltVar: value of the game variable GUN (g_varIdxGun; KOLT only if non-zero).
  * The STAY cases do not reset the idle counter (only the switch branch writes 700).
  */

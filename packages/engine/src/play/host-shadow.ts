@@ -1,6 +1,6 @@
 // Shadow commands: persons, Jack, and shadows baked into the background.
 
-import type { Command, CommandResult } from "../script";
+import { JACK, type Command, type CommandResult } from "../script";
 import type { HostState } from "./host-state";
 
 export function run(this: HostState, cmd: Command): CommandResult {
@@ -63,7 +63,7 @@ export function run(this: HostState, cmd: Command): CommandResult {
         const anim = cmd.refs.find((r) => r[1] === "anim")?.[2] as string | undefined;
         const shadow = cmd.n1 === "NULL" ? null : /^SHAD(\d+)$/.exec(cmd.n1)?.[1];
         if (!anim || shadow === undefined) return "unhandled";
-        return sc.setAnimShadow(anim, a[1] === 0x66 ? null : a[1], shadow === null ? null : Number(shadow), a[3] !== 0) ? "done" : "unhandled";
+        return sc.setAnimShadow(anim, a[1] === JACK ? null : a[1], shadow === null ? null : Number(shadow), a[3] !== 0) ? "done" : "unhandled";
       }
       case 0x9e: // SHADOWONE object: persons' shadows are composed with the sprites up to the object's layer
         return sc.setShadowOne(cmd.n1) ? "done" : "unhandled";

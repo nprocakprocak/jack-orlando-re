@@ -42,10 +42,10 @@ export function isVerbMode(mode: number): boolean {
 /** Cursor_SetVerbName: the verb prefix of the VERB-NAME macros; unknown modes -> POKAZANIE. */
 export function verbName(mode: number): string {
   switch (mode) {
-    case 1: return "PATRZENIE";
-    case 2: return "UDERZENIE";
-    case 3: return "STRZELANIE";
-    case 4: return "BRANIE";
+    case CursorMode.Look: return "PATRZENIE";
+    case CursorMode.Hit: return "UDERZENIE";
+    case CursorMode.Shoot: return "STRZELANIE";
+    case CursorMode.Take: return "BRANIE";
     default: return "POKAZANIE";
   }
 }
@@ -57,11 +57,11 @@ export function verbName(mode: number): string {
  */
 export function hotspotOffset(mode: number, flag = false): { dx: number; dy: number } {
   switch (mode) {
-    case 0: return { dx: -9, dy: -12 };
-    case 1: return { dx: -4, dy: -4 };
-    case 2: return { dx: -7, dy: -10 };
-    case 3: return { dx: 0, dy: 0 };
-    case 4: return flag ? { dx: -9, dy: -12 } : { dx: -10, dy: 8 };
+    case CursorMode.Point: return { dx: -9, dy: -12 };
+    case CursorMode.Look: return { dx: -4, dy: -4 };
+    case CursorMode.Hit: return { dx: -7, dy: -10 };
+    case CursorMode.Shoot: return { dx: 0, dy: 0 };
+    case CursorMode.Take: return flag ? { dx: -9, dy: -12 } : { dx: -10, dy: 8 };
     default:
       return isZoneMode(mode) || flag ? { dx: -9, dy: -12 } : { dx: 0, dy: 0 };
   }

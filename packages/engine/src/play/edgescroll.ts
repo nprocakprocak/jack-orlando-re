@@ -1,6 +1,8 @@
 // Scrolling the scene by the mouse at the screen edge.
 // Pure logic: the game loop (game.ts) feeds it the state of the frame and applies the result.
 import { edgeScrollMode } from "../areas/hit";
+import { SCREEN_WIDTH } from "../core/constants";
+import { CursorMode } from "../cursor/modes";
 
 export const MODE_SCROLL_LEFT = 20; // 0x14
 export const MODE_SCROLL_RIGHT = 21; // 0x15
@@ -63,7 +65,7 @@ export function edgeFrame(st: EdgeState, inp: EdgeInput): EdgeResult {
   const out: EdgeResult = { mode, saved, prevScrolling: st.prevScrolling, dir: null, walkTo: null };
   const inZone = mode === MODE_SCROLL_LEFT || mode === MODE_SCROLL_RIGHT;
   const env = { mode, mouseX: inp.mouseX + inp.scrollX, scrollX: inp.scrollX, scrollMin: inp.scrollMin, scrollMax: inp.scrollMax };
-  if (!inZone && mode !== 5 && !inp.noControl && inp.bgWide && !inp.menuOrText) {
+  if (!inZone && mode !== CursorMode.Item && !inp.noControl && inp.bgWide && !inp.menuOrText) {
     ({ mode, saved } = edgeScrollMode(env, saved));
     env.mode = mode;
   }
@@ -94,10 +96,13 @@ export function edgeClick(left: boolean, inp: EdgeInput): Pick<EdgeResult, "dir"
   return { dir: left ? -1 : 1, walkTo };
 }
 
+/** Pixels from the screen edge that scroll a scene with no edge cursor (0x14). */
+const NO_CONTROL_MARGIN = 0x14;
+
 /** Game_Run, after the answer-menu step (g_sceneNoControl scenes): the mouse within 20 px of the screen edge scrolls, with no cursor change. */
 export function noControlDir(mouseX: number, cursorEnabled: boolean): -1 | 1 | null {
   if (!cursorEnabled) return null;
-  if (mouseX < 0x14) return -1;
-  if (mouseX > 0x26c) return 1;
+  if (mouseX < NO_CONTROL_MARGIN) return -1;
+  if (mouseX > SCREEN_WIDTH - NO_CONTROL_MARGIN) return 1;
   return null;
 }

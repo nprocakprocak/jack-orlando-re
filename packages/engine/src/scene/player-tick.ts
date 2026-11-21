@@ -12,6 +12,7 @@ import {
 } from "../anim";
 import { placeTurnFrame, turnFrameTicks, turnSequence, turnShadow, TurnPlayer, type TurnFrame, type TurnTick } from "../anim/turn";
 import { parseSfb, type HotSpot } from "../formats/global";
+import { SCREEN_WIDTH } from "../core/constants";
 import { alignScroll, scrollLimits, scrollTick } from "../render";
 import { stepTicks, walkStep } from "../walk";
 import { turningTick } from "../walk/turn";
@@ -158,7 +159,7 @@ export function jackTick(this: ScenePlayerState, result: TickResult): void {
     if (inserting && r.update.sprite && !this.jackHidden) arrangeJack.call(this, true);
     if (r.update.insertionEnded !== undefined) this.events.push({ kind: "jackInsertionEnded", name: r.update.insertionEnded, global: r.update.insertionGlobal === true });
     else if (inserting && r.update.sprite && this.insReleaseEarly) {
-      // Game_Run: a frame was drawn while was set (INITFIRST): the insertion stops, the flag is spent
+      // Game_Run: a frame was drawn while `insReleaseEarly` was set (INITFIRST): the insertion stops, the flag is spent
       this.jack.mode = "stand";
       this.insReleaseEarly = false;
       this.events.push({ kind: "jackInsertionReleased" });
@@ -256,9 +257,12 @@ export function setScrollLimits(this: ScenePlayerState, min: number | null, max:
     this.scrollMax = hi;
 }
 
+/** Steps of followScroll while the opening view catches Jack. */
+const INITIAL_SCROLL_STEPS = 300;
+
 export function initialScroll(this: ScenePlayerState, x: number): number {
-    let s = this.scene.ccg.wide ? Math.max(0, Math.min(this.scene.ccg.scroll, this.bgWidth - 640)) : 0;
-    for (let i = 0; i < 300; i++) {
+    let s = this.scene.ccg.wide ? Math.max(0, Math.min(this.scene.ccg.scroll, this.bgWidth - SCREEN_WIDTH)) : 0;
+    for (let i = 0; i < INITIAL_SCROLL_STEPS; i++) {
       const n = followScroll(s, x, this.bgWidth);
       if (n === s) break;
       s = n;
@@ -267,7 +271,7 @@ export function initialScroll(this: ScenePlayerState, x: number): number {
 }
 
 export function scriptedStartScroll(this: ScenePlayerState): number {
-    return this.scene.ccg.wide ? alignScroll(Math.max(0, Math.min(this.scene.ccg.scroll, this.bgWidth - 640))) : 0;
+    return this.scene.ccg.wide ? alignScroll(Math.max(0, Math.min(this.scene.ccg.scroll, this.bgWidth - SCREEN_WIDTH))) : 0;
 }
 
 export function centroid(this: ScenePlayerState): { x: number; y: number } {
