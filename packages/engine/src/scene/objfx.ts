@@ -2,23 +2,11 @@
 // the drawing step of Game_Run).
 import type { Image16 } from "../formats/bm";
 import { scaleColor } from "../anim/light";
-import { blend565 } from "../cursor/lens";
+import { blend565 } from "../render/rgb565";
+export { mixColour } from "../render/rgb565";
 
 /** The colour a type -8 object is blended in before SETDARKNESSANIMA (is initialised to 0xffff at the animation's creation). */
 export const GLASS_WHITE = 0xffff;
-
-/**
- * `(c1, c2, t)`: per channel `ftol((a * (2 - t) + b * t) / 2)` (the float code was read from the instructions, see
- * `mixColour` in play/film.ts, which has the same formula; copied here to keep the scene code free of the game layer).
- * SETDARKNESSANIMA stores `mixColour(0xffff, 0, f)`: f = 0 white, f = 2 black.
- */
-export function mixColour(c1: number, c2: number, t: number): number {
-  const ch = (a: number, b: number) => Math.trunc((a * (2 - t) + b * t) / 2);
-  const r = ch((c1 >> 11) & 0x1f, (c2 >> 11) & 0x1f);
-  const g = ch((c1 >> 5) & 0x3f, (c2 >> 5) & 0x3f);
-  const b = ch(c1 & 0x1f, c2 & 0x1f);
-  return ((r << 11) | (g << 5) | b) & 0xffff;
-}
 
 /**
  * BRIGHTNESSE (case 0x40): every non-zero palette colour of the 8-bit image has its channels multiplied by `factor` (truncated,

@@ -3,6 +3,7 @@
 // codec header (type 0x32..0x35), then - except for type 0x33 - the 12-byte buffer header,
 // then IMA ADPCM or GSM 6.10 (WAV49) data.
 import { viewOf } from "./bytes";
+import { parseCodec } from "./media-avx";
 import { GSM_BLOCK, SoundError, decodeGsm, decodeIma } from "./sound-codec";
 export { GSM_BLOCK, IMA_INDEX, IMA_STEP, SoundError, decodeGsm, decodeIma } from "./sound-codec";
 
@@ -41,6 +42,15 @@ const EXT_KINDS: Record<string, SoundKind[]> = {
 const CODEC_HEADER_SIZE = 0x18;
 const BUFFER_HEADER_SIZE = 12;
 
+/** size, loop start and loop length: the 12-byte buffer header at `pos`. */
+function readBufferHeader(view: DataView, pos: number): { size: number; loopStart: number; loopLength: number } {
+  return {
+    size: view.getUint32(pos, true),
+    loopStart: view.getUint32(pos + 4, true),
+    loopLength: view.getUint32(pos + 8, true),
+  };
+}
+
 // --- container -------------------------------------------------------------------
 
 export class Sound {
@@ -77,22 +87,24 @@ export class Sound {
     if (tag in TYPE_KIND) {
       this.kind = TYPE_KIND[tag];
       if (data.length < CODEC_HEADER_SIZE) throw new SoundError("codec header truncated");
-      this.type = tag;
-      this.packedSize = view.getUint32(4, true);
-      this.unpackedSize = view.getUint32(8, true);
-      this.loopOffset = view.getUint32(12, true);
-      this.predictor = view.getInt16(16, true);
-      this.index = view.getUint8(18);
-      this.predictorRight = view.getInt16(20, true);
+      const codec = parseCodec(data, 0);
+      this.type = codec.type;
+      this.packedSize = codec.packedSize;
+      this.unpackedSize = codec.unpackedSize;
+      this.loopOffset = codec.loopOffset;
+      this.predictor = codec.predictor;
+      this.index = codec.index;
+      this.predictorRight = codec.predictorR;
       pos = CODEC_HEADER_SIZE;
       if (tag === TYPE_IMA_STEREO) {
         this.size = this.unpackedSize;
         this.loopStart = this.loopLength = 0;
       } else {
         if (data.length < pos + BUFFER_HEADER_SIZE) throw new SoundError("buffer header truncated");
-        this.size = view.getUint32(pos, true);
-        this.loopStart = view.getUint32(pos + 4, true);
-        this.loopLength = view.getUint32(pos + 8, true);
+        const header = readBufferHeader(view, pos);
+        this.size = header.size;
+        this.loopStart = header.loopStart;
+        this.loopLength = header.loopLength;
         pos += BUFFER_HEADER_SIZE;
       }
       this.payload = data.subarray(pos, pos + this.packedSize);
@@ -104,9 +116,10 @@ export class Sound {
       // raw buffer: loaded as is and played by
       this.kind = ext === "SND" ? "raw8" : "raw16";
       if (data.length < BUFFER_HEADER_SIZE) throw new SoundError("buffer header truncated");
-      this.size = view.getUint32(0, true);
-      this.loopStart = view.getUint32(4, true);
-      this.loopLength = view.getUint32(8, true);
+      const header = readBufferHeader(view, 0);
+      this.size = header.size;
+      this.loopStart = header.loopStart;
+      this.loopLength = header.loopLength;
       pos = BUFFER_HEADER_SIZE;
       this.payload = data.subarray(pos);
       if (this.size > this.payload.length) {

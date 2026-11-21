@@ -13,6 +13,20 @@ export const IMA_STEP = [
   32767,
 ];
 
+/** One IMA nibble: new predictor and step index. The sample is `pred`. */
+export function imaStep(pred: number, index: number, code: number): { pred: number; index: number } {
+  const step = IMA_STEP[index];
+  let diff = step >> 3;
+  if (code & 4) diff += step;
+  if (code & 2) diff += step >> 1;
+  if (code & 1) diff += step >> 2;
+  if (code & 8) diff = -diff;
+  return {
+    pred: Math.max(-32768, Math.min(32767, pred + diff)),
+    index: Math.max(0, Math.min(88, index + IMA_INDEX[code])),
+  };
+}
+
 class ImaChannel {
   constructor(
     public pred: number,
@@ -20,14 +34,9 @@ class ImaChannel {
   ) {}
 
   next(code: number): number {
-    const step = IMA_STEP[this.index];
-    let diff = step >> 3;
-    if (code & 4) diff += step;
-    if (code & 2) diff += step >> 1;
-    if (code & 1) diff += step >> 2;
-    if (code & 8) diff = -diff;
-    this.pred = Math.max(-32768, Math.min(32767, this.pred + diff));
-    this.index = Math.max(0, Math.min(88, this.index + IMA_INDEX[code]));
+    const stepped = imaStep(this.pred, this.index, code);
+    this.pred = stepped.pred;
+    this.index = stepped.index;
     return this.pred;
   }
 }

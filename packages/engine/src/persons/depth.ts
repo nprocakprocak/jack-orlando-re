@@ -2,9 +2,9 @@
 // after a walking step, after an insertion step). As for Jack
 // the game does not sort: it moves the person's sprite below or above the other sprite when the
 // order is wrong. Only persons with SETCHKPRIOR on (default) are arranged.
-import { corner, type WalkObject } from "../walk/objects";
-import { ftol, pointBelowLine } from "../walk/geometry";
-import type { DepthRelation } from "../walk/depth";
+import { ftol } from "../walk/geometry";
+import { quadEdges, type DepthRelation } from "../walk/depth";
+import type { WalkObject } from "../walk/objects";
 
 /** Another sprite as seen by the person's order check. */
 export type DepthOther<T> =
@@ -26,15 +26,7 @@ export function behindByY(selfY: number, otherY: number): DepthRelation {
 export function personObjectDepth(o: WalkObject, x: number, y: number): DepthRelation {
   const px = ftol(x);
   const py = ftol(y);
-  let above = false;
-  let below = false;
-  for (let k = 0; k < 4; k++) {
-    const n = (k + 1) & 3;
-    const a = corner(o, k);
-    const b = corner(o, n);
-    if (o.quad[k * 2] < o.quad[n * 2] && !pointBelowLine(px, py, a.x, a.y, b.x, b.y)) above = true;
-    if (o.quad[n * 2] < o.quad[k * 2] && pointBelowLine(px, py, b.x, b.y, a.x, a.y)) below = true;
-  }
+  const { above, below } = quadEdges(o, px, py);
   if (above && !below) return "behind";
   if (below && !above) return "front";
   return null;

@@ -1,7 +1,8 @@
 // Music: streamed IMA ADPCM (.PMS) on mixer channel 5.
 // Logic only (no DOM / Web Audio): the stream is a StreamSource for Mixer.playStream.
 
-import { IMA_INDEX, IMA_STEP, Sound, SoundError, TYPE_IMA_STEREO } from "../formats/sound";
+import { imaStep } from "../formats/sound-codec";
+import { Sound, SoundError, TYPE_IMA_STEREO } from "../formats/sound";
 import { gameVolumeToLevel, MUSIC_CHANNEL, type Mixer } from "./mixer";
 import type { StreamSource } from "./types";
 
@@ -136,14 +137,9 @@ export class PmsStream implements StreamSource {
 }
 
 function step(ch: ImaState, code: number): number {
-  const s = IMA_STEP[ch.index];
-  let diff = s >> 3;
-  if (code & 4) diff += s;
-  if (code & 2) diff += s >> 1;
-  if (code & 1) diff += s >> 2;
-  if (code & 8) diff = -diff;
-  ch.pred = Math.max(-32768, Math.min(32767, ch.pred + diff));
-  ch.index = Math.max(0, Math.min(88, ch.index + IMA_INDEX[code]));
+  const stepped = imaStep(ch.pred, ch.index, code);
+  ch.pred = stepped.pred;
+  ch.index = stepped.index;
   return ch.pred;
 }
 

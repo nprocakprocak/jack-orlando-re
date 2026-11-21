@@ -3,7 +3,7 @@
 import type { Font } from "../formats/fnt";
 import { renderText, textWidth } from "../formats/fnt";
 import { centerOffset, drawText } from "../gui/draw";
-import { blend565 } from "../play/film";
+import { blend565 } from "../render/rgb565";
 import type { Surface16 } from "../render/surface";
 import { blitCopy, createSurface } from "../render/surface";
 

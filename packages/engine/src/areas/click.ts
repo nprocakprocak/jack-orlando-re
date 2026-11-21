@@ -164,6 +164,23 @@ export function spritePasses(cursorMode: number, forClick: boolean): number {
   return cursorMode !== 1 ? 2 : 1;
 }
 
+/** One pass over the draw list, topmost first. `stop` ends the scan on the sprite it accepts. */
+function scanSprites(
+  list: readonly SpriteCandidate[],
+  passes: number,
+  stop: (c: SpriteCandidate, index: number) => boolean,
+): number {
+  for (let pass = 0; pass < passes; pass++) {
+    for (let i = list.length - 1; i >= 0; i--) {
+      const c = list[i];
+      const hit = pass === 0 ? c.pixelHit : c.flagged;
+      if (!hit || c.excluded) continue;
+      if (stop(c, i)) return i;
+    }
+  }
+  return -1;
+}
+
 /**
  * the topmost sprite (list in drawing order, last = on top) that is hit. Returns the
  * index or -1. The original stops at the first hit sprite even if that one has no macro.
@@ -176,17 +193,12 @@ export function spritePasses(cursorMode: number, forClick: boolean): number {
 export function spriteClickTarget(list: readonly SpriteCandidate[], cursorMode: number, hasMacro?: (name: string) => boolean): number {
   const passes = spritePasses(cursorMode, true);
   let first = -1;
-  for (let pass = 0; pass < passes; pass++) {
-    for (let i = list.length - 1; i >= 0; i--) {
-      const c = list[i];
-      const hit = pass === 0 ? c.pixelHit : c.flagged;
-      if (!hit || c.excluded) continue;
-      if (!hasMacro) return i;
-      if (first < 0) first = i;
-      if (hasMacro(c.name)) return i;
-    }
-  }
-  return first;
+  const found = scanSprites(list, passes, (c, i) => {
+    if (!hasMacro) return true;
+    if (first < 0) first = i;
+    return hasMacro(c.name);
+  });
+  return found < 0 ? first : found;
 }
 
 /** Cursor_HitTestSprites: sprites are scanned until one with an existing macro is found. */
@@ -194,18 +206,11 @@ export function spriteReaction(
   list: readonly SpriteCandidate[], port: MacroPort, cursorMode: number, action: Action,
 ): { over: boolean; exists: boolean; index: number; label: string } {
   let over = false;
-  const passes = spritePasses(cursorMode, false);
-  for (let pass = 0; pass < passes; pass++) {
-    for (let i = list.length - 1; i >= 0; i--) {
-      const c = list[i];
-      const hit = pass === 0 ? c.pixelHit : c.flagged;
-      if (!hit || c.excluded) continue;
-      over = true;
-      if (reactionExists(port, action, c.name, true)) {
-        return { over, exists: true, index: i, label: macroName(actionPrefix(action), c.name) };
-      }
-    }
-  }
+  const index = scanSprites(list, spritePasses(cursorMode, false), (c) => {
+    over = true;
+    return reactionExists(port, action, c.name, true);
+  });
+  if (index >= 0) return { over, exists: true, index, label: macroName(actionPrefix(action), list[index].name) };
   return { over, exists: false, index: -1, label: "" };
 }
 

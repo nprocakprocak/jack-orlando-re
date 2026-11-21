@@ -35,32 +35,7 @@ export function dist(a: Point, b: Point): number {
   return s16(ftol(Math.sqrt(dx * dx + dy * dy)));
 }
 
-/**
- * Geom_PointBelowLine: (px - ax) * slope(a, b) <= py - ay; the slope is a float,
- * a vertical edge gets slope dy * 1e7. The product is compared unrounded (x87 register).
- */
-export function pointBelowLine(px: number, py: number, ax: number, ay: number, bx: number, by: number): boolean {
-  const dx = s16(bx - ax);
-  const slope = dx === 0 ? f32((by - ay) * 1e7) : f32((by - ay) / dx);
-  return (px - ax) * slope <= py - ay;
-}
-
-/** Half-plane part of Walk_FindTriangle and of the area test. */
-export function insideTriangleSides(t: readonly number[], px: number, py: number): boolean {
-  const [x1, y1, x2, y2, x3, y3] = t;
-  if (!pointBelowLine(x2, y2, x1, y1, x3, y3)) {
-    return (
-      !pointBelowLine(px, py, x1, y1, x3, y3) &&
-      pointBelowLine(px, py, x1, y1, x2, y2) &&
-      pointBelowLine(px, py, x2, y2, x3, y3)
-    );
-  }
-  return (
-    pointBelowLine(px, py, x1, y1, x3, y3) &&
-    !pointBelowLine(px, py, x1, y1, x2, y2) &&
-    !pointBelowLine(px, py, x2, y2, x3, y3)
-  );
-}
+export { insideTriangleSides, pointBelowLine } from "../formats/halfplane";
 
 /** Walk_FindTriangle for one triangle and for the whole list: the scene parser's copy. */
 export { findTriangle as findWalkTriangle, triangleContains as walkTriangleContains } from "../formats/scene";

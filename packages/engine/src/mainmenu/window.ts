@@ -2,7 +2,7 @@
 // Blit_TintRect16), a title and four buttons, opened and closed by blending.
 import type { Font } from "../formats/fnt";
 import { textWidth } from "../formats/fnt";
-import { blend565 } from "../cursor/lens";
+import { blend565 } from "../render/rgb565";
 import { darkenRect } from "../gui/darken";
 import {
   centerOffset, COLOR_BLUE, COLOR_OUTLINE_BLACK, COLOR_WHITE, COLOR_YELLOW, drawButtonFrame, drawText, drawWindowFrame,

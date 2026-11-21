@@ -4,7 +4,7 @@ import { TurnPlayer, turnSequence, type TurnStep, type TurnTick } from "../anim/
 import type { Facing as Mirror } from "../anim/jack";
 import { f32, jackScale, type Point } from "./geometry";
 import type { WalkWorld } from "./smooth";
-import { startSegment, walkStep, type Facing, type StepEvent, type WalkPlan, type Walker } from "./walker";
+import { followPlanTail, startSegment, walkStep, type Facing, type StepEvent, type WalkPlan, type Walker } from "./walker";
 
 /** A walker with the turn state of the original. */
 export interface TurningJack {
@@ -95,18 +95,7 @@ function followPlanTurningInner(tj: TurningJack, plan: WalkPlan): void {
     tj.pointRotateSaved = tj.pointRotate;
     tj.pointRotate = true;
   }
-  if (plan.direct) {
-    w.path = [];
-    w.index = 0;
-    startSegmentTurning(tj, plan.path[1]);
-    return;
-  }
-  w.path = plan.path;
-  w.index = 1;
-  if (w.path.length > 1 && startSegmentTurning(tj, w.path[1]) && w.index < w.path.length - 1) {
-    w.index++;
-    startSegmentTurning(tj, w.path[w.index]);
-  }
+  followPlanTail(w, plan, (point) => startSegmentTurning(tj, point));
 }
 
 /**

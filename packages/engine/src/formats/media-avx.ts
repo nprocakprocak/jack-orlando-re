@@ -1,5 +1,5 @@
 import { viewOf } from "./bytes";
-import { IMA_INDEX, IMA_STEP } from "./sound";
+import { imaStep } from "./sound-codec";
 import {
   FLX_HEADER_SIZE, Flx, FrameBuffer, MediaError, decodeFrame, parseFlxHeader,
   type FlxHeader, type Frame,
@@ -72,19 +72,10 @@ export class ImaStereoStream {
         for (let ch = 0; ch < 2; ch++) {
           const byte = src[w + 4 * ch + (i >> 1)];
           const code = (byte >> (4 * (i & 1))) & 15;
-          let pred = st[2 * ch];
-          let index = st[2 * ch + 1];
-          const step = IMA_STEP[index];
-          let diff = step >> 3;
-          if (code & 4) diff += step;
-          if (code & 2) diff += step >> 1;
-          if (code & 1) diff += step >> 2;
-          if (code & 8) diff = -diff;
-          pred = Math.max(-32768, Math.min(32767, pred + diff));
-          index = Math.max(0, Math.min(88, index + IMA_INDEX[code]));
-          st[2 * ch] = pred;
-          st[2 * ch + 1] = index;
-          out[o++] = pred;
+          const stepped = imaStep(st[2 * ch], st[2 * ch + 1], code);
+          st[2 * ch] = stepped.pred;
+          st[2 * ch + 1] = stepped.index;
+          out[o++] = stepped.pred;
         }
       }
       pos = (pos + 8) >>> 0;

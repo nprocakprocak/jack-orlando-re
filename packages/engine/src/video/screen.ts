@@ -4,8 +4,7 @@
 // images stay where they were drawn until a later delta overwrites them.
 // src/video/README.md
 
-import { viewOf } from "../formats/bytes";
-import { AVX_INDEX_BUFFER, FrameBuffer } from "../formats/media";
+import { AVX_INDEX_BUFFER, FrameBuffer, walkDelta } from "../formats/media";
 import type { AvxFrame } from "../formats/media";
 import type { Image16 } from "../formats/bm";
 import { SCREEN_H, SCREEN_W } from "../formats/subtitles";
@@ -50,21 +49,9 @@ export class MovieBuffer extends FrameBuffer {
   override applyDelta(src: Uint8Array, base = 0): number {
     const stopped = super.applyDelta(src, base);
     // the same walk as FrameBuffer.applyDelta, which has already validated it
-    const v = viewOf(src);
-    const end = base + v.getUint32(base, true);
-    let pos = v.getUint32(base + 4, true);
-    let p = base + 8;
-    const at = (i: number) => (i < src.length ? src[i] : 0);
-    while (p < end) {
-      pos += at(p);
-      const n = at(p + 1);
-      p += 2;
-      if (!n) continue;
-      if (p >= end) break;
+    walkDelta(src, base, () => {}, (pos, n) => {
       this.runs.push(pos, n);
-      pos += n;
-      p += n;
-    }
+    });
     return stopped;
   }
 }

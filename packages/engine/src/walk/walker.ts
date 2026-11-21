@@ -190,22 +190,30 @@ export function planWalk(
 }
 
 /**
- * Starts following a plan: index 1, and one more point when the
- * first one is reached at once. A direct walk is one segment to the click with no path.
+ * Path assignment and the first segment, through `start` (and the next point when the first
+ * one is reached at once). A direct walk is one segment to the click with no path.
  */
-export function followPlan(w: Walker, plan: WalkPlan): void {
+export function followPlanTail(w: Walker, plan: WalkPlan, start: (point: Point) => boolean): void {
   if (plan.direct) {
     w.path = [];
     w.index = 0;
-    startSegment(w, plan.path[1]);
+    start(plan.path[1]);
     return;
   }
   w.path = plan.path;
   w.index = 1;
-  if (w.path.length > 1 && startSegment(w, w.path[1]) && w.index < w.path.length - 1) {
+  if (w.path.length > 1 && start(w.path[1]) && w.index < w.path.length - 1) {
     w.index++;
-    startSegment(w, w.path[w.index]);
+    start(w.path[w.index]);
   }
+}
+
+/**
+ * Starts following a plan: index 1, and one more point when the
+ * first one is reached at once. A direct walk is one segment to the click with no path.
+ */
+export function followPlan(w: Walker, plan: WalkPlan): void {
+  followPlanTail(w, plan, (point) => startSegment(w, point));
 }
 
 export interface StepEvent {

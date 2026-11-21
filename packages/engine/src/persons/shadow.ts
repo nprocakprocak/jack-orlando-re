@@ -199,26 +199,32 @@ export class PersonShadow {
   }
 }
 
-/** The common part of the three cases: size, position and steps from the scale. */
-function shape(inp: ShadowInput, rawScale: number, level: number, anchor: readonly [number, number] = PERSON_SHADOW_ANCHOR, cap = true): ShadowDraw {
-  const scale = cap && rawScale > f32(SHADOW_SCALE_MAX) ? f32(SHADOW_SCALE_MAX) : rawScale;
-  const width = ftol(inp.maskWidth * scale) & 0xffff;
-  const height = ftol(inp.maskHeight * scale) & 0xffff;
-  const x = (ftol(inp.x - anchor[0] * scale) << 16) >> 16;
-  const y = (ftol(inp.y - anchor[1] * scale) << 16) >> 16;
+/** Width, height, source step and backdrop rectangle at `scale`, with the rectangle's left at screen `x`. */
+export function shadowExtent(
+  x: number,
+  scale: number,
+  maskWidth: number,
+  maskHeight: number,
+): Pick<ShadowDraw, "width" | "height" | "stepInt" | "stepFrac" | "backdrop"> {
+  const width = ftol(maskWidth * scale) & 0xffff;
+  const height = ftol(maskHeight * scale) & 0xffff;
   const left = Math.max(-x, 0);
   const step = ftol(STEP_BASE / scale) >>> 0;
   return {
-    scale,
-    x,
-    y,
     width,
     height,
-    level,
     stepInt: Math.floor(step / STEP_BASE) & 0xffff,
     stepFrac: step % STEP_BASE,
     backdrop: { srcX: Math.max(x, 0), srcWidth: (width - left) & 0xffff, dstX: left },
   };
+}
+
+/** Scale cap and anchor; the size and steps are `shadowExtent`. */
+function shape(inp: ShadowInput, rawScale: number, level: number, anchor: readonly [number, number] = PERSON_SHADOW_ANCHOR, cap = true): ShadowDraw {
+  const scale = cap && rawScale > f32(SHADOW_SCALE_MAX) ? f32(SHADOW_SCALE_MAX) : rawScale;
+  const x = (ftol(inp.x - anchor[0] * scale) << 16) >> 16;
+  const y = (ftol(inp.y - anchor[1] * scale) << 16) >> 16;
+  return { scale, x, y, level, ...shadowExtent(x, scale, inp.maskWidth, inp.maskHeight) };
 }
 
 /**

@@ -3,8 +3,7 @@
 // w x h sprite: the background under it is copied (Render_ComposeRegionNoFlag) and darkened under the non-zero
 // pixels of the mask image.
 import type { Image16 } from "../formats/bm";
-import { darken, type ShadowDraw, type ShadowTables } from "../persons/shadow";
-import { ftol } from "../walk/geometry";
+import { darken, shadowExtent, type ShadowDraw, type ShadowTables } from "../persons/shadow";
 
 /**
  * Stand-in for the colour tables where a player has none (the M1
@@ -29,21 +28,7 @@ export function approximateShadowTables(): ShadowTables {
  * as the `ShadowDraw` the pure code works with; the same sizes and steps as `PersonShadow` (`shape`).
  */
 export function drawAt(x: number, y: number, scale: number, maskWidth: number, maskHeight: number, level: number): ShadowDraw {
-  const width = ftol(maskWidth * scale) & 0xffff;
-  const height = ftol(maskHeight * scale) & 0xffff;
-  const left = Math.max(-x, 0);
-  const step = ftol(65535 / scale) >>> 0;
-  return {
-    scale,
-    x,
-    y,
-    width,
-    height,
-    level,
-    stepInt: Math.floor(step / 65535) & 0xffff,
-    stepFrac: step % 65535,
-    backdrop: { srcX: Math.max(x, 0), srcWidth: (width - left) & 0xffff, dstX: left },
-  };
+  return { scale, x, y, level, ...shadowExtent(x, scale, maskWidth, maskHeight) };
 }
 
 /** `Image16` flipped left to right (the mirrored shadows of Jack: the game passes a negative column step). */

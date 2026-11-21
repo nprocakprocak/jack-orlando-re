@@ -2,6 +2,8 @@
 // and the box-filter scaler of the mode-switch zoom. Pure functions on RGB565 buffers
 // (0 = transparent colour key). Description and evidence.
 import type { Image16 } from "../formats/bm";
+import { blend565 } from "../render/rgb565";
+export { blend565 };
 
 /** Glass region: its top-left is `mouse - 12` in both axes (`g_mouseX + -0xc`). */
 export const LENS_REGION_OFFSET = 12;
@@ -43,25 +45,6 @@ export function readRegion(bg: Uint16Array, bgW: number, rect: Rect): Uint16Arra
     }
   }
   return out;
-}
-
-/** `round(v)` of the x87 (fistp): ties to even - how the exe's blend tables were filled (checked in). */
-function roundHalfEven(v: number): number {
-  const f = Math.floor(v);
-  const d = v - f;
-  return d < 0.5 ? f : d > 0.5 ? f + 1 : f % 2 === 0 ? f : f + 1;
-}
-
-/**
- * dst moved `level`/32 of the way to src per channel through the exe's tables
- * (R, G, B; same as `blend565` in play/film.ts).
- */
-export function blend565(dst: number, src: number, level: number): number {
-  const mix = (d: number, s: number) => d + roundHalfEven(((s - d) * level) / 32);
-  const r = mix((dst >> 11) & 0x1f, (src >> 11) & 0x1f);
-  const g = mix((dst >> 5) & 0x3f, (src >> 5) & 0x3f);
-  const b = mix(dst & 0x1f, src & 0x1f);
-  return ((r << 11) | (g << 5) | b) & 0xffff;
 }
 
 /**

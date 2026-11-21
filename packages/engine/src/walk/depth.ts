@@ -18,16 +18,24 @@ export function objectDepth(o: WalkObject, p: Point): DepthRelation {
   const c = [0, 1, 2, 3].map((k) => corner(o, k));
   if (c.every((q) => q.y >= p.y)) return "behind";
   if (c.every((q) => q.y <= p.y)) return "front";
+  const { above, below } = quadEdges(o, p.x, p.y);
+  if (above && !below) return "behind";
+  if (below && !above) return "front";
+  return null;
+}
+
+/** Left-to-right edges set `above`, right-to-left edges set `below`. */
+export function quadEdges(o: WalkObject, px: number, py: number): { above: boolean; below: boolean } {
   let above = false;
   let below = false;
   for (let k = 0; k < 4; k++) {
     const n = (k + 1) & 3;
-    if (o.quad[k * 2] < o.quad[n * 2] && !pointBelowLine(p.x, p.y, c[k].x, c[k].y, c[n].x, c[n].y)) above = true;
-    if (o.quad[n * 2] < o.quad[k * 2] && pointBelowLine(p.x, p.y, c[n].x, c[n].y, c[k].x, c[k].y)) below = true;
+    const a = corner(o, k);
+    const b = corner(o, n);
+    if (o.quad[k * 2] < o.quad[n * 2] && !pointBelowLine(px, py, a.x, a.y, b.x, b.y)) above = true;
+    if (o.quad[n * 2] < o.quad[k * 2] && pointBelowLine(px, py, b.x, b.y, a.x, a.y)) below = true;
   }
-  if (above && !below) return "behind";
-  if (below && !above) return "front";
-  return null;
+  return { above, below };
 }
 
 /** Another person: compared by the float y of the feet only. */

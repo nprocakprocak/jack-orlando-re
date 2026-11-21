@@ -184,22 +184,12 @@ export class FrameBuffer {
  * Returns the offset (from base) where the walk stopped.
  */
   applyDelta(src: Uint8Array, base = 0): number {
-    if (base + DELTA_HEAD_SIZE > src.length) throw new MediaError(`delta head truncated at ${base}`);
-    const v = viewOf(src);
-    const size = v.getUint32(base, true);
-    let pos = v.getUint32(base + 4, true);
     const limit = this.capacity;
-    if (pos > limit) throw new MediaError(`delta start ${pos} outside the buffer (${limit})`);
-    const { indices, pixels, palette } = this;
     const at = (i: number) => (i < src.length ? src[i] : 0);
-    let p = base + DELTA_HEAD_SIZE;
-    const end = base + size;
-    while (p < end) {
-      pos += at(p);
-      const n = at(p + 1);
-      p += 2;
-      if (!n) continue;
-      if (p >= end) break; // a count with no bytes left: the game stops here
+    const { indices, pixels, palette } = this;
+    return walkDelta(src, base, (start) => {
+      if (start > limit) throw new MediaError(`delta start ${start} outside the buffer (${limit})`);
+    }, (pos, n, p, end) => {
       if (p + n > end) this.overruns++;
       if (pos + n > limit) throw new MediaError(`delta writes pixel ${pos + n - 1} outside the buffer (${limit})`);
       for (let k = 0; k < n; k++) {
@@ -207,11 +197,42 @@ export class FrameBuffer {
         indices[pos + k] = c;
         pixels[pos + k] = palette[c];
       }
-      pos += n;
-      p += n;
-    }
-    return p - base;
+    });
   }
+}
+
+/**
+ * Header walk of a delta: size and start pixel, then skip, count and the pointer advance.
+ * `onStart` sees the start pixel before any pair. `visit` sees each non-empty run
+ * (source offset `p` of its index bytes, record end `end`) before the pointer moves on.
+ * A count with no bytes left stops the walk. Bytes past the end of `src` read as 0.
+ * Returns the offset from `base` where the walk stopped.
+ */
+export function walkDelta(
+  src: Uint8Array,
+  base: number,
+  onStart: (start: number) => void,
+  visit: (pos: number, n: number, p: number, end: number) => void,
+): number {
+  if (base + DELTA_HEAD_SIZE > src.length) throw new MediaError(`delta head truncated at ${base}`);
+  const v = viewOf(src);
+  const size = v.getUint32(base, true);
+  let pos = v.getUint32(base + 4, true);
+  onStart(pos);
+  const at = (i: number) => (i < src.length ? src[i] : 0);
+  let p = base + DELTA_HEAD_SIZE;
+  const end = base + size;
+  while (p < end) {
+    pos += at(p);
+    const n = at(p + 1);
+    p += 2;
+    if (!n) continue;
+    if (p >= end) break; // a count with no bytes left: the game stops here
+    visit(pos, n, p, end);
+    pos += n;
+    p += n;
+  }
+  return p - base;
 }
 
 export interface Frame {

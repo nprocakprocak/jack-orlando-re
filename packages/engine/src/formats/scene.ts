@@ -3,6 +3,7 @@
 //, C atoi/atof) with its quirks, so the result is what the game sees.
 // Same model as the external checker (camelCase here, snake_case there).
 
+import { insideTriangleSides } from "./halfplane";
 import { Pak } from "./pak";
 import { decrypt } from "./textcrypt";
 
@@ -50,25 +51,15 @@ export function quadIsConvex(quad: number[]): boolean {
 
 // --- walk area ------------------------------------------------------------------
 
-/** (px - ax) * slope(a, b) <= py - ay; slope of a vertical edge = dy * 1e7. */
-function below(px: number, py: number, ax: number, ay: number, bx: number, by: number): boolean {
-  const dx = s16(bx - ax);
-  const slope = dx === 0 ? f32((by - ay) * 1e7) : f32((by - ay) / dx);
-  return (px - ax) * slope <= py - ay; // the product is compared unrounded (x87 register)
-}
-
 /**
  * Point test of Walk_FindTriangle for one triangle. The x range checked is
  * x1..x3, so the game expects vertices sorted by x (true for all scene data).
  */
 export function triangleContains(tri: readonly number[], px: number, py: number): boolean {
-  const [x1, y1, x2, y2, x3, y3] = tri;
+  const [x1, y1, , y2, x3, y3] = tri;
   const [lo, hi] = y1 < y2 ? [Math.min(y1, y3), Math.max(y2, y3)] : [Math.min(y2, y3), Math.max(y1, y3)];
   if (!(x1 <= px && px <= x3 && lo <= py && py <= hi)) return false;
-  if (!below(x2, y2, x1, y1, x3, y3)) {
-    return !below(px, py, x1, y1, x3, y3) && below(px, py, x1, y1, x2, y2) && below(px, py, x2, y2, x3, y3);
-  }
-  return below(px, py, x1, y1, x3, y3) && !below(px, py, x1, y1, x2, y2) && !below(px, py, x2, y2, x3, y3);
+  return insideTriangleSides(tri, px, py);
 }
 
 /** Walk_FindTriangle: index of the first triangle >= start containing the point, or -1. */
