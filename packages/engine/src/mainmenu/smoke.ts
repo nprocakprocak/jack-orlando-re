@@ -1,7 +1,14 @@
 // The cigarette smoke of the main menu: MENU.PAK:D1.FLX played one chunk per call by Menu_FlxStep.
 import { viewOf } from "../formats/bytes";
 import {
-  CHUNK_DELTA, CHUNK_HEAD_SIZE, CHUNK_PACKED, CHUNK_PALETTE, FLX_HEADER_SIZE, FrameBuffer, MediaError, parseFlxHeader,
+  CHUNK_DELTA,
+  CHUNK_HEAD_SIZE,
+  CHUNK_PACKED,
+  CHUNK_PALETTE,
+  FLX_HEADER_SIZE,
+  FrameBuffer,
+  MediaError,
+  parseFlxHeader,
   unpackRle,
 } from "../formats/media";
 import type { FlxHeader } from "../formats/media";
@@ -16,7 +23,8 @@ const PALETTE_BYTES = 0x200;
 function chunkAt(data: Uint8Array, pos: number): { type: number; size: number } {
   if (pos + CHUNK_HEAD_SIZE > data.length) throw new MediaError(`menu FLX: chunk head truncated at ${pos}`);
   const size = viewOf(data).getUint32(pos + 2, true);
-  if (size < CHUNK_HEAD_SIZE || pos + size > data.length) throw new MediaError(`menu FLX: chunk at ${pos} has bad size ${size}`);
+  if (size < CHUNK_HEAD_SIZE || pos + size > data.length)
+    throw new MediaError(`menu FLX: chunk at ${pos} has bad size ${size}`);
   return { type: data[pos], size };
 }
 
@@ -47,7 +55,8 @@ export class MenuSmoke {
     const d = this.data;
     let c = chunkAt(d, this.pos);
     if (c.type === CHUNK_PALETTE) {
-      if (c.size - CHUNK_HEAD_SIZE < PALETTE_BYTES) throw new MediaError(`menu FLX: palette chunk at ${this.pos} too short`);
+      if (c.size - CHUNK_HEAD_SIZE < PALETTE_BYTES)
+        throw new MediaError(`menu FLX: palette chunk at ${this.pos} too short`);
       this.fb.setPalette(d, this.pos + CHUNK_HEAD_SIZE, 1);
       this.pos += c.size;
       c = chunkAt(d, this.pos);

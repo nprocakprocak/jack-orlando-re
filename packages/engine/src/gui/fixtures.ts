@@ -12,7 +12,16 @@ export function blockFont(height = 7): Font {
     const y = Math.floor(i / 5);
     return x === 0 || x === 4 || y === 0 || y === height - 1 ? 1 : 2;
   });
-  return { dataEnd: 0, glyphs: Array.from({ length: 256 }, (_, code) => ({ code, offset: 0, width: 5, height, pixels })) };
+  return {
+    dataEnd: 0,
+    glyphs: Array.from({ length: 256 }, (_, code) => ({
+      code,
+      offset: 0,
+      width: 5,
+      height,
+      pixels,
+    })),
+  };
 }
 
 export function flat(w: number, h: number, color: number): Surface16 {

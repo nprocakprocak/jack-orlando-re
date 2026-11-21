@@ -8,7 +8,8 @@ import { createSurface, type Surface16 } from "../render/surface";
 import { MenuSmoke } from "./smoke";
 import { MAIN_MENU_TEXTS_PL, type MainMenuTexts } from "./texts";
 import { DEFAULT_MUSIC_VOLUME, PRESENT_MS } from "./timing";
-import { BLEND_MAX, BLEND_STEP, BLEND_STEPS, BUTTON_NAMES, type ButtonName, type MenuWindow } from "./window";
+import * as inputBody from "./menu-input";
+import { BLEND_MAX, BLEND_STEP, BLEND_STEPS, type ButtonName, type MenuWindow } from "./window";
 import * as frameBody from "./menu-frame";
 import * as stateBody from "./menu-state";
 import type { MenuFields } from "./menu-state";
@@ -163,7 +164,10 @@ export class MainMenu {
   private mouseY = 0;
   private mouseInside = false;
 
-  constructor(readonly assets: MainMenuAssets, options: MainMenuOptions = {}) {
+  constructor(
+    readonly assets: MainMenuAssets,
+    options: MainMenuOptions = {},
+  ) {
     this.texts = options.texts ?? MAIN_MENU_TEXTS_PL;
     this.sound = options.sound ?? true;
     this.volume = options.musicVolume ?? DEFAULT_MUSIC_VOLUME;
@@ -179,10 +183,30 @@ export class MainMenu {
   /** The moved steps read these. A reference keeps the private names in use. */
   private retain(): void {
     void [
-      this.texts, this.sound, this.volume, this.onEvent, this.nextTick, this.nextPresent, this.done, this.wipe,
-      this.still, this.discImage, this.loadingSprite, this.mouseInside, this.emit, this.music, this.phaseLength,
-      this.progress, this.finishPhase, this.resetAfterIntro, this.openWindow, this.leave, this.finish, this.tick,
-      this.present, this.cursorImage,
+      this.texts,
+      this.sound,
+      this.volume,
+      this.onEvent,
+      this.nextTick,
+      this.nextPresent,
+      this.done,
+      this.wipe,
+      this.still,
+      this.discImage,
+      this.loadingSprite,
+      this.mouseInside,
+      this.emit,
+      this.music,
+      this.phaseLength,
+      this.progress,
+      this.finishPhase,
+      this.resetAfterIntro,
+      this.openWindow,
+      this.leave,
+      this.finish,
+      this.tick,
+      this.present,
+      this.cursorImage,
     ];
   }
 
@@ -196,9 +220,9 @@ export class MainMenu {
   }
 
   /**
- * "Loading" has been visible long enough [engine, >= LOADING_MIN_MS = 1000 ms]: newGame / load -> switch to the game once it is loaded
- * too; intro -> start the movie.
- */
+   * "Loading" has been visible long enough [engine, >= LOADING_MIN_MS = 1000 ms]: newGame / load -> switch to the game once it is loaded
+   * too; intro -> start the movie.
+   */
   get readyToLeave(): boolean {
     return (this.phase === "loading" || this.phase === "intro") && this.loadingMs >= LOADING_MIN_MS;
   }
@@ -218,31 +242,57 @@ export class MainMenu {
     return this.pressed >= 0 && this.pressedOver ? this.pressed : -1;
   }
 
-  private emit(e: MainMenuEvent): void { stateBody.emit.call(this as unknown as MenuFields, e); }
+  private emit(e: MainMenuEvent): void {
+    stateBody.emit.call(this as unknown as MenuFields, e);
+  }
 
-  private music(command: MusicCommand): void { stateBody.music.call(this as unknown as MenuFields, command); }
+  private music(command: MusicCommand): void {
+    stateBody.music.call(this as unknown as MenuFields, command);
+  }
 
-  private enter(phase: MainMenuPhase): void { stateBody.enter.call(this as unknown as MenuFields, phase); }
+  private enter(phase: MainMenuPhase): void {
+    stateBody.enter.call(this as unknown as MenuFields, phase);
+  }
 
-  private phaseLength(): number { return stateBody.phaseLength.call(this as unknown as MenuFields); }
+  private phaseLength(): number {
+    return stateBody.phaseLength.call(this as unknown as MenuFields);
+  }
 
-  advance(dtMs: number): void { stateBody.advance.call(this as unknown as MenuFields, dtMs); }
+  advance(dtMs: number): void {
+    stateBody.advance.call(this as unknown as MenuFields, dtMs);
+  }
 
-  private progress(): void { stateBody.progress.call(this as unknown as MenuFields); }
+  private progress(): void {
+    stateBody.progress.call(this as unknown as MenuFields);
+  }
 
-  private finishPhase(): void { stateBody.finishPhase.call(this as unknown as MenuFields); }
+  private finishPhase(): void {
+    stateBody.finishPhase.call(this as unknown as MenuFields);
+  }
 
-  private resetAfterIntro(): void { stateBody.resetAfterIntro.call(this as unknown as MenuFields); }
+  private resetAfterIntro(): void {
+    stateBody.resetAfterIntro.call(this as unknown as MenuFields);
+  }
 
-  private openWindow(): void { stateBody.openWindow.call(this as unknown as MenuFields); }
+  private openWindow(): void {
+    stateBody.openWindow.call(this as unknown as MenuFields);
+  }
 
-  private choose(name: ButtonName | null): void { stateBody.choose.call(this as unknown as MenuFields, name); }
+  choose(name: ButtonName | null): void {
+    stateBody.choose.call(this as unknown as MenuFields, name);
+  }
 
-  private leave(): void { stateBody.leave.call(this as unknown as MenuFields); }
+  private leave(): void {
+    stateBody.leave.call(this as unknown as MenuFields);
+  }
 
-  private finish(result: MainMenuResult): void { stateBody.finish.call(this as unknown as MenuFields, result); }
+  private finish(result: MainMenuResult): void {
+    stateBody.finish.call(this as unknown as MenuFields, result);
+  }
 
-  returnFromIntro(lastFrame?: Surface16): void { stateBody.returnFromIntro.call(this as unknown as MenuFields, lastFrame); }
+  returnFromIntro(lastFrame?: Surface16): void {
+    stateBody.returnFromIntro.call(this as unknown as MenuFields, lastFrame);
+  }
 
   /** Launcher_TimerTick. */
   private tick(): void {
@@ -322,41 +372,28 @@ export class MainMenu {
   }
 
   pointerDown(x: number, y: number): void {
-    this.pointerMove(x, y);
-    if (this.phase !== "menu" || this.enterHeld) return;
-    const i = this.window!.hit(this.mouseX, this.mouseY);
-    if (i < 0) return;
-    this.pressed = i;
-    this.pressedOver = true;
+    return inputBody.pointerDown.call(this as unknown as MenuFields, x, y);
   }
 
   /** Released over the pressed button -> its name; elsewhere the press is cancelled. */
   pointerUp(x: number, y: number): void {
-    this.pointerMove(x, y);
-    if (this.phase !== "menu" || this.pressed < 0 || this.enterHeld) return;
-    const i = this.pressed;
-    this.pressed = -1;
-    this.pressedOver = false;
-    if (this.window!.hit(this.mouseX, this.mouseY) === i) this.choose(BUTTON_NAMES[i]);
+    return inputBody.pointerUp.call(this as unknown as MenuFields, x, y);
   }
 
   /** Enter = button 1 ("Introduction"), sunken until released; Esc = "/0" -> quit. KeyboardEvent.key names. */
   keyDown(key: string): void {
-    if (this.phase !== "menu") return;
-    if (key === "Escape") this.choose(null);
-    else if (key === "Enter" && !this.enterHeld) {
-      this.enterHeld = true;
-      this.pressed = 0;
-      this.pressedOver = true;
-    }
+    return inputBody.keyDown.call(this as unknown as MenuFields, key);
   }
 
   keyUp(key: string): void {
-    if (this.phase !== "menu" || key !== "Enter" || !this.enterHeld) return;
-    this.choose(BUTTON_NAMES[0]);
+    return inputBody.keyUp.call(this as unknown as MenuFields, key);
   }
 
-  private cursorImage(): Surface16 | null { return frameBody.cursorImage.call(this as unknown as MenuFields); }
+  private cursorImage(): Surface16 | null {
+    return frameBody.cursorImage.call(this as unknown as MenuFields);
+  }
 
-  frame(): Surface16 { return frameBody.frame.call(this as unknown as MenuFields); }
+  frame(): Surface16 {
+    return frameBody.frame.call(this as unknown as MenuFields);
+  }
 }

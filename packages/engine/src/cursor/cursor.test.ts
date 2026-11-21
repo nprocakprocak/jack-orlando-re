@@ -2,8 +2,17 @@ import { describe, expect, it } from "vitest";
 import type { Image16 } from "../formats/bm";
 import { Cursor, motionFrame, type CursorDraw, type ImageSize } from "./cursor";
 import {
-  allCursorFiles, busyName, frameName, hotspotInImage, hotspotOffset, imageOrigin, isVerbMode, isZoneMode,
-  lensHotName, lensMaskFiles, verbName,
+  allCursorFiles,
+  busyName,
+  frameName,
+  hotspotInImage,
+  hotspotOffset,
+  imageOrigin,
+  isVerbMode,
+  isZoneMode,
+  lensHotName,
+  lensMaskFiles,
+  verbName,
 } from "./modes";
 import { drawCursor, lensMaskName } from "./overlay";
 
@@ -26,7 +35,13 @@ describe("modes", () => {
   it("verb modes are 0..4 and have the verb names of the original", () => {
     expect([0, 4, 5, -1].map(isVerbMode)).toEqual([true, true, false, false]);
     expect([0, 1, 2, 3, 4, 5, 12].map(verbName)).toEqual([
-      "POKAZANIE", "PATRZENIE", "UDERZENIE", "STRZELANIE", "BRANIE", "POKAZANIE", "POKAZANIE",
+      "POKAZANIE",
+      "PATRZENIE",
+      "UDERZENIE",
+      "STRZELANIE",
+      "BRANIE",
+      "POKAZANIE",
+      "POKAZANIE",
     ]);
   });
 
@@ -107,8 +122,15 @@ describe("Cursor.animate", () => {
   });
 
   it("each zone mode picks its own set; modes without a set keep the image", () => {
-    for (const [m, name] of [[11, "RIGHT02.BM"], [13, "STDN0002.BM"], [14, "TOIN0002.BM"], [15, "STUP0002.BM"],
-      [17, "TOUT0002.BM"], [20, "SCLF0002.BM"], [21, "SCRG0002.BM"]] as const) {
+    for (const [m, name] of [
+      [11, "RIGHT02.BM"],
+      [13, "STDN0002.BM"],
+      [14, "TOIN0002.BM"],
+      [15, "STUP0002.BM"],
+      [17, "TOUT0002.BM"],
+      [20, "SCLF0002.BM"],
+      [21, "SCRG0002.BM"],
+    ] as const) {
       const c = new Cursor(sizes);
       c.mode = m;
       c.animate(0);
@@ -326,7 +348,12 @@ describe("Cursor.present", () => {
 });
 
 describe("drawCursor", () => {
-  const img = (w: number, h: number, px: number[]): Image16 => ({ width: w, height: h, kind: "rgb565", pixels: Uint16Array.from(px) });
+  const img = (w: number, h: number, px: number[]): Image16 => ({
+    width: w,
+    height: h,
+    kind: "rgb565",
+    pixels: Uint16Array.from(px),
+  });
   const screen = () => new Uint8ClampedArray(640 * 480 * 4);
 
   it("keys colour 0 and writes opaque pixels", () => {
@@ -352,7 +379,14 @@ describe("drawCursor", () => {
 
   it("scales with the box filter of the original (see overlay.test.ts)", () => {
     const out = screen();
-    drawCursor(out, img(2, 2, [0xf800, 0xf800, 0xf800, 0xf800]), { image: "x", x: 0, y: 0, w: 1, h: 1, scale: 0.5 });
+    drawCursor(out, img(2, 2, [0xf800, 0xf800, 0xf800, 0xf800]), {
+      image: "x",
+      x: 0,
+      y: 0,
+      w: 1,
+      h: 1,
+      scale: 0.5,
+    });
     expect([...out.slice(0, 4)]).toEqual([255, 0, 0, 255]);
   });
 });

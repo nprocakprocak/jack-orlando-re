@@ -50,7 +50,12 @@ export function personDef(p: Person): PersonDef {
   const dirs: (PersonFrame[] | null)[] = Array.from({ length: PERSON_DIRS }, () => null);
   for (const d of p.directions) {
     if (d.dir < 0 || d.dir >= PERSON_DIRS) continue;
-    dirs[d.dir] = d.frames.map((f) => ({ file: String(f[0]), hotRight: Number(f[1]), hotLeft: Number(f[2]), hotY: Number(f[3]) }));
+    dirs[d.dir] = d.frames.map((f) => ({
+      file: String(f[0]),
+      hotRight: Number(f[1]),
+      hotLeft: Number(f[2]),
+      hotY: Number(f[3]),
+    }));
   }
   return {
     name: p.name,
@@ -116,7 +121,14 @@ export function effectVolumes(volume: number, scale: number, x: number, scrollX:
 }
 
 /** Brightness factor [i]: base + up to 1 near a light; range = trunc(scale * 300 * PCS scale). */
-export function personBrightness(x: number, y: number, lights: readonly (readonly number[])[], scale: number, lightScale: number, base: number): number {
+export function personBrightness(
+  x: number,
+  y: number,
+  lights: readonly (readonly number[])[],
+  scale: number,
+  lightScale: number,
+  base: number,
+): number {
   let near = LIGHT_FAR;
   for (const [lx, ly] of lights) {
     const dx = s16(ftol(x - lx));

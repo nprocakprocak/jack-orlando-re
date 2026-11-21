@@ -16,7 +16,13 @@ export const PALETTE_ENTRIES = 128;
  * Brightness factor: base (script command Brightness) plus up to 1 near the
  * closest light. The game rescales Jack's palette only when the factor is below 1.
  */
-export function jackBrightness(x: number, y: number, lights: readonly (readonly number[])[], scale: number, base: number): number {
+export function jackBrightness(
+  x: number,
+  y: number,
+  lights: readonly (readonly number[])[],
+  scale: number,
+  base: number,
+): number {
   let near = LIGHT_FAR;
   for (const [lx, ly] of lights) {
     const dx = ftol(x - lx);

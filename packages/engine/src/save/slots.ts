@@ -1,8 +1,26 @@
 // Legacy slot mode: ten slots in browser storage and the slot windows built from the GUI components.
 // Load window = the dead ; save window = reconstruction after the user's screenshots
 // of an older version (5.4). What is code and what is reconstruction: README.md.
-import { LIGHT_HEADER, NORMAL_HEADER, HEADER_SIZE, VERSION_BYTE, cstr, encodeCstr, parseSave, writeSave } from "../formats/save";
-import { COLOR_BLUE, COLOR_OUTLINE_BLACK, COLOR_WHITE, COLOR_YELLOW, centerOffset, copyRect, drawButtonFrame, drawText } from "../gui/draw";
+import {
+  LIGHT_HEADER,
+  NORMAL_HEADER,
+  HEADER_SIZE,
+  VERSION_BYTE,
+  cstr,
+  encodeCstr,
+  parseSave,
+  writeSave,
+} from "../formats/save";
+import {
+  COLOR_BLUE,
+  COLOR_OUTLINE_BLACK,
+  COLOR_WHITE,
+  COLOR_YELLOW,
+  centerOffset,
+  copyRect,
+  drawButtonFrame,
+  drawText,
+} from "../gui/draw";
 import type { GuiEvent, WindowAssets } from "../gui/window";
 import { GuiWindow } from "../gui/window";
 import type { Surface16 } from "../render/surface";
@@ -122,7 +140,16 @@ export class SlotWindow {
     const w = (this.win = new GuiWindow(assets, scene, 0, 0, WIN_W, WIN_H, true));
     w.addLabel(mode === "save" ? texts.saveTitle : texts.loadTitle, true, 0, 16, COLOR_OUTLINE_BLACK, COLOR_YELLOW);
     for (let i = 0; i < SLOT_COUNT; i++) {
-      w.addButton(slotName(i), descriptions[i] ?? texts.empty, SLOT_X, SLOT_Y0 + i * SLOT_STEP, SLOT_W, SLOT_H, false, false);
+      w.addButton(
+        slotName(i),
+        descriptions[i] ?? texts.empty,
+        SLOT_X,
+        SLOT_Y0 + i * SLOT_STEP,
+        SLOT_W,
+        SLOT_H,
+        false,
+        false,
+      );
     }
     if (mode === "load") w.addButton("NewGame", texts.newGame, 20, 350, 220, 32);
     w.addButton("Cancel", texts.cancel, 340, 350, 100, 32);
@@ -214,6 +241,14 @@ export class SlotWindow {
     copyRect(this.scene, screen, x, y, SLOT_W, SLOT_H);
     drawButtonFrame(screen, x, y, SLOT_W, SLOT_H, true);
     // pressed button text: no shadow, shifted by 1 (GuiWindow.render)
-    drawText(screen, this.assets.fontSmall, e.field.display(), x + 8 + 1, y + centerOffset(SLOT_H, 16) + 1 + 1, COLOR_BLUE, COLOR_WHITE);
+    drawText(
+      screen,
+      this.assets.fontSmall,
+      e.field.display(),
+      x + 8 + 1,
+      y + centerOffset(SLOT_H, 16) + 1 + 1,
+      COLOR_BLUE,
+      COLOR_WHITE,
+    );
   }
 }

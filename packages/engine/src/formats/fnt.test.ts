@@ -61,8 +61,12 @@ describe("fnt on synthetic data", () => {
   });
 
   it("verify reports trailing bytes, unknown pixel values and wide glyphs", () => {
-    expect(verifyFnt(Uint8Array.from([...data, 0]))).toEqual([`glyph data ends at ${data.length}, file has ${data.length + 1} bytes`]);
-    expect(verifyFnt(buildFont({ 65: { w: 1, h: 1, px: [3] } }))).toEqual(["pixel values [3] (only 0, 1, 2 are known)"]);
+    expect(verifyFnt(Uint8Array.from([...data, 0]))).toEqual([
+      `glyph data ends at ${data.length}, file has ${data.length + 1} bytes`,
+    ]);
+    expect(verifyFnt(buildFont({ 65: { w: 1, h: 1, px: [3] } }))).toEqual([
+      "pixel values [3] (only 0, 1, 2 are known)",
+    ]);
     const wide = buildFont({ 65: { w: 128, h: 1, px: new Array(128).fill(2) } });
     expect(verifyFnt(wide)).toEqual(["glyphs [65] wider than 127 (the blitter uses width & 0x7f)"]);
   });
@@ -96,9 +100,24 @@ describe("fnt on synthetic data", () => {
     const o = 0x1111;
     const f = 0x2222;
     expect([...img.pixels]).toEqual([
-      0, o, 0, 0, f, 0, //
-      o, f, o, 0, f, 0, //
-      0, 0, 0, 0, o, 0,
+      0,
+      o,
+      0,
+      0,
+      f,
+      0, //
+      o,
+      f,
+      o,
+      0,
+      f,
+      0, //
+      0,
+      0,
+      0,
+      0,
+      o,
+      0,
     ]);
   });
 

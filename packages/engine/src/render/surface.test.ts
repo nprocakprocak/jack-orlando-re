@@ -1,7 +1,15 @@
 import { describe, expect, it } from "vitest";
 import {
-  blitCopy, blitKeyed, blitScaled, createSurface, renderScaled, softenEdges, stepValue, UNIT_STEP,
-  windowToRgba, type Surface16,
+  blitCopy,
+  blitKeyed,
+  blitScaled,
+  createSurface,
+  renderScaled,
+  softenEdges,
+  stepValue,
+  UNIT_STEP,
+  windowToRgba,
+  type Surface16,
 } from "./surface";
 import { stepForScale } from "./sprites";
 
@@ -23,40 +31,64 @@ describe("blitCopy / blitKeyed", () => {
     const dst = createSurface(4, 3);
     dst.pixels.fill(9);
     blitCopy(src, 0, 0, 3, 2, dst, 1, 1);
-    expect(rows(dst)).toEqual([[9, 9, 9, 9], [9, 1, 0, 3], [9, 4, 5, 0]]);
+    expect(rows(dst)).toEqual([
+      [9, 9, 9, 9],
+      [9, 1, 0, 3],
+      [9, 4, 5, 0],
+    ]);
   });
 
   it("keyed copy skips color 0", () => {
     const dst = createSurface(3, 2);
     dst.pixels.fill(9);
     blitKeyed(src, 0, 0, 3, 2, dst, 0, 0);
-    expect(rows(dst)).toEqual([[1, 9, 3], [4, 5, 9]]);
+    expect(rows(dst)).toEqual([
+      [1, 9, 3],
+      [4, 5, 9],
+    ]);
   });
 
   it("clamps negative coordinates to 0 like the original", () => {
     const dst = createSurface(3, 2);
     blitCopy(src, -5, -1, 2, 1, dst, -2, -7);
-    expect(rows(dst)).toEqual([[1, 0, 0], [0, 0, 0]]);
+    expect(rows(dst)).toEqual([
+      [1, 0, 0],
+      [0, 0, 0],
+    ]);
   });
 
   it("clips at the surface edges", () => {
     const dst = createSurface(2, 2);
     blitCopy(src, 1, 1, 5, 5, dst, 1, 1);
-    expect(rows(dst)).toEqual([[0, 0], [0, 5]]);
+    expect(rows(dst)).toEqual([
+      [0, 0],
+      [0, 5],
+    ]);
   });
 
   it("ignores empty blocks", () => {
     const dst = createSurface(2, 2);
     blitCopy(src, 0, 0, 0, 2, dst, 0, 0);
     blitKeyed(src, 0, 0, 2, -1, dst, 0, 0);
-    expect(rows(dst)).toEqual([[0, 0], [0, 0]]);
+    expect(rows(dst)).toEqual([
+      [0, 0],
+      [0, 0],
+    ]);
   });
 
   it("honours the stride of a raw buffer", () => {
-    const raw: Surface16 = { width: 2, height: 2, stride: 3, pixels: Uint16Array.from([1, 2, 99, 3, 4, 99]) };
+    const raw: Surface16 = {
+      width: 2,
+      height: 2,
+      stride: 3,
+      pixels: Uint16Array.from([1, 2, 99, 3, 4, 99]),
+    };
     const dst = createSurface(2, 2);
     blitCopy(raw, 0, 0, 2, 2, dst, 0, 0);
-    expect(rows(dst)).toEqual([[1, 2], [3, 4]]);
+    expect(rows(dst)).toEqual([
+      [1, 2],
+      [3, 4],
+    ]);
   });
 });
 
@@ -66,7 +98,10 @@ describe("blitScaled", () => {
   it("unit step is a keyed copy", () => {
     const dst = createSurface(4, 2);
     blitScaled(img, UNIT_STEP, 0, 0, 4, 2, dst, 0, 0);
-    expect(rows(dst)).toEqual([[1, 2, 3, 4], [5, 6, 7, 8]]);
+    expect(rows(dst)).toEqual([
+      [1, 2, 3, 4],
+      [5, 6, 7, 8],
+    ]);
   });
 
   it("scale 0.5 samples every second pixel and row", () => {

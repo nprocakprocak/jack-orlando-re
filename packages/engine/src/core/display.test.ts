@@ -5,10 +5,19 @@ const base = { logicalWidth: 640, logicalHeight: 480, targetCssWidth: 640, maxCs
 
 describe("computeDisplay", () => {
   it("dpr 1: native size, pixelated", () => {
-    expect(computeDisplay({ ...base, dpr: 1 })).toEqual({ cssWidth: 640, cssHeight: 480, scale: 1, smooth: false });
+    expect(computeDisplay({ ...base, dpr: 1 })).toEqual({
+      cssWidth: 640,
+      cssHeight: 480,
+      scale: 1,
+      smooth: false,
+    });
   });
   it("dpr 2: 640 CSS px is exactly 2x", () => {
-    expect(computeDisplay({ ...base, dpr: 2 })).toMatchObject({ cssWidth: 640, scale: 2, smooth: false });
+    expect(computeDisplay({ ...base, dpr: 2 })).toMatchObject({
+      cssWidth: 640,
+      scale: 2,
+      smooth: false,
+    });
   });
   it("dpr 1.25: integer 1x covers 80% of wanted -> crisp 512 CSS px", () => {
     const l = computeDisplay({ ...base, dpr: 1.25 });
@@ -25,7 +34,11 @@ describe("computeDisplay", () => {
     expect(computeDisplay({ ...base, dpr: 1.75 }).smooth).toBe(true);
   });
   it("dpr 2.5: 2x is 80% -> crisp", () => {
-    expect(computeDisplay({ ...base, dpr: 2.5 })).toMatchObject({ scale: 2, smooth: false, cssWidth: 512 });
+    expect(computeDisplay({ ...base, dpr: 2.5 })).toMatchObject({
+      scale: 2,
+      smooth: false,
+      cssWidth: 512,
+    });
   });
   it("narrow window: max width caps the size", () => {
     const l = computeDisplay({ ...base, dpr: 1, maxCssWidth: 400 });
@@ -34,11 +47,20 @@ describe("computeDisplay", () => {
     expect(l.cssHeight).toBe(300);
   });
   it("mode integer never smooths, minimum 1x", () => {
-    expect(computeDisplay({ ...base, dpr: 1.5, mode: "integer" })).toMatchObject({ scale: 1, smooth: false });
-    expect(computeDisplay({ ...base, dpr: 1, maxCssWidth: 300, mode: "integer" })).toMatchObject({ scale: 1, cssWidth: 640 });
+    expect(computeDisplay({ ...base, dpr: 1.5, mode: "integer" })).toMatchObject({
+      scale: 1,
+      smooth: false,
+    });
+    expect(computeDisplay({ ...base, dpr: 1, maxCssWidth: 300, mode: "integer" })).toMatchObject({
+      scale: 1,
+      cssWidth: 640,
+    });
   });
   it("mode smooth keeps the wanted size, but exact integers stay pixelated", () => {
-    expect(computeDisplay({ ...base, dpr: 1.25, mode: "smooth" })).toMatchObject({ cssWidth: 640, smooth: true });
+    expect(computeDisplay({ ...base, dpr: 1.25, mode: "smooth" })).toMatchObject({
+      cssWidth: 640,
+      smooth: true,
+    });
     expect(computeDisplay({ ...base, dpr: 2, mode: "smooth" }).smooth).toBe(false);
   });
   it("wanted 960 CSS px at dpr 1.25 (1.875x) -> smooth", () => {
@@ -47,7 +69,13 @@ describe("computeDisplay", () => {
   it("invalid dpr falls back to 1; other buffer size keeps aspect", () => {
     expect(computeDisplay({ ...base, dpr: 0 }).scale).toBe(1);
     expect(computeDisplay({ ...base, dpr: NaN }).scale).toBe(1);
-    const l = computeDisplay({ logicalWidth: 320, logicalHeight: 200, targetCssWidth: 640, maxCssWidth: 2000, dpr: 1 });
+    const l = computeDisplay({
+      logicalWidth: 320,
+      logicalHeight: 200,
+      targetCssWidth: 640,
+      maxCssWidth: 2000,
+      dpr: 1,
+    });
     expect(l).toMatchObject({ cssWidth: 640, cssHeight: 400, scale: 2 });
   });
 });

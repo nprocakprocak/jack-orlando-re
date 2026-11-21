@@ -48,7 +48,13 @@ export function inRect(x: number, y: number, l: number, t: number, w: number, h:
  * Top-left of the opened bullet: mouse (world coordinates, scroll included) minus (102, 97),
  * clamped to [scroll + 10, scroll + 630 - w] x [15, 470 - h]; the lower bound first, the upper second.
  */
-export function bulletPosition(mouseX: number, mouseY: number, scrollX: number, w = BULLET_W, h = BULLET_H): { x: number; y: number } {
+export function bulletPosition(
+  mouseX: number,
+  mouseY: number,
+  scrollX: number,
+  w = BULLET_W,
+  h = BULLET_H,
+): { x: number; y: number } {
   let x = mouseX - 0x66;
   let y = mouseY - 0x61;
   if (x < scrollX + 10) x = scrollX + 10;
@@ -69,7 +75,13 @@ export function verbMenuHeight(gun: boolean): number {
 }
 
 /** Screen position of the verb window: centred on mouse - 7, 63 px above the mouse, clamped. */
-export function verbMenuPosition(mouseX: number, mouseY: number, scrollX: number, gun: boolean, language = "P"): { x: number; y: number } {
+export function verbMenuPosition(
+  mouseX: number,
+  mouseY: number,
+  scrollX: number,
+  gun: boolean,
+  language = "P",
+): { x: number; y: number } {
   const w = verbMenuWidth(language);
   const h = verbMenuHeight(gun);
   let x = mouseX - 7 - (w >> 1) - scrollX;

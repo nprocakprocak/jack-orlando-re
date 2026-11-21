@@ -1,31 +1,37 @@
 // Fields the playable game's methods read. The class keeps them private; a wrapper casts `this`.
 
-import { Cursor, CursorEnable } from "../cursor";
-import { DialogController, ReleaseGate, type DialogTables, type Side } from "../dialog";
+import type { Cursor, CursorEnable } from "../cursor";
+import type { DialogController, ReleaseGate } from "../dialog";
+import { type DialogTables, type Side } from "../dialog";
 import type { Image16 } from "../formats/bm";
 import type { Font } from "../formats/fnt";
 import type { Ics } from "../formats/global";
-import { Pak } from "../formats/pak";
+import type { Pak } from "../formats/pak";
 import type { MoviePlayer } from "../video";
-import { PlayAudio } from "./audio";
-import { FilmRun } from "./film";
+import type { PlayAudio } from "./audio";
+import type { FilmRun } from "./film";
 import type { Remap } from "./facewin";
 import type { Overlay } from "./overlay";
-import { AreaState, type HitRect, type ClickOutcome } from "../areas";
-import { type Surface16, SceneTransition } from "../render";
-import { GuiMenu, type MenuAssets } from "../gui";
-import { BulletMenu, VerbMenu } from "../bulletmenu";
-import { CoatScreen, Inventory } from "../inventory";
-import { WheelAccumulator } from "../inventory/wheel";
-import { TopBar } from "../inventory/topbar";
-import { MiniMapScreen } from "../minimap";
+import type { AreaState } from "../areas";
+import { type HitRect, type ClickOutcome } from "../areas";
+import type { SceneTransition } from "../render";
+import { type Surface16 } from "../render";
+import type { GuiMenu } from "../gui";
+import { type MenuAssets } from "../gui";
+import type { BulletMenu, VerbMenu } from "../bulletmenu";
+import type { CoatScreen, Inventory } from "../inventory";
+import type { WheelAccumulator } from "../inventory/wheel";
+import type { TopBar } from "../inventory/topbar";
+import type { MiniMapScreen } from "../minimap";
 import type { GameConfig } from "../settings/config";
-import { NoticeStrip } from "../keys/notice";
-import { SlotWindow, type JackPose as SavedPose, type LoadedState } from "../save";
-import { ScenePlayer, type SceneEvent } from "../scene";
-import { Interpreter, Variables } from "../script";
+import type { NoticeStrip } from "../keys/notice";
+import type { SlotWindow } from "../save";
+import { type JackPose as SavedPose, type LoadedState } from "../save";
+import type { ScenePlayer } from "../scene";
+import { type SceneEvent } from "../scene";
+import type { Interpreter, Variables } from "../script";
 import type { EdgeState } from "./edgescroll";
-import { AutoIncClock, SceneHost } from "./host";
+import type { AutoIncClock, SceneHost } from "./host";
 import type { GameFiles, LogLine, Phase, PlayInput, PlayOptions, PlayView } from "./types";
 
 /** What the game needs to draw the dialog layer: the caption font and the dialog tables. */
@@ -77,7 +83,12 @@ export interface GameState {
   fadeRequested: boolean;
   ticks: number;
   clickX: number;
-  lastClick: { x: number; y: number; outcome: ClickOutcome["kind"] | "ignored"; macro?: string | null } | null;
+  lastClick: {
+    x: number;
+    y: number;
+    outcome: ClickOutcome["kind"] | "ignored";
+    macro?: string | null;
+  } | null;
   readonly history: string[];
   error: string | null;
   readonly audio: PlayAudio;
@@ -101,7 +112,14 @@ export interface GameState {
   readonly inventory: Inventory;
   readonly notice: NoticeStrip;
   noticeFont: Font | null;
-  slotUi: { win: SlotWindow; kind: "save" | "load"; scene: Surface16; screen: Surface16; down: boolean; fromMenu: boolean } | null;
+  slotUi: {
+    win: SlotWindow;
+    kind: "save" | "load";
+    scene: Surface16;
+    screen: Surface16;
+    down: boolean;
+    fromMenu: boolean;
+  } | null;
   modal: boolean;
   ioPromise: Promise<void> | null;
   jackSaved: SavedPose;
@@ -143,7 +161,7 @@ export interface GameState {
   prevMiddle: boolean;
   menuScene: Surface16 | null;
   menuScreen: Surface16 | null;
-  menuInput: { down: boolean; escape: boolean; };
+  menuInput: { down: boolean; escape: boolean };
   menuCursorCountdown: number;
   readonly keysPressed: Set<number>;
   wasTalking: boolean;

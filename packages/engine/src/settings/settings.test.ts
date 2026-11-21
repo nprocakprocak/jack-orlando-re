@@ -10,7 +10,18 @@ function fakeStorage(initial: Record<string, string> = {}): KeyValueStorage & { 
 
 describe("config", () => {
   it("has the defaults of Sys_InitConfigAndCd", () => {
-    expect(DEFAULT_CONFIG).toMatchObject({ walkSpeed: 1, musicVol: 0x23, sfxVol: 0x20, talkVol: 0x40, reverseStereo: 0, surround: 1, musicDown: 1, talkInterrupt: 1, showText: 1, showBullet: 1 });
+    expect(DEFAULT_CONFIG).toMatchObject({
+      walkSpeed: 1,
+      musicVol: 0x23,
+      sfxVol: 0x20,
+      talkVol: 0x40,
+      reverseStereo: 0,
+      surround: 1,
+      musicDown: 1,
+      talkInterrupt: 1,
+      showText: 1,
+      showBullet: 1,
+    });
   });
   it("defaultConfig returns a copy", () => {
     const c = defaultConfig();
@@ -18,7 +29,14 @@ describe("config", () => {
     expect(DEFAULT_CONFIG.walkSpeed).toBe(1);
   });
   it("clamps out-of-range values and ignores junk", () => {
-    const c = sanitizeConfig({ walkSpeed: 99, musicVol: -4, sfxVol: 12.9, talkVol: "x", surround: 7, bogus: 1 });
+    const c = sanitizeConfig({
+      walkSpeed: 99,
+      musicVol: -4,
+      sfxVol: 12.9,
+      talkVol: "x",
+      surround: 7,
+      bogus: 1,
+    });
     expect(c).toMatchObject({ walkSpeed: 6, musicVol: 0, sfxVol: 12, talkVol: 0x40, surround: 1 });
     expect(c).not.toHaveProperty("bogus");
   });
@@ -50,8 +68,12 @@ describe("ConfigStore", () => {
   });
   it("survives a throwing storage", () => {
     const bad: KeyValueStorage = {
-      getItem() { throw new Error("blocked"); },
-      setItem() { throw new Error("quota"); },
+      getItem() {
+        throw new Error("blocked");
+      },
+      setItem() {
+        throw new Error("quota");
+      },
     };
     const store = new ConfigStore(bad);
     expect(store.load()).toEqual(DEFAULT_CONFIG);

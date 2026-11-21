@@ -12,7 +12,11 @@ import {
   type JackInfo,
 } from "./gestures";
 
-const jack = (dir: JackDir, facing: 1 | -1 = 1, uniform = false): JackInfo => ({ dir, facing, uniform });
+const jack = (dir: JackDir, facing: 1 | -1 = 1, uniform = false): JackInfo => ({
+  dir,
+  facing,
+  uniform,
+});
 
 /** A mock of the host: plays each started insertion for `len` ticks, then calls the end hook. */
 class MockHost {
@@ -20,7 +24,11 @@ class MockHost {
   left = 0;
   readonly started: string[] = [];
   readonly vars: Record<string, number> = { SLAP: 0, SHOOT: 0 };
-  constructor(readonly g: Gestures, readonly j: JackInfo, readonly len = 3) {}
+  constructor(
+    readonly g: Gestures,
+    readonly j: JackInfo,
+    readonly len = 3,
+  ) {}
   apply(s: { start?: { name: string }; vars?: Readonly<Record<string, number>> }): void {
     if (s.vars) Object.assign(this.vars, s.vars);
     if (s.start) {
@@ -53,19 +61,43 @@ class MockHost {
 
 describe("insertion choice", () => {
   it("PICKUP: civil / uniform per dir, n 0 bends, other n stands up", () => {
-    expect([0, 1, 2, 3, 4].map((d) => pickupInsertion(0, jack(d as JackDir)).name)).toEqual(["PP_D0", "PP_L0", "PP_U0", "SC34P0", "PP_RU0"]);
-    expect([0, 1, 2, 3, 4].map((d) => pickupInsertion(5, jack(d as JackDir, -1, true)).name)).toEqual(["PM_D1", "PM_L1", "PM_U1", "PM_LD1", "PM_RU1"]);
+    expect([0, 1, 2, 3, 4].map((d) => pickupInsertion(0, jack(d as JackDir)).name)).toEqual([
+      "PP_D0",
+      "PP_L0",
+      "PP_U0",
+      "SC34P0",
+      "PP_RU0",
+    ]);
+    expect([0, 1, 2, 3, 4].map((d) => pickupInsertion(5, jack(d as JackDir, -1, true)).name)).toEqual([
+      "PM_D1",
+      "PM_L1",
+      "PM_U1",
+      "PM_LD1",
+      "PM_RU1",
+    ]);
     expect(pickupInsertion(1, jack(1, -1))).toEqual({ name: "PP_L1", facing: -1, scaleMul: 1 });
   });
   it("GIVE: phases 0..2, anything else OPUSZCZA", () => {
     expect([0, 1, 2, 3, -1].map((n) => giveInsertion(n, jack(3)).name)).toEqual([
-      "DAJE_DO_WYC_DP_LD", "CHOWA_WYC_DP_LD", "STAY_DO_WYC_DP_LD", "OPUSZCZA_WYC_DP_LD", "OPUSZCZA_WYC_DP_LD",
+      "DAJE_DO_WYC_DP_LD",
+      "CHOWA_WYC_DP_LD",
+      "STAY_DO_WYC_DP_LD",
+      "OPUSZCZA_WYC_DP_LD",
+      "OPUSZCZA_WYC_DP_LD",
     ]);
-    expect(giveInsertion(0, jack(4, -1, true))).toEqual({ name: "DAJE_DO_WYC_DM_RU", facing: -1, scaleMul: 1 });
+    expect(giveInsertion(0, jack(4, -1, true))).toEqual({
+      name: "DAJE_DO_WYC_DM_RU",
+      facing: -1,
+      scaleMul: 1,
+    });
   });
   it("SHOOTF: side in the name, direction always 1; dir 4 swaps L/P", () => {
     expect(shootInsertion(0, jack(1, 1))).toEqual({ name: "SPPRL0", facing: 1, scaleMul: 1 });
-    expect(shootInsertion(1, jack(1, -1, true))).toEqual({ name: "SWPRP1", facing: 1, scaleMul: 1 });
+    expect(shootInsertion(1, jack(1, -1, true))).toEqual({
+      name: "SWPRP1",
+      facing: 1,
+      scaleMul: 1,
+    });
     expect(shootInsertion(0, jack(3, -1))!.name).toBe("SPSPP0");
     expect(shootInsertion(0, jack(4, 1))!.name).toBe("SPSTP0");
     expect(shootInsertion(1, jack(4, -1, true))!.name).toBe("SWSTL1");

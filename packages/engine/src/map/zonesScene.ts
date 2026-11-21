@@ -1,6 +1,6 @@
 // Click-zone data for a scene without control, built from the scene archives (no DOM): the background as the
 // scene draws it, the zones, the hit grid, and the overlay painted into one RGBA buffer.
-import { Pak } from "../formats/pak";
+import type { Pak } from "../formats/pak";
 import { decrypt } from "../formats/textcrypt";
 import { windowToRgba } from "../render/surface";
 import { ScenePlayer } from "../scene/player";
@@ -34,19 +34,37 @@ export function loadMapZones(scene: string, resource: Pak, phk: Pak, ph2: Pak | 
   const areas = mapClickAreas(sc.areas, program);
   const zones = sceneZones(areas, objects, program);
   const fb = player.renderer.framebuffer;
-  const width = player.bgWidth, height = fb.height;
-  const grid = hitGrid(width, height, step, (x, y) => zoneAt(zones, areas, program, x, y, (px, py) => player.spriteCandidates(px, py)));
+  const width = player.bgWidth,
+    height = fb.height;
+  const grid = hitGrid(width, height, step, (x, y) =>
+    zoneAt(zones, areas, program, x, y, (px, py) => player.spriteCandidates(px, py)),
+  );
   // a sprite's box: where its macro actually reacts (opaque pixels not covered by an area with a macro)
   for (let z = 0; z < zones.length; z++) if (zones[z].kind === "sprite") zones[z].bounds = cellBounds(grid, step, z);
-  return { scene, width, height, background: windowToRgba(fb, 0, 0, width, height), areas, program, zones, step, grid };
+  return {
+    scene,
+    width,
+    height,
+    background: windowToRgba(fb, 0, 0, width, height),
+    areas,
+    program,
+    zones,
+    step,
+    grid,
+  };
 }
 
-export function cellBounds(grid: { cols: number; rows: number; cells: Int16Array }, step: number, value: number): Rect | null {
+export function cellBounds(
+  grid: { cols: number; rows: number; cells: Int16Array },
+  step: number,
+  value: number,
+): Rect | null {
   let r: Rect | null = null;
   for (let cy = 0; cy < grid.rows; cy++) {
     for (let cx = 0; cx < grid.cols; cx++) {
       if (grid.cells[cy * grid.cols + cx] !== value) continue;
-      const x = cx * step, y = cy * step;
+      const x = cx * step,
+        y = cy * step;
       if (!r) r = { x0: x, y0: y, x1: x + step - 1, y1: y + step - 1 };
       else {
         r.x0 = Math.min(r.x0, x);
@@ -61,7 +79,12 @@ export function cellBounds(grid: { cols: number; rows: number; cells: Int16Array
 
 /** Zone colours (RGB); an area without a macro is drawn grey and hatched. */
 export const ZONE_COLORS: readonly (readonly [number, number, number])[] = [
-  [255, 80, 80], [80, 200, 255], [255, 210, 60], [120, 255, 120], [230, 120, 255], [255, 150, 60],
+  [255, 80, 80],
+  [80, 200, 255],
+  [255, 210, 60],
+  [120, 255, 120],
+  [230, 120, 255],
+  [255, 150, 60],
 ];
 export const SILENT_COLOR = [190, 190, 190] as const;
 
@@ -73,7 +96,11 @@ export function zoneColor(zones: readonly Zone[], z: number): readonly [number, 
  * The overlay: every grid cell blended with the colour of its zone (silent areas hatched), the zone boxes outlined.
  * `highlight` (a zone index or -1) is drawn stronger, the others fainter.
  */
-export function paintZones(data: MapZonesData, highlight = -1, out = new Uint8ClampedArray(data.background)): Uint8ClampedArray {
+export function paintZones(
+  data: MapZonesData,
+  highlight = -1,
+  out = new Uint8ClampedArray(data.background),
+): Uint8ClampedArray {
   const { width, height, step, grid, zones } = data;
   const blend = (x: number, y: number, c: readonly number[], a: number) => {
     const i = (y * width + x) * 4;
@@ -94,8 +121,12 @@ export function paintZones(data: MapZonesData, highlight = -1, out = new Uint8Cl
   zones.forEach((z, i) => {
     const b = z.bounds;
     if (!b) return;
-    const c = zoneColor(zones, i), a = i === highlight ? 1 : 0.85;
-    const x0 = Math.max(0, b.x0), x1 = Math.min(width - 1, b.x1), y0 = Math.max(0, b.y0), y1 = Math.min(height - 1, b.y1);
+    const c = zoneColor(zones, i),
+      a = i === highlight ? 1 : 0.85;
+    const x0 = Math.max(0, b.x0),
+      x1 = Math.min(width - 1, b.x1),
+      y0 = Math.max(0, b.y0),
+      y1 = Math.min(height - 1, b.y1);
     for (let w = 0; w < (i === highlight ? 3 : 1); w++) {
       for (let x = x0; x <= x1; x++) {
         if (y0 + w <= y1) blend(x, y0 + w, c, a);

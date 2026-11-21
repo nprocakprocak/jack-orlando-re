@@ -28,10 +28,25 @@ describe("ICS (synthetic)", () => {
   });
 
   it("reads sections, frames and an EFFECT attached to the next frame", () => {
-    const r = ics("[walk]", "a.pbm 1 2 3 4 5 1000 1000", "Effect step.snd 0 20 30", "B.PBM -1 -2 -3 -4 -5 -6 -7", "[Two]", "C.PBM 0 0 0 0 0 0 0");
+    const r = ics(
+      "[walk]",
+      "a.pbm 1 2 3 4 5 1000 1000",
+      "Effect step.snd 0 20 30",
+      "B.PBM -1 -2 -3 -4 -5 -6 -7",
+      "[Two]",
+      "C.PBM 0 0 0 0 0 0 0",
+    );
     expect(r.sections.map((s) => s.name)).toEqual(["WALK", "TWO"]);
     const [a, b] = r.sections[0].frames;
-    expect(a).toEqual({ file: "A.PBM", xRight: 1, xLeft: 2, y: 3, shadow1: [4, 5], shadow2: [1000, 1000], effect: null });
+    expect(a).toEqual({
+      file: "A.PBM",
+      xRight: 1,
+      xLeft: 2,
+      y: 3,
+      shadow1: [4, 5],
+      shadow2: [1000, 1000],
+      effect: null,
+    });
     expect(b.effect).toEqual({ sound: "STEP.SND", channel: 0, unused: 20, volume: 30 });
     expect(frameValues(b)).toEqual([-1, -2, -3, -4, -5, -6, -7]);
     expect(r.lostEffects).toEqual([]);
@@ -39,7 +54,10 @@ describe("ICS (synthetic)", () => {
 
   it("drops an EFFECT before a section or at the end", () => {
     const r = ics("[A]", "X.PBM 0 0 0 0 0 0 0", "EFFECT S1 1 2 3", "[B]", "Y.PBM 0 0 0 0 0 0 0", "EFFECT S2 1 2 3");
-    expect(r.lostEffects).toEqual([["A", "S1"], ["B", "S2"]]);
+    expect(r.lostEffects).toEqual([
+      ["A", "S1"],
+      ["B", "S2"],
+    ]);
     expect(r.sections[1].frames[0].effect).toBeNull();
   });
 
@@ -91,7 +109,10 @@ describe("FCM (synthetic)", () => {
   it("reads positioned films (negative time) and several films", () => {
     const films = fcm("[A]", "-120", "BG.PBM", "F1.PBM 10 -20", "[B]", "50", "X.PBM", "Y.PBM");
     expect(films[0]).toMatchObject({ frameMs: 120, positioned: true });
-    expect(films[0].frames).toEqual([{ file: "BG.PBM", x: 0, y: 0 }, { file: "F1.PBM", x: 10, y: -20 }]);
+    expect(films[0].frames).toEqual([
+      { file: "BG.PBM", x: 0, y: 0 },
+      { file: "F1.PBM", x: 10, y: -20 },
+    ]);
     expect(films[1].frames.length).toBe(2);
   });
 
@@ -139,7 +160,10 @@ describe("SFB and CM (synthetic)", () => {
   const i16 = (...v: number[]) => new Uint8Array(new Int16Array(v).buffer);
 
   it("reads hot-spot triples and checks the series length", () => {
-    expect(parseSfb(i16(47, 59, 257, -6, 94, 259))).toEqual([[47, 59, 257], [-6, 94, 259]]);
+    expect(parseSfb(i16(47, 59, 257, -6, 94, 259))).toEqual([
+      [47, 59, 257],
+      [-6, 94, 259],
+    ]);
     expect(() => parseSfb(new Uint8Array(0))).toThrow("not a multiple of 6");
     expect(() => parseSfb(new Uint8Array(7))).toThrow("not a multiple of 6");
     const twelve = i16(...Array.from({ length: 36 }, (_, i) => i));

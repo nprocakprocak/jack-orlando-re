@@ -1,6 +1,13 @@
 import { describe, expect, it } from "vitest";
 import {
-  alignScroll, MAX_SCROLL_X, presentRgba, screenToBuffer, SCREEN_H, SCREEN_W, scrollLimits, scrollTick,
+  alignScroll,
+  MAX_SCROLL_X,
+  presentRgba,
+  screenToBuffer,
+  SCREEN_H,
+  SCREEN_W,
+  scrollLimits,
+  scrollTick,
 } from "./present";
 import { createSurface } from "./surface";
 import { BUFFER_H, BUFFER_W } from "./renderer";

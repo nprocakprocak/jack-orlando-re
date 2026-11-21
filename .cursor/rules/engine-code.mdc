@@ -14,7 +14,7 @@ One file has one responsibility. A comment that belongs to a method moves with t
 
 Keep the folder names `scene`, `map`, `areas`, and `minimap`. Each name is a different part of the game.
 
-Do not add Prettier. Do not reformat a file in bulk. A split moves the code, so the diff is that move.
+Prettier formats the sources. Do not reflow a file by hand. A split moves the code; it does not rewrite it.
 
 ```ts
 // Wrong: leave the comment behind, or rewrap the body while moving it.

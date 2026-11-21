@@ -15,7 +15,11 @@ function gridData(width: number, height: number, cells: number[], zones: Zone[],
     program: { macros: [] },
     zones,
     step,
-    grid: { cols: Math.ceil(width / step), rows: Math.ceil(height / step), cells: Int16Array.from(cells) },
+    grid: {
+      cols: Math.ceil(width / step),
+      rows: Math.ceil(height / step),
+      cells: Int16Array.from(cells),
+    },
   } as unknown as MapZonesData;
 }
 

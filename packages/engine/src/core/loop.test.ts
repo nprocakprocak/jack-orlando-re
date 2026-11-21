@@ -219,7 +219,10 @@ describe("EngineLoop input polling", () => {
 
   it("input applied by a poll is visible to logic ticks later in the same step", () => {
     const seen: boolean[] = [];
-    const loop = new EngineLoop({ update: () => seen.push(loop.keyboard.isKeyDown(DIK.SPACE)) }, { doubleEvery11th: false });
+    const loop = new EngineLoop(
+      { update: () => seen.push(loop.keyboard.isKeyDown(DIK.SPACE)) },
+      { doubleEvery11th: false },
+    );
     loop.keyboard.push({ dik: DIK.SPACE, down: true, char: 0x20 });
     loop.step(0);
     loop.step(45); // ticks 1..9: logic at 3, 6, 9; poll at 8

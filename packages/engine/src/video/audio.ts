@@ -11,9 +11,9 @@ export interface MovieSoundSink {
   start(pcm: Int16Array, level: number): void;
   push(pcm: Int16Array): void;
   /**
- * PCM bytes played since start() (4 per sample frame) — the play cursor of the DirectSound buffer.
- * null: nothing is playing (a suspended AudioContext), the player keeps its nominal clock.
- */
+   * PCM bytes played since start() (4 per sample frame) — the play cursor of the DirectSound buffer.
+   * null: nothing is playing (a suspended AudioContext), the player keeps its nominal clock.
+   */
   playedBytes(): number | null;
   /** Snd_SetVolume(1, level), 0..127 */
   setLevel(level: number): void;

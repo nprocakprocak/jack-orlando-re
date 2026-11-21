@@ -40,9 +40,9 @@ export interface StreamSource {
 
 export interface AudioBackend {
   /**
- * Starts playing. `onEnded` is called once when playback runs out on its own; it must not
- * be called after `Voice.stop()`.
- */
+   * Starts playing. `onEnded` is called once when playback runs out on its own; it must not
+   * be called after `Voice.stop()`.
+   */
   start(sound: PreparedSound, params: VoiceParams, onEnded: () => void): Voice;
   /** Like `start`, but pulls frames from `source` shortly before they are heard. */
   startStream(source: StreamSource, params: VoiceParams, onEnded: () => void): Voice;

@@ -49,7 +49,8 @@ export class IdbStore implements SaveStore {
     this.db ??= new Promise((resolve, reject) => {
       const req = this.factory.open(this.dbName, 1);
       req.onupgradeneeded = () => {
-        for (const s of [IDB_SAVEGAME, IDB_SLOTS]) if (!req.result.objectStoreNames.contains(s)) req.result.createObjectStore(s);
+        for (const s of [IDB_SAVEGAME, IDB_SLOTS])
+          if (!req.result.objectStoreNames.contains(s)) req.result.createObjectStore(s);
       };
       req.onsuccess = () => resolve(req.result);
       req.onerror = () => reject(req.error);

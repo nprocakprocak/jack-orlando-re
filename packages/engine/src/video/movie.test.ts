@@ -116,7 +116,9 @@ describe("MoviePlayer without sound", () => {
   });
 
   it("the outro mode needs its images", () => {
-    expect(() => new MoviePlayer(new Avx(buildAvx([tiny(20, [[PAL, FULL]])])), { mode: MODE_OUTRO })).toThrow(/outro images/);
+    expect(() => new MoviePlayer(new Avx(buildAvx([tiny(20, [[PAL, FULL]])])), { mode: MODE_OUTRO })).toThrow(
+      /outro images/,
+    );
   });
 });
 
@@ -254,7 +256,12 @@ describe("sound", () => {
 });
 
 describe("OUTRO (mode 2)", () => {
-  const img = (w: number, h: number, px: number[]): Image16 => ({ width: w, height: h, kind: "rgb565", pixels: Uint16Array.from(px) });
+  const img = (w: number, h: number, px: number[]): Image16 => ({
+    width: w,
+    height: h,
+    kind: "rgb565",
+    pixels: Uint16Array.from(px),
+  });
   const outro: OutroImages = {
     background: img(W, 480, new Array(W * 480).fill(0x0011)),
     credits: img(2, 1, [0x2222, 0x3333]),
@@ -271,7 +278,12 @@ describe("OUTRO (mode 2)", () => {
   }
   const play = (level = 100) => {
     const sink = new FakeMovieSink();
-    const p = new MoviePlayer(new Avx(buildAvx(segs)), { mode: MODE_OUTRO, outro, sound: sink, level });
+    const p = new MoviePlayer(new Avx(buildAvx(segs)), {
+      mode: MODE_OUTRO,
+      outro,
+      sound: sink,
+      level,
+    });
     const shots: Record<string, number[]> = {};
     p.start(0);
     for (let t = 0; t < 2000 && !p.isOver; t++) {
@@ -326,7 +338,19 @@ describe("OUTRO (mode 2)", () => {
 
 describe("MovieBuffer runs", () => {
   it("record every run of the delta, in order", () => {
-    const avx = new Avx(buildAvx([tiny(20, [[PAL, deltaChunk(1, [[2, [1, 2]], [3, [3]]])]])]));
+    const avx = new Avx(
+      buildAvx([
+        tiny(20, [
+          [
+            PAL,
+            deltaChunk(1, [
+              [2, [1, 2]],
+              [3, [3]],
+            ]),
+          ],
+        ]),
+      ]),
+    );
     const p = new MoviePlayer(avx, { mode: MODE_SCENE });
     p.start(0);
     p.step(0);

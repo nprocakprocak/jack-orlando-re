@@ -33,7 +33,13 @@ export function quickScore(fileName: string): number {
   const dot = fileName.indexOf(".", start);
   const frag = fileName.slice(start, dot < 0 ? undefined : dot);
   const year = atoi(frag.slice(0, 4));
-  return (year - 1900) * 525600 + atoi(frag.slice(5)) * 43200 + atoi(frag.slice(8)) * 1440 + atoi(frag.slice(11)) * 60 + atoi(frag.slice(14));
+  return (
+    (year - 1900) * 525600 +
+    atoi(frag.slice(5)) * 43200 +
+    atoi(frag.slice(8)) * 1440 +
+    atoi(frag.slice(11)) * 60 +
+    atoi(frag.slice(14))
+  );
 }
 
 /** `Szybki Zapis*.*` — also files of the other version (`.svl` in the normal one): the load then refuses them silently. */

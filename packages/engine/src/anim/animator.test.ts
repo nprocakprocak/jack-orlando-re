@@ -5,11 +5,23 @@ import { findInsertion, globalInsertion, insertionTable } from "./assets";
 import { f32, ROUND_SHADOW } from "./jack";
 
 const hot = (i: number): HotSpot => [40 + i, 60 - i, 260];
-const DATA: WalkFrames = { hotSpots: [0, 1, 2, 3, 4].map(() => Array.from({ length: 12 }, (_, i) => hot(i))), standWidths: [100, 60, 110, 80, 90] };
+const DATA: WalkFrames = {
+  hotSpots: [0, 1, 2, 3, 4].map(() => Array.from({ length: 12 }, (_, i) => hot(i))),
+  standWidths: [100, 60, 110, 80, 90],
+};
 const POSE: JackPose = { x: 300, y: 400, dir: 1, facing: 1, scale: 1 };
 
 function frame(file: string, extra: Partial<IcsFrame> = {}): IcsFrame {
-  return { file, xRight: 50, xLeft: 70, y: 262, shadow1: [5, 2], shadow2: [NO_SHADOW, NO_SHADOW], effect: null, ...extra };
+  return {
+    file,
+    xRight: 50,
+    xLeft: 70,
+    y: 262,
+    shadow1: [5, 2],
+    shadow2: [NO_SHADOW, NO_SHADOW],
+    effect: null,
+    ...extra,
+  };
 }
 
 function ticks(a: JackAnimator, n: number, pose = POSE) {
@@ -21,7 +33,14 @@ describe("JackAnimator: standing (Jack_Stand)", () => {
     const a = new JackAnimator(DATA);
     const u = a.stand({ ...POSE, dir: 0, scale: 0.5 });
     const s = f32(f32(0.978) * 0.5);
-    expect(u.sprite).toEqual({ file: "SSFR2.PBM", source: "resource", x: Math.trunc(300 - 46 * s), y: Math.trunc(400 - 264 * s), scale: s, mirrored: false });
+    expect(u.sprite).toEqual({
+      file: "SSFR2.PBM",
+      source: "resource",
+      x: Math.trunc(300 - 46 * s),
+      y: Math.trunc(400 - 264 * s),
+      scale: s,
+      mirrored: false,
+    });
     expect(u.shadows![0]!.file).toBe("SH_FR04.PBM");
     expect(a.walkFrame).toBe(3);
     const left = a.stand({ ...POSE, dir: 1, facing: -1 });
@@ -31,7 +50,9 @@ describe("JackAnimator: standing (Jack_Stand)", () => {
 
   it("noScale and the uniform change the scale", () => {
     expect(new JackAnimator(DATA, { noScale: true }).standScale({ ...POSE, scale: 0.3 })).toBe(1);
-    expect(new JackAnimator(DATA, { uniform: true }).standScale({ ...POSE, dir: 4, scale: 0.5 })).toBe(f32(f32(1.014) * 0.5));
+    expect(new JackAnimator(DATA, { uniform: true }).standScale({ ...POSE, dir: 4, scale: 0.5 })).toBe(
+      f32(f32(1.014) * 0.5),
+    );
     expect(new JackAnimator(DATA).standScale({ ...POSE, dir: 4, scale: 1 })).toBe(1); // 1.015 clamped
     expect(new JackAnimator(DATA).standScale({ ...POSE, dir: 0, scale: 0.05 })).toBe(f32(0.1));
   });
@@ -41,7 +62,10 @@ describe("JackAnimator: the uniform set (Jack_LoadWalkFramesUniform)", () => {
   const uhot = (i: number): HotSpot => [30 + i, 70 - i, 250];
   const BOTH: WalkFrames = {
     ...DATA,
-    uniform: { hotSpots: [0, 1, 2, 3, 4].map(() => Array.from({ length: 12 }, (_, i) => uhot(i))), standWidths: [101, 61, 111, 81, 91] },
+    uniform: {
+      hotSpots: [0, 1, 2, 3, 4].map(() => Array.from({ length: 12 }, (_, i) => uhot(i))),
+      standWidths: [101, 61, 111, 81, 91],
+    },
   };
 
   it("standing: ST*W13.PBM with the uniform hot spots and scale", () => {
@@ -50,7 +74,14 @@ describe("JackAnimator: the uniform set (Jack_LoadWalkFramesUniform)", () => {
     expect(files).toEqual(["STFRW13.PBM", "STPRW13.PBM", "STBAW13.PBM", "STSFW13.PBM", "STSBW13.PBM"]);
     const s = f32(f32(0.978) * 0.5);
     const u = a.stand({ ...POSE, dir: 0, scale: 0.5 });
-    expect(u.sprite).toEqual({ file: "STFRW13.PBM", source: "resource", x: Math.trunc(300 - 47 * s), y: Math.trunc(400 - 268 * s), scale: s, mirrored: false });
+    expect(u.sprite).toEqual({
+      file: "STFRW13.PBM",
+      source: "resource",
+      x: Math.trunc(300 - 47 * s),
+      y: Math.trunc(400 - 268 * s),
+      scale: s,
+      mirrored: false,
+    });
     // mirrored: xLeft = width of STSFW13 (81) - 39
     expect(a.stand({ ...POSE, dir: 3, facing: -1 }).sprite!.x).toBe(300 - Math.trunc((81 - 39) * f32(1)));
     // 0.988 of the civilian three-quarter frames is 1 in the uniform
@@ -101,7 +132,10 @@ describe("JackAnimator: walking", () => {
     expect(shown[0].sprite!.x).toBe(300 - 43);
     expect(shown[0].shadows![0]!.file).toBe("SH_PR05.PBM");
     const steps = shown.filter((u) => u.sounds.length).map((u) => [u.walkFrame, u.sounds[0].sound]);
-    expect(steps).toEqual([[6, "KROK2.SND"], [0, "KROK1.SND"]]);
+    expect(steps).toEqual([
+      [6, "KROK2.SND"],
+      [0, "KROK1.SND"],
+    ]);
   });
 
   it("calls move before drawing and never waits less than 1 tick", () => {
@@ -117,7 +151,13 @@ describe("JackAnimator: walking", () => {
 
   it("removes a shown shadow 2 when walking starts, shadows off leaves them alone", () => {
     const a = new JackAnimator(DATA);
-    a.startInsertion({ frames: [frame("A.PBM", { shadow2: [1, 1] })], start: 0, count: 1, facing: 1, global: false });
+    a.startInsertion({
+      frames: [frame("A.PBM", { shadow2: [1, 1] })],
+      start: 0,
+      count: 1,
+      facing: 1,
+      global: false,
+    });
     const ins = ticks(a, 5).find((u) => u.sprite)!;
     expect(ins.shadows![1]!.file).toBe(ROUND_SHADOW);
     a.walk();
@@ -132,17 +172,47 @@ describe("JackAnimator: walking", () => {
 describe("JackAnimator: insertions", () => {
   it("shows each frame after frameDelay ticks, rounds the placement, ends one delay after the last", () => {
     const a = new JackAnimator(DATA, { frameDelay: 3 });
-    a.startInsertion({ frames: [frame("A.PBM"), frame("B.PBM")], start: 0, count: 2, facing: 1, global: false, name: "AB" });
+    a.startInsertion({
+      frames: [frame("A.PBM"), frame("B.PBM")],
+      start: 0,
+      count: 2,
+      facing: 1,
+      global: false,
+      name: "AB",
+    });
     const out = ticks(a, 9);
-    expect(out.map((u) => u.sprite?.file ?? (u.insertionEnded !== undefined ? "end" : "-"))).toEqual(["-", "-", "A.PBM", "-", "-", "B.PBM", "-", "-", "end"]);
-    expect(out[2].sprite).toEqual({ file: "A.PBM", source: "scene", x: 250, y: 138, scale: 1, mirrored: false });
+    expect(out.map((u) => u.sprite?.file ?? (u.insertionEnded !== undefined ? "end" : "-"))).toEqual([
+      "-",
+      "-",
+      "A.PBM",
+      "-",
+      "-",
+      "B.PBM",
+      "-",
+      "-",
+      "end",
+    ]);
+    expect(out[2].sprite).toEqual({
+      file: "A.PBM",
+      source: "scene",
+      x: 250,
+      y: 138,
+      scale: 1,
+      mirrored: false,
+    });
     expect(out[8].insertionEnded).toBe("AB");
     expect(a.mode).toBe("stand");
   });
 
   it("mirrors with xLeft, flips shadow dx, scales offsets unless noScale", () => {
     const a = new JackAnimator(DATA, { frameDelay: 1 });
-    a.startInsertion({ frames: [frame("A.PBM", { shadow1: [10, 4] })], start: 0, count: 1, facing: -1, global: false });
+    a.startInsertion({
+      frames: [frame("A.PBM", { shadow1: [10, 4] })],
+      start: 0,
+      count: 1,
+      facing: -1,
+      global: false,
+    });
     const u = a.tick({ ...POSE, scale: 0.5 }).update;
     expect(u.sprite).toMatchObject({ x: Math.trunc(300 - 70 * 0.5 + 0.5), mirrored: true });
     const sh = u.shadows![0]!;
@@ -150,7 +220,13 @@ describe("JackAnimator: insertions", () => {
     expect([sh.x, sh.y]).toEqual([Math.trunc(295 - 55 * s), Math.trunc(402 - 14 * s)]);
     expect(u.shadows![1]).toBeUndefined();
     const n = new JackAnimator(DATA, { frameDelay: 1, noScale: true });
-    n.startInsertion({ frames: [frame("A.PBM", { shadow1: [10, 4] })], start: 0, count: 1, facing: 1, global: false });
+    n.startInsertion({
+      frames: [frame("A.PBM", { shadow1: [10, 4] })],
+      start: 0,
+      count: 1,
+      facing: 1,
+      global: false,
+    });
     const v = n.tick({ ...POSE, scale: 0.5 }).update;
     expect(v.sprite!.scale).toBe(1);
     expect(v.shadows![0]!.x).toBe(Math.trunc(310 - 55 * s)); // offset unscaled, shadow size still 0.5
@@ -158,7 +234,14 @@ describe("JackAnimator: insertions", () => {
 
   it("global insertions: GLOBAL.PAK, scale times scaleMul clamped to 0.1..1", () => {
     const a = new JackAnimator(DATA, { frameDelay: 1 });
-    a.startInsertion({ frames: [frame("A.PBM"), frame("B.PBM")], start: 0, count: 2, facing: 1, global: true, scaleMul: 0.97 });
+    a.startInsertion({
+      frames: [frame("A.PBM"), frame("B.PBM")],
+      start: 0,
+      count: 2,
+      facing: 1,
+      global: true,
+      scaleMul: 0.97,
+    });
     const u = a.tick({ ...POSE, scale: 1 }).update;
     expect(u.sprite).toMatchObject({ source: "global", scale: f32(0.97) });
     expect(a.tick({ ...POSE, scale: 0.05 }).update.sprite!.scale).toBe(f32(0.1));
@@ -166,10 +249,15 @@ describe("JackAnimator: insertions", () => {
 
   it("plays effects on both channels for channel 0, and the next section's first effect at the end", () => {
     const ics = parseIcs(
-      new TextEncoder().encode("[A] A1.PBM 1 2 3 1000 0 1000 0 EFFECT S1.SND 0 7 30 A2.PBM 1 2 3 1000 0 1000 0 [B] EFFECT S2.SND 3 0 20 B1.PBM 1 2 3 1000 0 1000 0"),
+      new TextEncoder().encode(
+        "[A] A1.PBM 1 2 3 1000 0 1000 0 EFFECT S1.SND 0 7 30 A2.PBM 1 2 3 1000 0 1000 0 [B] EFFECT S2.SND 3 0 20 B1.PBM 1 2 3 1000 0 1000 0",
+      ),
     );
     const table = insertionTable(ics);
-    expect(table.sections).toEqual([{ name: "A", start: 0, count: 2 }, { name: "B", start: 2, count: 1 }]);
+    expect(table.sections).toEqual([
+      { name: "A", start: 0, count: 2 },
+      { name: "B", start: 2, count: 1 },
+    ]);
     const a = new JackAnimator(DATA, { frameDelay: 1 });
     a.startInsertion(findInsertion(table, "A", 1)!);
     const out = ticks(a, 3);
@@ -178,13 +266,21 @@ describe("JackAnimator: insertions", () => {
     expect(out[2].sounds).toEqual([{ sound: "S2.SND", channels: [3], volumes: [20], kind: "insertion" }]);
     expect(out[0].shadows).toEqual([undefined, undefined]); // no shadows in the frame, none shown before
     expect(findInsertion(table, "a", 1)).toBeNull(); // strcmp: exact name
-    expect(globalInsertion(ics, "b", -1, 0.9)).toMatchObject({ start: 0, count: 1, global: true, scaleMul: 0.9, name: "B" });
+    expect(globalInsertion(ics, "b", -1, 0.9)).toMatchObject({
+      start: 0,
+      count: 1,
+      global: true,
+      scaleMul: 0.9,
+      name: "B",
+    });
     expect(globalInsertion(ics, "C", 1)).toBeNull();
   });
 
   it("rejects ranges outside the frame table", () => {
     const a = new JackAnimator(DATA);
-    expect(() => a.startInsertion({ frames: [frame("A.PBM")], start: 0, count: 2, facing: 1, global: false })).toThrow(AnimError);
+    expect(() => a.startInsertion({ frames: [frame("A.PBM")], start: 0, count: 2, facing: 1, global: false })).toThrow(
+      AnimError,
+    );
     expect(() => a.startInsertion({ frames: [], start: -1, count: 0, facing: 1, global: false })).toThrow(AnimError);
   });
 });

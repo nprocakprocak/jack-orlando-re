@@ -20,8 +20,22 @@ const frames = (prefix: string, n: number) => Array.from({ length: n }, (_, i) =
  * searches from slot 0).
  */
 export const BUILTIN_FACES: readonly Face[] = [
-  { name: "JACK", face: "FACEJ.PBM", eyesPos: [0x22, 0x30], eyes: frames("OCJA", 3), mouthPos: [0x23, 0x48], mouth: frames("USJA", 5) },
-  { name: "JACKWOJ", face: "FACEJAW.PBM", eyesPos: [0x25, 0x2d], eyes: frames("OJAW", 3), mouthPos: [0x23, 0x47], mouth: frames("UJAW", 5) },
+  {
+    name: "JACK",
+    face: "FACEJ.PBM",
+    eyesPos: [0x22, 0x30],
+    eyes: frames("OCJA", 3),
+    mouthPos: [0x23, 0x48],
+    mouth: frames("USJA", 5),
+  },
+  {
+    name: "JACKWOJ",
+    face: "FACEJAW.PBM",
+    eyesPos: [0x25, 0x2d],
+    eyes: frames("OJAW", 3),
+    mouthPos: [0x23, 0x47],
+    mouth: frames("UJAW", 5),
+  },
 ];
 /** DIALOG answers are spoken on mixer channel 1 (LEFT) / 2 (everything else), as TALK LEFT / RIGHT. */
 export const voiceChannel = (side: Side) => (side === "L" ? 1 : 2);
@@ -47,15 +61,15 @@ export interface FaceView {
   /** the left window is drawn mirrored unless SHOWFACE had a '*' */
   mirrored: boolean;
   /**
- * Mouth frame 0..4 drawn over the face, null = none since SHOWFACE. The game never redraws the
- * window at the end of a line, so the last frame stays.
- */
+   * Mouth frame 0..4 drawn over the face, null = none since SHOWFACE. The game never redraws the
+   * window at the end of a line, so the last frame stays.
+   */
   mouth: number | null;
   /**
- * Eye frames (0..2) drawn over the face since its last redraw, oldest first (keyed blits over
- * each other; a repeated frame covers its earlier copy, so each appears once). An idle blink
- * draws over the window as it is and its last frame stays; a talking step redraws the face.
- */
+   * Eye frames (0..2) drawn over the face since its last redraw, oldest first (keyed blits over
+   * each other; a repeated frame covers its earlier copy, so each appears once). An idle blink
+   * draws over the window as it is and its last frame stays; a talking step redraws the face.
+   */
   eyes: number[];
 }
 
@@ -104,10 +118,10 @@ export class DialogController {
   scrollX = 0;
   scrollY = 0;
   /**
- * Jack wears the uniform (g_jackUniform - a uniform flag, not a gun; script variable
- * JACKISWOJ): SHOWFACE of JACK shows JACKWOJ. Set by EXTRA 6 (Script_ExecStep case 0x24 ->
- *, SC105 [BRANIE-MUNDUR.PBM]), cleared by EXTRA 8 (unused in scripts) and on load.
- */
+   * Jack wears the uniform (g_jackUniform - a uniform flag, not a gun; script variable
+   * JACKISWOJ): SHOWFACE of JACK shows JACKWOJ. Set by EXTRA 6 (Script_ExecStep case 0x24 ->
+   *, SC105 [BRANIE-MUNDUR.PBM]), cleared by EXTRA 8 (unused in scripts) and on load.
+   */
   jackUniform = false;
   /** DialogOnOff (g_dialogTextOn): off hides the captions, not the answer menu */
   textOn = true;
@@ -154,14 +168,21 @@ export class DialogController {
   }
 
   /**
- * SHOWFACE name L|R [*] (Script_ExecStep case 0x17 -> Face_Show). Returns false for an
- * unknown name. In the uniform (jackUniform), JACK becomes JACKWOJ and the star is dropped.
- */
+   * SHOWFACE name L|R [*] (Script_ExecStep case 0x17 -> Face_Show). Returns false for an
+   * unknown name. In the uniform (jackUniform), JACK becomes JACKWOJ and the star is dropped.
+   */
   showFace(name: string, side: Side, star: boolean): boolean {
     let slot = [...BUILTIN_FACES, ...this.faces].findIndex((f) => f.name === name);
     if (slot < 0) return false;
     if (this.jackUniform && slot === 0) [slot, star] = [1, false];
-    this.sides[side] = { slot, mirrored: side === "L" && !star, mouth: null, eyes: [], idleCounter: this.sides[side]?.idleCounter ?? 0, idleBlink: -1 };
+    this.sides[side] = {
+      slot,
+      mirrored: side === "L" && !star,
+      mouth: null,
+      eyes: [],
+      idleCounter: this.sides[side]?.idleCounter ?? 0,
+      idleBlink: -1,
+    };
     return true;
   }
 
@@ -171,10 +192,10 @@ export class DialogController {
   }
 
   /**
- * HIDEFACEAT (`Script_ExecStep` case 0x5e): only arms a flag; `Talk_FaceStep` (its tail) hides the
- * window once no line is active (`g_talkActive == 0`) — so `TALK LEFT +` followed by `HIDEFACEAT L` lets the
- * line be spoken first. One shared flag: a second HIDEFACEAT before it fires replaces the side.
- */
+   * HIDEFACEAT (`Script_ExecStep` case 0x5e): only arms a flag; `Talk_FaceStep` (its tail) hides the
+   * window once no line is active (`g_talkActive == 0`) — so `TALK LEFT +` followed by `HIDEFACEAT L` lets the
+   * line be spoken first. One shared flag: a second HIDEFACEAT before it fires replaces the side.
+   */
   hideFaceAt(side: Side): void {
     this.pendingHide = side;
   }
@@ -183,7 +204,14 @@ export class DialogController {
     const s = this.sides[side];
     if (!s) return null;
     const source = s.slot < FIRST_FACE ? "resource" : "scene";
-    return { slot: s.slot, face: this.faceAt(s.slot), source, mirrored: s.mirrored, mouth: s.mouth, eyes: [...s.eyes] };
+    return {
+      slot: s.slot,
+      face: this.faceAt(s.slot),
+      source,
+      mirrored: s.mirrored,
+      mouth: s.mouth,
+      eyes: [...s.eyes],
+    };
   }
 
   /** Caption colour of the speaker in a window: slots < 2 and no face use the default (white). */
@@ -204,7 +232,14 @@ export class DialogController {
   }
 
   /** TALKRANDOM (`index` drawn by the host, 0..count-1) / TALKRANDOMINDEX: option `index` of the block. */
-  talkOption(speaker: Speaker, dialogId: number, index: number, channel: number, wait: "-" | "+", macro: number): boolean {
+  talkOption(
+    speaker: Speaker,
+    dialogId: number,
+    index: number,
+    channel: number,
+    wait: "-" | "+",
+    macro: number,
+  ): boolean {
     const d = this.dcn ? findDialog(this.dcn, dialogId) : -1;
     if (!this.dcn || d < 0) return false;
     const dlg = this.dcn.dialogs[d];
@@ -222,10 +257,25 @@ export class DialogController {
     if (this.textOn) {
       const colors = { leftColor: this.speakerColor("L"), rightColor: this.speakerColor("R") };
       if (speaker === "LEFT") this.caption = placeCaption({ ...input, ...colors }, this.scrollX, CAPTION_Y);
-      else if (speaker === "RIGHT") this.caption = placeCaption({ ...input, ...colors }, this.scrollX + 0x280, CAPTION_Y);
-      else this.caption = placePersonCaption(input, speaker.x, speaker.y, { outline: this.textColors[4], fill: this.textColors[5] });
+      else if (speaker === "RIGHT")
+        this.caption = placeCaption({ ...input, ...colors }, this.scrollX + 0x280, CAPTION_Y);
+      else
+        this.caption = placePersonCaption(input, speaker.x, speaker.y, {
+          outline: this.textColors[4],
+          fill: this.textColors[5],
+        });
     }
-    this.line = { side, noFace: typeof speaker !== "string", lip, interval, nextStep: interval, counter: 0, n: 0, blink: -1, resumeMacro };
+    this.line = {
+      side,
+      noFace: typeof speaker !== "string",
+      lip,
+      interval,
+      nextStep: interval,
+      counter: 0,
+      n: 0,
+      blink: -1,
+      resumeMacro,
+    };
   }
 
   /** 15 ms logic tick: the line's clock runs. */
@@ -234,10 +284,10 @@ export class DialogController {
   }
 
   /**
- * One game frame: a step of the talking face when its clock has reached the next step
- *, and the idle blinking of the faces. `skip` = the player clicked (g_clickArmed),
- * which ends the line at its next step.
- */
+   * One game frame: a step of the talking face when its clock has reached the next step
+   *, and the idle blinking of the faces. `skip` = the player clicked (g_clickArmed),
+   * which ends the line at its next step.
+   */
   frame(skip = false): void {
     const l = this.line;
     if (l && l.nextStep <= l.counter) {
@@ -307,7 +357,14 @@ export class DialogController {
     const dlg = this.dcn.dialogs[d];
     const hidden = this.hidden.slice(dlg.first, dlg.first + dlg.count);
     const top = menuTop(visibleCount(hidden, dlg.count));
-    const rows = buildMenu(this.dcn.entries.slice(dlg.first, dlg.first + dlg.count), hidden, this.o.measure, this.scrollX, this.scrollY, top);
+    const rows = buildMenu(
+      this.dcn.entries.slice(dlg.first, dlg.first + dlg.count),
+      hidden,
+      this.o.measure,
+      this.scrollX,
+      this.scrollY,
+      top,
+    );
     this.menuPointer = new MenuPointer(rows);
     this.menu = { dialog: dialogId, rows, pressed: -1 };
     this.menuMacro = macro;
@@ -316,10 +373,10 @@ export class DialogController {
   }
 
   /**
- * Click point (g_clickX/Y = mouse + hotspot offset, `Cursor.clickPoint`) over the open menu in world pixels. When a row is chosen the answer is stored
- * (`answers.set(dialog, original index)`) and the answer line is spoken - the macro resumes
- * when it ends. Returns the chosen option index.
- */
+   * Click point (g_clickX/Y = mouse + hotspot offset, `Cursor.clickPoint`) over the open menu in world pixels. When a row is chosen the answer is stored
+   * (`answers.set(dialog, original index)`) and the answer line is spoken - the macro resumes
+   * when it ends. Returns the chosen option index.
+   */
   pointer(worldX: number, worldY: number, down: boolean): number | undefined {
     if (!this.menu || !this.menuPointer || !this.dcn) return undefined;
     const r = this.menuPointer.update(worldX, worldY, down);
@@ -330,7 +387,13 @@ export class DialogController {
     this.menuPointer = null;
     this.o.answers.set(dialog, r.chosen);
     const dlg = this.dcn.dialogs[findDialog(this.dcn, dialog)];
-    this.startLine(this.menuSpeaker === "L" ? "LEFT" : "RIGHT", this.dcn.entries[dlg.first + r.chosen], voiceChannel(this.menuSpeaker), PACE_ANSWER, this.menuMacro);
+    this.startLine(
+      this.menuSpeaker === "L" ? "LEFT" : "RIGHT",
+      this.dcn.entries[dlg.first + r.chosen],
+      voiceChannel(this.menuSpeaker),
+      PACE_ANSWER,
+      this.menuMacro,
+    );
     return r.chosen;
   }
 }

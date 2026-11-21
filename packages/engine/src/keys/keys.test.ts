@@ -6,12 +6,32 @@ import { DIK, keyActions, mapAvailableIn, PAUSE_CHAR, type KeyContext, type KeyI
 import { ANIM_ROLLUP, NOTICE_HEIGHT, NoticeStrip, STATE_NONE, STATE_UNROLLED } from "./notice";
 
 const idle: KeyContext = {
-  sceneNoControl: false, answerMenuOpen: false, captionShown: false, bulletMenuOpen: false, topBarOpen: false,
-  topBarFolded: true, macroPlayerLocked: false, keysEnabled: true, facesShown: false, menuVar: true, barFlag: false,
-  noticeShown: false, macroActive: false, cursorEnabled: true, cursorMode: 0, optionsRequest: false, coatRequest: false,
-  mapAvailable: true, backspace: { file: "SC005B.CCG", last: 7 }, canSave: true,
+  sceneNoControl: false,
+  answerMenuOpen: false,
+  captionShown: false,
+  bulletMenuOpen: false,
+  topBarOpen: false,
+  topBarFolded: true,
+  macroPlayerLocked: false,
+  keysEnabled: true,
+  facesShown: false,
+  menuVar: true,
+  barFlag: false,
+  noticeShown: false,
+  macroActive: false,
+  cursorEnabled: true,
+  cursorMode: 0,
+  optionsRequest: false,
+  coatRequest: false,
+  mapAvailable: true,
+  backspace: { file: "SC005B.CCG", last: 7 },
+  canSave: true,
 };
-const press = (...keys: number[]): KeyInput => ({ pressed: new Set(keys), down: new Set(keys), lastChar: 0 });
+const press = (...keys: number[]): KeyInput => ({
+  pressed: new Set(keys),
+  down: new Set(keys),
+  lastChar: 0,
+});
 const kinds = (i: KeyInput, c: Partial<KeyContext> = {}) => keyActions(i, { ...idle, ...c }).map((a) => a.kind);
 
 describe("keyActions", () => {
@@ -35,7 +55,13 @@ describe("keyActions", () => {
   });
 
   it("F5 and F6 ignore every state; F5 copies the temp save when the scene does not allow saving", () => {
-    const busy = { macroActive: true, noticeShown: true, bulletMenuOpen: true, sceneNoControl: true, menuVar: false };
+    const busy = {
+      macroActive: true,
+      noticeShown: true,
+      bulletMenuOpen: true,
+      sceneNoControl: true,
+      menuVar: false,
+    };
     expect(kinds(press(DIK.F5), busy)).toEqual(["quickSave"]);
     expect(kinds(press(DIK.F6), busy)).toEqual(["quickLoad"]);
     expect(keyActions(press(DIK.F5), { ...idle, noticeShown: true, canSave: false })).toEqual([
@@ -50,8 +76,14 @@ describe("keyActions", () => {
   });
 
   it.each([
-    ["bulletMenuOpen", true], ["facesShown", true], ["menuVar", false], ["barFlag", true], ["noticeShown", true],
-    ["macroActive", true], ["topBarFolded", false], ["optionsRequest", true],
+    ["bulletMenuOpen", true],
+    ["facesShown", true],
+    ["menuVar", false],
+    ["barFlag", true],
+    ["noticeShown", true],
+    ["macroActive", true],
+    ["topBarFolded", false],
+    ["optionsRequest", true],
   ] as const)("F2/F3 are blocked by %s = %s", (field, value) => {
     expect(kinds(press(DIK.F2), { [field]: value })).not.toContain("saveWindow");
     expect(kinds(press(DIK.F3), { [field]: value })).not.toContain("loadWindow");
@@ -81,8 +113,14 @@ describe("keyActions", () => {
 
   it("Backspace is blocked by dialogue, captions, locked macros, a disabled flag and scenes without control", () => {
     const blockers: Partial<KeyContext>[] = [
-      { sceneNoControl: true }, { answerMenuOpen: true }, { captionShown: true }, { bulletMenuOpen: true },
-      { topBarOpen: true }, { macroPlayerLocked: true }, { keysEnabled: false }, { backspace: undefined },
+      { sceneNoControl: true },
+      { answerMenuOpen: true },
+      { captionShown: true },
+      { bulletMenuOpen: true },
+      { topBarOpen: true },
+      { macroPlayerLocked: true },
+      { keysEnabled: false },
+      { backspace: undefined },
     ];
     for (const c of blockers) expect(kinds(press(DIK.BACKSPACE), c)).toEqual([]);
     expect(keyActions(press(DIK.BACKSPACE), idle)).toEqual([{ kind: "backspace", file: "SC005B.CCG", last: 7 }]);
@@ -94,7 +132,13 @@ describe("keyActions", () => {
   });
 
   it("keeps the order of Game_Run when several keys come together", () => {
-    expect(kinds(press(DIK.F1, DIK.M, DIK.F5, DIK.F2, DIK.BACKSPACE))).toEqual(["backspace", "quickSave", "saveWindow", "map", "coat"]);
+    expect(kinds(press(DIK.F1, DIK.M, DIK.F5, DIK.F2, DIK.BACKSPACE))).toEqual([
+      "backspace",
+      "quickSave",
+      "saveWindow",
+      "map",
+      "coat",
+    ]);
   });
 });
 
@@ -154,7 +198,15 @@ describe("NoticeStrip", () => {
   it("show: width rounded up to even, level 1, state unrolling", () => {
     const n = new NoticeStrip();
     n.show(0x1cc, text, font, 4);
-    expect(n).toMatchObject({ shown: true, anim: 1, state: 1, wipe: 1, slot: 4, y: 0x1cc, width: 18 });
+    expect(n).toMatchObject({
+      shown: true,
+      anim: 1,
+      state: 1,
+      wipe: 1,
+      slot: 4,
+      y: 0x1cc,
+      width: 18,
+    });
     n.show(400, Uint8Array.from([65]), font);
     expect(n.width).toBe(6);
     n.show(400, Uint8Array.from([65, 0x2f, 0x32, 65]), font); // "A/2A": 6 + 7 + ... odd total

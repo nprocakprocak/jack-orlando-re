@@ -8,11 +8,45 @@ import { wipeOrder } from "../launcher/wipe";
 import { createSurface, type Surface16 } from "../render/surface";
 import { deltaChunk, flxHeader, paletteChunk, rectChunk, u32 } from "../video/synthetic";
 import {
-  BUTTON_H, BUTTON_W, BUTTON_X, BUTTON_YS, DEFAULT_MUSIC_VOLUME, fadeInSteps, fadeOutSteps, INTERLACE_TOTAL_MS,
-  interlaceRows, interlaceRowsAt, LOADING_MIN_MS, LOADING_X, LOADING_Y, MAIN_MENU_TEXTS_EN, MainMenu, MENU_MUSIC, menuBytes, MenuSmoke,
-  MenuWindow, MAIN_MENU_TEXTS_PL, PRESENT_MS, REVEAL_TOTAL_MS, revealPixels, revealPixelsAt, sleepMs, SMOKE_X, SMOKE_Y,
-  tintRect, TINT_COLOR, TICK_MS, TRUCK_X, TRUCK_Y, WINDOW_H, WINDOW_W, WINDOW_X, WINDOW_Y,
-  type MainMenuAssets, type MainMenuEvent, type MainMenuPhase,
+  BUTTON_H,
+  BUTTON_W,
+  BUTTON_X,
+  BUTTON_YS,
+  DEFAULT_MUSIC_VOLUME,
+  fadeInSteps,
+  fadeOutSteps,
+  INTERLACE_TOTAL_MS,
+  interlaceRows,
+  interlaceRowsAt,
+  LOADING_MIN_MS,
+  LOADING_X,
+  LOADING_Y,
+  MAIN_MENU_TEXTS_EN,
+  MainMenu,
+  MENU_MUSIC,
+  menuBytes,
+  MenuSmoke,
+  MenuWindow,
+  MAIN_MENU_TEXTS_PL,
+  PRESENT_MS,
+  REVEAL_TOTAL_MS,
+  revealPixels,
+  revealPixelsAt,
+  sleepMs,
+  SMOKE_X,
+  SMOKE_Y,
+  tintRect,
+  TINT_COLOR,
+  TICK_MS,
+  TRUCK_X,
+  TRUCK_Y,
+  WINDOW_H,
+  WINDOW_W,
+  WINDOW_X,
+  WINDOW_Y,
+  type MainMenuAssets,
+  type MainMenuEvent,
+  type MainMenuPhase,
 } from "./index";
 
 const BG = 0x8410;
@@ -75,7 +109,10 @@ function menuAt(events: MainMenuEvent[] = [], opts = {}): MainMenu {
   return m;
 }
 
-const buttonCenter = (i: number): [number, number] => [WINDOW_X + BUTTON_X + BUTTON_W / 2, WINDOW_Y + BUTTON_YS[i] + BUTTON_H / 2];
+const buttonCenter = (i: number): [number, number] => [
+  WINDOW_X + BUTTON_X + BUTTON_W / 2,
+  WINDOW_Y + BUTTON_YS[i] + BUTTON_H / 2,
+];
 
 function click(m: MainMenu, i: number): void {
   const [x, y] = buttonCenter(i);
@@ -161,7 +198,9 @@ describe("MenuWindow", () => {
   const w = new MenuWindow(blockFont(), bg, MAIN_MENU_TEXTS_PL);
 
   it("geometry of Launcher_Run: 230 x 235 at (205, 190), buttons 180 x 34 at x 24", () => {
-    expect([WINDOW_X, WINDOW_Y, WINDOW_W, WINDOW_H, BUTTON_X, BUTTON_W, BUTTON_H]).toEqual([205, 190, 230, 235, 24, 180, 34]);
+    expect([WINDOW_X, WINDOW_Y, WINDOW_W, WINDOW_H, BUTTON_X, BUTTON_W, BUTTON_H]).toEqual([
+      205, 190, 230, 235, 24, 180, 34,
+    ]);
     expect([...BUTTON_YS]).toEqual([60, 98, 136, 174]);
   });
 
@@ -198,8 +237,21 @@ describe("MenuWindow", () => {
   });
 
   it("texts: PL from the exe, the title's diamonds are glyph 4", () => {
-    expect(MAIN_MENU_TEXTS_PL).toMatchObject({ intro: "Wprowadzenie", newGame: "Nowa gra", load: "Załaduj grę", quit: "Wyjście z gry" });
-    expect([...menuBytes(MAIN_MENU_TEXTS_PL.title)]).toEqual([0x2f, 0x32, 4, 0x3d, ...[..."MENU GRY"].map((c) => c.charCodeAt(0)), 0x3d, 4]);
+    expect(MAIN_MENU_TEXTS_PL).toMatchObject({
+      intro: "Wprowadzenie",
+      newGame: "Nowa gra",
+      load: "Załaduj grę",
+      quit: "Wyjście z gry",
+    });
+    expect([...menuBytes(MAIN_MENU_TEXTS_PL.title)]).toEqual([
+      0x2f,
+      0x32,
+      4,
+      0x3d,
+      ...[..."MENU GRY"].map((c) => c.charCodeAt(0)),
+      0x3d,
+      4,
+    ]);
     expect([...menuBytes("ł")]).toEqual([0x92]);
   });
 });
@@ -216,7 +268,9 @@ describe("MainMenu flow", () => {
     expect(runUntil(m, "musicIn")).toBe(INTERLACE_TOTAL_MS - 10);
     expect(music(ev).slice(0, 2)).toEqual([{ op: "stop" }, { op: "start", file: MENU_MUSIC }]);
     expect(runUntil(m, "reveal")).toBe(35 * 15);
-    const vols = music(ev).filter((c) => c.op === "volume").map((c) => (c as { value: number }).value);
+    const vols = music(ev)
+      .filter((c) => c.op === "volume")
+      .map((c) => (c as { value: number }).value);
     expect(vols).toEqual([...Array.from({ length: 35 }, (_, i) => i), 35]);
     expect(runUntil(m, "open")).toBe(REVEAL_TOTAL_MS);
     f = m.frame();
@@ -304,7 +358,9 @@ describe("MainMenu flow", () => {
     runUntil(m, "musicOut");
     expect([m.windowLevel, m.buttonsVisible]).toEqual([-1, false]);
     runUntil(m, "loading");
-    const vols = music(ev).filter((c) => c.op === "volume").map((c) => (c as { value: number }).value);
+    const vols = music(ev)
+      .filter((c) => c.op === "volume")
+      .map((c) => (c as { value: number }).value);
     expect(vols[0]).toBe(DEFAULT_MUSIC_VOLUME);
     expect(vols).toHaveLength(17);
     expect(music(ev).at(-1)).toEqual({ op: "stop" });

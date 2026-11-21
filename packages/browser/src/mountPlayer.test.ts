@@ -53,9 +53,7 @@ describe("mountPlayer", () => {
       onStatus: (text) => statuses.push(text),
     });
 
-    canvas.dispatchEvent(
-      new PointerEvent("pointermove", { clientX: 120, clientY: 80, bubbles: true }),
-    );
+    canvas.dispatchEvent(new PointerEvent("pointermove", { clientX: 120, clientY: 80, bubbles: true }));
     expect(rectSpy).toHaveBeenCalled();
 
     await vi.waitFor(() => {
@@ -63,17 +61,13 @@ describe("mountPlayer", () => {
     });
 
     rectSpy.mockClear();
-    canvas.dispatchEvent(
-      new PointerEvent("pointermove", { clientX: 200, clientY: 100, bubbles: true }),
-    );
+    canvas.dispatchEvent(new PointerEvent("pointermove", { clientX: 200, clientY: 100, bubbles: true }));
     expect(rectSpy).toHaveBeenCalled();
 
     await handle.stop();
 
     rectSpy.mockClear();
-    canvas.dispatchEvent(
-      new PointerEvent("pointermove", { clientX: 300, clientY: 120, bubbles: true }),
-    );
+    canvas.dispatchEvent(new PointerEvent("pointermove", { clientX: 300, clientY: 120, bubbles: true }));
     expect(rectSpy).not.toHaveBeenCalled();
 
     canvas.remove();
@@ -118,10 +112,6 @@ describe("httpGameFiles", () => {
     expect(await files.exists("page.bin")).toBe(false);
     expect(await files.exists("missing.bin")).toBe(false);
     const heads = fetchMock.mock.calls.filter((c) => c[1]?.method === "HEAD").map((c) => String(c[0]));
-    expect(heads).toEqual([
-      "http://files/item.bin",
-      "http://files/page.bin",
-      "http://files/missing.bin",
-    ]);
+    expect(heads).toEqual(["http://files/item.bin", "http://files/page.bin", "http://files/missing.bin"]);
   });
 });

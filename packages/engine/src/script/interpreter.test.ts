@@ -1,12 +1,27 @@
 import { describe, expect, it } from "vitest";
 import { compileMcc, type Command } from "./compiler";
 import {
-  CO_RESET, CO_START, Interpreter, LoggingHost, Variables, WAIT_KIND, gotoSceneName,
-  type CommandContext, type CommandResult, type LogEntry, type ScriptHost,
+  CO_RESET,
+  CO_START,
+  Interpreter,
+  LoggingHost,
+  Variables,
+  WAIT_KIND,
+  gotoSceneName,
+  type CommandContext,
+  type CommandResult,
+  type LogEntry,
+  type ScriptHost,
 } from "./interpreter";
 
 const bytes = (s: string) => new Uint8Array([...s].map((c) => c.charCodeAt(0)));
-const VARS = new Map([["LAST", 5], ["A", 0], ["B", 0], ["RAND", 0], ["JACKX", 0]]);
+const VARS = new Map([
+  ["LAST", 5],
+  ["A", 0],
+  ["B", 0],
+  ["RAND", 0],
+  ["JACKX", 0],
+]);
 
 /** Records host commands as "WORD n1"; results per word can be scripted. */
 class TestHost implements ScriptHost {
@@ -69,14 +84,18 @@ describe("variables and conditions", () => {
   });
 
   it("If skips to the matching EndIf, nested blocks included", () => {
-    const { host, it } = setup("[M] If LAST 4 Stay X1 If LAST 5 Stay X2 EndIf IfF LAST > 0 Stay X3 EndIf EndIf If LAST 5 Stay X4 EndIf");
+    const { host, it } = setup(
+      "[M] If LAST 4 Stay X1 If LAST 5 Stay X2 EndIf IfF LAST > 0 Stay X3 EndIf EndIf If LAST 5 Stay X4 EndIf",
+    );
     it.start("M");
     runAll(it);
     expect(host.calls).toEqual(["STAY X4"]);
   });
 
   it("IfF with > = <", () => {
-    const { host, it } = setup("[M] IfF LAST > 4 Stay GT EndIf IfF LAST = 5 Stay EQ EndIf IfF LAST < 6 Stay LT EndIf IfF LAST > 5 Stay NO EndIf IfF LAST < 5 Stay NO2 EndIf");
+    const { host, it } = setup(
+      "[M] IfF LAST > 4 Stay GT EndIf IfF LAST = 5 Stay EQ EndIf IfF LAST < 6 Stay LT EndIf IfF LAST > 5 Stay NO EndIf IfF LAST < 5 Stay NO2 EndIf",
+    );
     it.start("M");
     runAll(it);
     expect(host.calls).toEqual(["STAY GT", "STAY EQ", "STAY LT"]);
@@ -97,7 +116,9 @@ describe("variables and conditions", () => {
   });
 
   it("IfAnswer uses the answer of the dialog; its skip does not count IfF (game bug)", () => {
-    const { host, it } = setup("[M] IfAnswer 1900 2 Stay TWO EndIf IfAnswer 1900 1 IfF LAST > 0 Stay IN EndIf Stay STILL EndIf Stay AFTER");
+    const { host, it } = setup(
+      "[M] IfAnswer 1900 2 Stay TWO EndIf IfAnswer 1900 1 IfF LAST > 0 Stay IN EndIf Stay STILL EndIf Stay AFTER",
+    );
     it.answers.set(1900, 2);
     it.start("M");
     runAll(it);
@@ -331,7 +352,9 @@ describe("macro control", () => {
   });
 
   it("interruptOutMacros stops OUTMACRO macros and starts their destructors", () => {
-    const { it, host } = setup("[A] OutMacro MacroDestructor CLEAN DoNothing 100 [B] OutMacro DoNothing 100 [C] DoNothing 100 [CLEAN] Stay CLEAN [~B] Stay TILDE");
+    const { it, host } = setup(
+      "[A] OutMacro MacroDestructor CLEAN DoNothing 100 [B] OutMacro DoNothing 100 [C] DoNothing 100 [CLEAN] Stay CLEAN [~B] Stay TILDE",
+    );
     it.start("A");
     it.start("B");
     it.start("C");

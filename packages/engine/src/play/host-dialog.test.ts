@@ -28,7 +28,10 @@ describe("SceneHost: dialogs and talk lines (M3 stand-ins)", () => {
     step(s);
     s.it.start("B");
     step(s);
-    expect(s.out.answers).toEqual([[5, 1], [5, 2]]);
+    expect(s.out.answers).toEqual([
+      [5, 1],
+      [5, 2],
+    ]);
     expect(s.it.answers.get(5)).toBe(7);
   });
 });
@@ -37,7 +40,12 @@ describe("SceneHost: SHOWFACE waits for the end of a scroll (Script_ExecStep cas
   function withDialog() {
     const s = setup("[A] ShowFace JACK L Let A 1");
     const shown: string[] = [];
-    (s.host as unknown as { env: { dialog: unknown } }).env.dialog = { showFace: (n: string, side: string) => { shown.push(`${n} ${side}`); return true; } };
+    (s.host as unknown as { env: { dialog: unknown } }).env.dialog = {
+      showFace: (n: string, side: string) => {
+        shown.push(`${n} ${side}`);
+        return true;
+      },
+    };
     return { s, shown };
   }
   it("does nothing and is tried again while the view scrolled in the last tick, then runs", () => {

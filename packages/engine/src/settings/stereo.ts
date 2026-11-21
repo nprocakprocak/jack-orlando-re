@@ -37,7 +37,11 @@ export function copyStereo(samples: Int16Array, surround: boolean, reverse: bool
 export class StereoOptions {
   private readonly gains: GainNode[];
 
-  constructor(ctx: BaseAudioContext, readonly input: AudioNode, readonly output: AudioNode) {
+  constructor(
+    ctx: BaseAudioContext,
+    readonly input: AudioNode,
+    readonly output: AudioNode,
+  ) {
     const splitter = ctx.createChannelSplitter(2);
     const merger = ctx.createChannelMerger(2);
     this.gains = [0, 1, 2, 3].map(() => ctx.createGain());

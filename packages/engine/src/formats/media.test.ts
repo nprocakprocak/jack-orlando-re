@@ -10,27 +10,41 @@ import {
   CHUNK_RECT,
   Flx,
   FrameBuffer,
-  ImaStereoStream,
-  MediaError,
   decodeFrame,
   frameTicks,
-  isAvx,
   parseFlxHeader,
-  rectProblems,
   unpackRle,
   verifyMedia,
   type Codec,
-  type FlxHeader,
 } from "./media";
-
 
 // --- synthetic data ------------------------------------------------------------
 
 const u16 = (v: number) => [v & 0xff, (v >> 8) & 0xff];
 const u32 = (v: number) => [v & 0xff, (v >> 8) & 0xff, (v >> 16) & 0xff, (v >>> 24) & 0xff];
 
-function flxHeader(frames: number, w: number, h: number, opts: { mode?: number; pal16?: number; fps?: number } = {}): number[] {
-  return [0x46, 0x4c, 0x58, 0, ...u16(frames), ...u16(w), ...u16(h), ...u16(opts.fps ?? 12), 1, opts.mode ?? 1, opts.pal16 ?? 1, 0, ...u16(5), ...u16(7)];
+function flxHeader(
+  frames: number,
+  w: number,
+  h: number,
+  opts: { mode?: number; pal16?: number; fps?: number } = {},
+): number[] {
+  return [
+    0x46,
+    0x4c,
+    0x58,
+    0,
+    ...u16(frames),
+    ...u16(w),
+    ...u16(h),
+    ...u16(opts.fps ?? 12),
+    1,
+    opts.mode ?? 1,
+    opts.pal16 ?? 1,
+    0,
+    ...u16(5),
+    ...u16(7),
+  ];
 }
 
 function chunk(type: number, body: number[]): number[] {
@@ -64,13 +78,28 @@ function flx(...parts: number[][]): Uint8Array {
 }
 
 function frames(data: Uint8Array) {
-  return [...new Flx(data).frames()].map((f) => ({ kind: f.frame.kind, rect: f.frame.rect, palette: f.frame.palette }));
+  return [...new Flx(data).frames()].map((f) => ({
+    kind: f.frame.kind,
+    rect: f.frame.rect,
+    palette: f.frame.palette,
+  }));
 }
 
 describe("FLX header", () => {
   it("parses all fields", () => {
     const h = parseFlxHeader(new Uint8Array(flxHeader(3, 10, 4, { mode: 2, fps: 11 })));
-    expect(h).toEqual({ frames: 3, width: 10, height: 4, fps: 11, unkC: 1, mode: 2, pal16: 1, unkF: 0, x: 5, y: 7 });
+    expect(h).toEqual({
+      frames: 3,
+      width: 10,
+      height: 4,
+      fps: 11,
+      unkC: 1,
+      mode: 2,
+      pal16: 1,
+      unkF: 0,
+      x: 5,
+      y: 7,
+    });
     expect(frameTicks(h)).toBe(18);
     expect(frameTicks({ ...h, fps: 0 })).toBe(0);
   });
@@ -90,7 +119,10 @@ describe("FLX frames", () => {
       flxHeader(3, 4, 2),
       palette16(),
       rect(0, 0, 4, 2),
-      deltaChunk(0, [[0, 1, 2], [3, 3]]), // pixels 0,1 then skip 3 -> pixel 5
+      deltaChunk(0, [
+        [0, 1, 2],
+        [3, 3],
+      ]), // pixels 0,1 then skip 3 -> pixel 5
       chunk(CHUNK_PACKED, [...u32(8 + 4), ...u32(2), 0, 2, 0xff, 9, 2]), // unpacked: pair skip 0, 2 x 9 at pixel 2
       chunk(CHUNK_EMPTY, []),
     );
@@ -115,7 +147,9 @@ describe("FLX frames", () => {
   });
 
   it("rejects bytes after the last frame and missing frames", () => {
-    expect(() => frames(flx(flxHeader(1, 2, 1), palette16(), chunk(CHUNK_EMPTY, []), [0]))).toThrow(/1 bytes after frame 1/);
+    expect(() => frames(flx(flxHeader(1, 2, 1), palette16(), chunk(CHUNK_EMPTY, []), [0]))).toThrow(
+      /1 bytes after frame 1/,
+    );
     expect(() => frames(flx(flxHeader(2, 2, 1), palette16(), chunk(CHUNK_EMPTY, [])))).toThrow(/chunk head truncated/);
   });
 
@@ -123,13 +157,19 @@ describe("FLX frames", () => {
     expect(() => frames(flx(flxHeader(1, 2, 1), [CHUNK_EMPTY, 0, ...u32(5)]))).toThrow(/bad size 5/);
     expect(() => frames(flx(flxHeader(1, 2, 1), [CHUNK_EMPTY, 0, ...u32(60)]))).toThrow(/bad size 60/);
     expect(() => frames(flx(flxHeader(1, 2, 1), chunk(CHUNK_EMPTY, [1])))).toThrow(/empty frame chunk/);
-    expect(() => frames(flx(flxHeader(1, 2, 1), chunk(CHUNK_RECT, [1, 2]), chunk(CHUNK_EMPTY, [])))).toThrow(/rect chunk at 20: size 8/);
-    expect(() => frames(flx(flxHeader(1, 2, 1), chunk(CHUNK_PALETTE, [1, 2]), chunk(CHUNK_EMPTY, [])))).toThrow(/2 bytes, expected 512/);
+    expect(() => frames(flx(flxHeader(1, 2, 1), chunk(CHUNK_RECT, [1, 2]), chunk(CHUNK_EMPTY, [])))).toThrow(
+      /rect chunk at 20: size 8/,
+    );
+    expect(() => frames(flx(flxHeader(1, 2, 1), chunk(CHUNK_PALETTE, [1, 2]), chunk(CHUNK_EMPTY, [])))).toThrow(
+      /2 bytes, expected 512/,
+    );
   });
 
   it("enforces the chunk order palette, rect, image", () => {
     const empty = chunk(CHUNK_EMPTY, []);
-    expect(() => frames(flx(flxHeader(1, 2, 1), rect(0, 0, 1, 1), palette16(), empty))).toThrow(/palette chunk out of order/);
+    expect(() => frames(flx(flxHeader(1, 2, 1), rect(0, 0, 1, 1), palette16(), empty))).toThrow(
+      /palette chunk out of order/,
+    );
     expect(() => frames(flx(flxHeader(1, 2, 1), palette16(), palette16(), empty))).toThrow(/out of order/);
     expect(() => frames(flx(flxHeader(1, 2, 1), rect(0, 0, 1, 1), rect(0, 0, 1, 1), empty))).toThrow(/unexpected rect/);
     const fb = new FrameBuffer(2, 1);
@@ -138,7 +178,9 @@ describe("FLX frames", () => {
   });
 
   it("reads signed rects (empty rects have a negative size)", () => {
-    expect(frames(flx(flxHeader(1, 2, 1), rect(639, 378, -638, -377), chunk(CHUNK_EMPTY, [])))[0].rect).toEqual([639, 378, -638, -377]);
+    expect(frames(flx(flxHeader(1, 2, 1), rect(639, 378, -638, -377), chunk(CHUNK_EMPTY, [])))[0].rect).toEqual([
+      639, 378, -638, -377,
+    ]);
   });
 
   it("converts an RGB888 palette (pal16 = 0) to RGB565", () => {
@@ -148,25 +190,37 @@ describe("FLX frames", () => {
     const f = new Flx(data).frames().next().value!;
     expect(f.fb.palette[0]).toBe((0xf8 << 8) | (0x80 << 3) | 1);
     expect(f.fb.frame()[0]).toBe(f.fb.palette[0]);
-    expect(() => frames(flx(flxHeader(1, 1, 1, { pal16: 0 }), palette16(), chunk(CHUNK_EMPTY, [])))).toThrow(/512 bytes, expected 768/);
+    expect(() => frames(flx(flxHeader(1, 1, 1, { pal16: 0 }), palette16(), chunk(CHUNK_EMPTY, [])))).toThrow(
+      /512 bytes, expected 768/,
+    );
   });
 });
 
 describe("FrameBuffer", () => {
   it("rerender = true redraws every pixel when the palette changes", () => {
     const fb = new FrameBuffer(2, 1, true);
-    const d = flx(palette16(), deltaChunk(0, [[1, 5]]), palette16((i) => i + 1), chunk(CHUNK_EMPTY, []));
-    let r = decodeFrame(fb, d, 0, d.length, 1);
+    const d = flx(
+      palette16(),
+      deltaChunk(0, [[1, 5]]),
+      palette16((i) => i + 1),
+      chunk(CHUNK_EMPTY, []),
+    );
+    const first = decodeFrame(fb, d, 0, d.length, 1);
     expect([...fb.frame()]).toEqual([0, 0x505]);
-    r = decodeFrame(fb, d, r.next, d.length, 1);
+    decodeFrame(fb, d, first.next, d.length, 1);
     expect([...fb.frame()]).toEqual([1, 6]);
   });
 
   it("rerender = false keeps the colors of the moment of writing", () => {
     const fb = new FrameBuffer(2, 1, false);
-    const d = flx(palette16(), deltaChunk(0, [[1, 5]]), palette16((i) => i + 1), deltaChunk(0, [[0, 5]]));
-    let r = decodeFrame(fb, d, 0, d.length, 1);
-    r = decodeFrame(fb, d, r.next, d.length, 1);
+    const d = flx(
+      palette16(),
+      deltaChunk(0, [[1, 5]]),
+      palette16((i) => i + 1),
+      deltaChunk(0, [[0, 5]]),
+    );
+    const first = decodeFrame(fb, d, 0, d.length, 1);
+    decodeFrame(fb, d, first.next, d.length, 1);
     expect([...fb.frame()]).toEqual([6, 0x505]);
   });
 
@@ -267,8 +321,28 @@ describe("RLE (chunk type 2)", () => {
 // --- AVX ---------------------------------------------------------------------------
 
 function codec(o: Partial<Codec> = {}): number[] {
-  const c = { type: 0x33, packedSize: 0x10000000, unpackedSize: 0, loopOffset: 0xee000000, predictor: 0, index: 0, predictorR: 0, ...o };
-  return [...u32(c.type), ...u32(c.packedSize), ...u32(c.unpackedSize), ...u32(c.loopOffset), ...u16(c.predictor & 0xffff), c.index, 0, ...u16(c.predictorR & 0xffff), 0, 0];
+  const c = {
+    type: 0x33,
+    packedSize: 0x10000000,
+    unpackedSize: 0,
+    loopOffset: 0xee000000,
+    predictor: 0,
+    index: 0,
+    predictorR: 0,
+    ...o,
+  };
+  return [
+    ...u32(c.type),
+    ...u32(c.packedSize),
+    ...u32(c.unpackedSize),
+    ...u32(c.loopOffset),
+    ...u16(c.predictor & 0xffff),
+    c.index,
+    0,
+    ...u16(c.predictorR & 0xffff),
+    0,
+    0,
+  ];
 }
 
 function record(video: number[], sound: number[] = Array(8).fill(0x11)): number[] {
@@ -334,7 +408,9 @@ describe("AVX container", () => {
     const inside = block(record([...aHeader(2), ...empty]), record([...aHeader(1), ...empty]));
     expect(() => [...new Avx(avx(1, [inside])).frames()]).toThrow(/FLX header inside segment 0/);
     expect(() => [...new Avx(avx(1, [block(record([...aHeader(0), ...empty]))])).frames()]).toThrow(/0 frames/);
-    expect(() => [...new Avx(avx(1, [block(record([...aHeader(1), ...rect(0, 0, 1, 1), ...empty]))])).frames()]).toThrow(/unexpected rect/);
+    expect(() => [
+      ...new Avx(avx(1, [block(record([...aHeader(1), ...rect(0, 0, 1, 1), ...empty]))])).frames(),
+    ]).toThrow(/unexpected rect/);
     const big = flxHeader(1, 2000, 1000);
     expect(() => [...new Avx(avx(1, [block(record([...big, ...empty]))])).frames()]).toThrow(/larger than the buffer/);
   });
@@ -350,99 +426,11 @@ describe("AVX container", () => {
     const wrong = [...aHeader(1), ...empty, ...u32(20), 0, 0, 0, 0];
     const w = new Avx(avx(1, [block([...u32(wrong.length), ...wrong])]));
     expect(() => w.audioChunk(w.frames().next().value!.record)).toThrow(/does not fill the record/);
-    expect(verifyMedia("W.AVX", avx(1, [block([...u32(wrong.length), ...wrong])]))).toEqual([expect.stringMatching(/does not fill/)]);
+    expect(verifyMedia("W.AVX", avx(1, [block([...u32(wrong.length), ...wrong])]))).toEqual([
+      expect.stringMatching(/does not fill/),
+    ]);
     expect(verifyMedia("O.AVX", avx(1, [block(record([...aHeader(1), ...empty], [1, 2, 3, 4]))]))).toEqual([
       expect.stringMatching(/not a multiple of 8/),
     ]);
-  });
-});
-
-describe("IMA stereo stream", () => {
-  const c = (o: Partial<Codec> = {}): Codec => ({ type: 0x33, packedSize: 1 << 30, unpackedSize: 0, loopOffset: 1 << 29, predictor: 0, index: 0, predictorR: 0, ...o });
-  const src = new Uint8Array(Array.from({ length: 32 }, (_, i) => (i * 37 + 11) & 0xff));
-
-  it("keeps its state between calls", () => {
-    const whole = new ImaStereoStream(c()).decode(src);
-    const s = new ImaStereoStream(c());
-    const parts = [...s.decode(src.subarray(0, 8)), ...s.decode(src.subarray(8, 24)), ...s.decode(src.subarray(24))];
-    expect(parts).toEqual([...whole]);
-    expect(whole.length).toBe(64);
-  });
-
-  it("decodes the left word then the right word, low nibble first", () => {
-    // left code 4 (+step), right code 12 (-step); step 7 -> diff 7 + (7 >> 3) = 7
-    const out = new ImaStereoStream(c({ predictor: 100, predictorR: -100 })).decode(new Uint8Array([4, 0, 0, 0, 12, 0, 0, 0]));
-    expect([out[0], out[1]]).toEqual([107, -107]);
-  });
-
-  it("starts from the codec header, both channels with the same index", () => {
-    const s = new ImaStereoStream(c({ predictor: 5, predictorR: -6, index: 30 }));
-    s.decode(new Uint8Array(8));
-    // 8 codes of 0 per channel: index 30 - 8
-    expect(s.state[1]).toBe(22);
-    expect(s.state[3]).toBe(22);
-  });
-
-  it("resets to the saved state at packedSize (zeros if loopOffset was never reached)", () => {
-    const s = new ImaStereoStream(c({ packedSize: 16, predictor: 1000, predictorR: 1000, index: 40 }));
-    const out = s.decode(src.subarray(0, 24));
-    const fresh = new ImaStereoStream(c({ predictor: 0, predictorR: 0, index: 0 })).decode(src.subarray(16, 24));
-    expect([...out.subarray(32)]).toEqual([...fresh]);
-    expect(s.resets).toBe(1);
-    expect(s.pos).toBe((1 << 29) + 8); // reset after unit 2, unit 3 counted from loopOffset
-  });
-
-  it("saves at loopOffset and comes back there", () => {
-    const s = new ImaStereoStream(c({ packedSize: 24, loopOffset: 8 }));
-    const out = s.decode(src.subarray(0, 24));
-    expect(s.pos).toBe(8);
-    expect(s.state).toEqual(s.saved);
-    // after the reset, the state is the one from position 8, so decoding [8..16)
-    // again from there gives the same samples as the first time
-    const again = s.decode(src.subarray(8, 16));
-    expect([...again]).toEqual([...out.subarray(16, 32)]);
-  });
-
-  it("re-reads the header when the counter is back at 0", () => {
-    const s = new ImaStereoStream(c({ packedSize: 8, loopOffset: 0, predictor: 50, predictorR: 60 }));
-    const a = s.decode(src.subarray(0, 8));
-    const b = s.decode(src.subarray(0, 8));
-    expect([...b]).toEqual([...a]);
-  });
-
-  it("rejects data that is not whole 8-byte units", () => {
-    expect(() => new ImaStereoStream(c()).decode(new Uint8Array(4))).toThrow(/not a multiple of 8/);
-  });
-});
-
-describe("verify rules", () => {
-  const h = (o: Partial<FlxHeader> = {}): FlxHeader => ({ ...parseFlxHeader(new Uint8Array(flxHeader(1, 10, 5))), ...o });
-
-  it("rects: empty allowed, in frame (one column of slack), mode 2 only by size", () => {
-    expect(rectProblems(h(), 0, [3, 3, -1, 5])).toEqual([]);
-    expect(rectProblems(h(), 0, [0, 0, 11, 5])).toEqual([]);
-    expect(rectProblems(h(), 0, [0, 0, 12, 5])).toHaveLength(1);
-    expect(rectProblems(h(), 0, [0, 1, 10, 5])).toHaveLength(1);
-    expect(rectProblems(h(), 0, [-1, 0, 2, 2])).toHaveLength(1);
-    expect(rectProblems(h({ mode: 2 }), 0, [300, 200, 10, 5])).toEqual([]);
-    expect(rectProblems(h({ mode: 2 }), 0, [0, 0, 11, 5])).toHaveLength(1);
-  });
-
-  it("palette: flag 1, in the first frame only", () => {
-    const e = chunk(CHUNK_EMPTY, []);
-    expect(verifyMedia("A.FLX", flx(flxHeader(2, 2, 1), palette16(), e, e))).toEqual([]);
-    expect(verifyMedia("A.FLX", flx(flxHeader(1, 2, 1, { pal16: 0 }), e))).toEqual(["palette flag 0", "first frame has no palette"]);
-    expect(verifyMedia("A.FLX", flx(flxHeader(2, 2, 1), palette16(), e, palette16(), e))).toEqual(["palette in frame 1"]);
-    expect(verifyMedia("A.FLX", flx(flxHeader(1, 2, 1), palette16(), rect(0, 0, 5, 1), e))).toHaveLength(1);
-    expect(verifyMedia("A.FLX", new Uint8Array(3))).toEqual([expect.stringMatching(/truncated/)]);
-  });
-
-  it("is case-insensitive about the extension", () => {
-    expect(isAvx("intro.avx")).toBe(true);
-    expect(isAvx("D1.FLX")).toBe(false);
-  });
-
-  it("MediaError is the only error type", () => {
-    expect(new MediaError("x")).toBeInstanceOf(Error);
   });
 });

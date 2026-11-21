@@ -3,12 +3,25 @@ import type { Image16 } from "../formats/bm";
 import { mapAvailableIn } from "../keys/keymap";
 import { createSurface, type Surface16 } from "../render/surface";
 import {
-  DIK_MAP, FRAME_MS, IMAGE_H, IMAGE_W, MAP_X, MAP_Y, MARKER_FRAMES, MARKER_SETS, MiniMapScreen, markerFileName,
-  markerSetFor, type MiniMapAssets,
+  DIK_MAP,
+  FRAME_MS,
+  IMAGE_H,
+  IMAGE_W,
+  MAP_X,
+  MAP_Y,
+  MARKER_FRAMES,
+  MARKER_SETS,
+  MiniMapScreen,
+  markerFileName,
+  markerSetFor,
+  type MiniMapAssets,
 } from "./index";
 
 const img = (w: number, h: number, fill: (i: number) => number): Image16 => ({
-  width: w, height: h, kind: "rgb565", pixels: Uint16Array.from({ length: w * h }, (_, i) => fill(i)),
+  width: w,
+  height: h,
+  kind: "rgb565",
+  pixels: Uint16Array.from({ length: w * h }, (_, i) => fill(i)),
 });
 const scene = (v = 0x4208): Surface16 => {
   const s = createSurface(640, 480);
@@ -40,7 +53,11 @@ describe("tables", () => {
     expect(markerFileName(0, 5)).toBe("haf005.bm");
     expect(markerFileName(1, 19)).toBe("jack19.bm");
     expect(markerFileName(2, 0)).toBe("stad00.bm");
-    expect(MARKER_SETS.map((m) => [m.x, m.y])).toEqual([[0x1b2, 100], [0x171, 0x105], [0xb6, 0xaf]]);
+    expect(MARKER_SETS.map((m) => [m.x, m.y])).toEqual([
+      [0x1b2, 100],
+      [0x171, 0x105],
+      [0xb6, 0xaf],
+    ]);
   });
   it("the map is open to the chapters the hook gets from keymap", () => {
     expect(mapAvailableIn(2, 40)).toBe(true);
@@ -81,7 +98,11 @@ describe("MiniMapScreen", () => {
 
   it("scales the marker by 0.63 with Cursor_BoxScale (41x30 -> 25x18)", () => {
     const m = new MiniMapScreen({ onExit() {} });
-    const a: MiniMapAssets = { map: img(IMAGE_W, IMAGE_H, () => 1), set: 0, frames: Array.from({ length: 20 }, () => img(41, 30, () => 0x0841)) };
+    const a: MiniMapAssets = {
+      map: img(IMAGE_W, IMAGE_H, () => 1),
+      set: 0,
+      frames: Array.from({ length: 20 }, () => img(41, 30, () => 0x0841)),
+    };
     m.open(a, scene(), false);
     m.tick(0);
     const s = shown(m);

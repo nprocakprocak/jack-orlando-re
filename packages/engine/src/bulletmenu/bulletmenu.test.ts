@@ -13,8 +13,20 @@ setDarkenTables(formulaTables());
 
 function input(p: Partial<BulletFrameInput> = {}): BulletFrameInput {
   return {
-    mouseX: 300, mouseY: 240, scrollX: 0, clickX: 291, clickY: 228, leftDown: false, rightDown: false, esc: false,
-    cursorMode: 0, gun: false, showBullet: true, blocked: false, cursorEnabled: true, ...p,
+    mouseX: 300,
+    mouseY: 240,
+    scrollX: 0,
+    clickX: 291,
+    clickY: 228,
+    leftDown: false,
+    rightDown: false,
+    esc: false,
+    cursorMode: 0,
+    gun: false,
+    showBullet: true,
+    blocked: false,
+    cursorEnabled: true,
+    ...p,
   };
 }
 const icon = (id: string) => ICONS.find((i) => i.id === id)!;
@@ -53,8 +65,11 @@ describe("geometry", () => {
   });
   it("icon table matches g_bulletIconPos", () => {
     expect(ICONS.map((i) => [i.id, i.mode, i.x, i.y, i.w, i.h])).toEqual([
-      ["look", 1, 90, 111, 20, 26], ["pointer", 0, 54, 70, 22, 38], ["take", 4, 74, 49, 42, 34],
-      ["hit", 2, 121, 90, 32, 32], ["gun", 3, 71, 80, 36, 23],
+      ["look", 1, 90, 111, 20, 26],
+      ["pointer", 0, 54, 70, 22, 38],
+      ["take", 4, 74, 49, 42, 34],
+      ["hit", 2, 121, 90, 32, 32],
+      ["gun", 3, 71, 80, 36, 23],
     ]);
   });
 });
@@ -115,7 +130,12 @@ describe("icons", () => {
     expect(m.open).toBe(false);
     expect(m.highlights()).toEqual([]);
   });
-  it.each([["look", 1], ["pointer", 0], ["take", 4], ["hit", 2]])("icon %s selects mode %i", (id, mode) => {
+  it.each([
+    ["look", 1],
+    ["pointer", 0],
+    ["take", 4],
+    ["hit", 2],
+  ])("icon %s selects mode %i", (id, mode) => {
     const m = opened();
     const p = at(id, m.x, m.y);
     m.frame(input({ ...p, leftDown: true }));
@@ -174,7 +194,9 @@ describe("icons", () => {
     m.frame(input({ ...p, leftDown: true, rightDown: true }));
     m.frame(input({ ...p, rightDown: true }));
     expect(m.open).toBe(false);
-    expect(m.frame(input({ ...p, rightDown: true, mouseX: 400, mouseY: 300 }))).toEqual([{ type: "open", x: 298, y: 203 }]);
+    expect(m.frame(input({ ...p, rightDown: true, mouseX: 400, mouseY: 300 }))).toEqual([
+      { type: "open", x: 298, y: 203 },
+    ]);
   });
   it("close() hides once", () => {
     const m = opened();
@@ -221,11 +243,21 @@ describe("verb window", () => {
     expect(x.result).toBeNull();
   });
   it("uses the small font 1 (JACKM) for the width; titles keep the exe's /3 letter-spacing code", () => {
-    const narrow = { ...assets, fontSmall: { ...assets.fontSmall, glyphs: assets.fontSmall.glyphs.map((g) => ({ ...g, width: 3 })) } };
+    const narrow = {
+      ...assets,
+      fontSmall: {
+        ...assets.fontSmall,
+        glyphs: assets.fontSmall.glyphs.map((g) => ({ ...g, width: 3 })),
+      },
+    };
     const tw = textWidth(narrow.fontSmall, encodeMazovia("Wskaźnik"));
     expect(textWidth(narrow.fontBig, encodeMazovia("Wskaźnik"))).not.toBe(tw);
     expect(new VerbMenu(narrow, scene, 10, 15, false).win.w).toBe(tw + 80 + ((tw + 80) % 2));
-    expect([VERB_TEXTS.P.title, VERB_TEXTS.E.title, VERB_TEXTS.D.title]).toEqual(["/3WYBIERZ", "/3SELECT", "/3AUSWAHL"]);
+    expect([VERB_TEXTS.P.title, VERB_TEXTS.E.title, VERB_TEXTS.D.title]).toEqual([
+      "/3WYBIERZ",
+      "/3SELECT",
+      "/3AUSWAHL",
+    ]);
   });
   it("releasing outside the pressed button does not choose", () => {
     const v = new VerbMenu(assets, scene, 100, 100, false);
@@ -239,7 +271,10 @@ describe("verb window", () => {
 describe("drawing", () => {
   it("draws the bullet and only the pressed highlights at the icon rectangle corner", () => {
     const m = opened();
-    const imgs: Record<string, ReturnType<typeof flat>> = { "POCISK.BM": flat(181, 182, 0x1111), "PIESC_1.BM": flat(37, 32, 0x2222) };
+    const imgs: Record<string, ReturnType<typeof flat>> = {
+      "POCISK.BM": flat(181, 182, 0x1111),
+      "PIESC_1.BM": flat(37, 32, 0x2222),
+    };
     const s = createSurface(640, 480);
     const px = (x: number, y: number) => s.pixels[y * 640 + x];
     drawBullet(m, false, (n) => imgs[n], s);

@@ -1,6 +1,13 @@
 import { describe, expect, it } from "vitest";
 import {
-  DEFAULT_CLIP, keptScale, MAX_SPRITES, newSprite, SCALE_KEEP, SpriteError, SpriteList, stepForScale,
+  DEFAULT_CLIP,
+  keptScale,
+  MAX_SPRITES,
+  newSprite,
+  SCALE_KEEP,
+  SpriteError,
+  SpriteList,
+  stepForScale,
 } from "./sprites";
 import { createSurface } from "./surface";
 

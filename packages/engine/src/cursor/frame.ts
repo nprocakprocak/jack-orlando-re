@@ -19,7 +19,12 @@ export function frameVisible(env: FrameEnv): boolean {
 }
 
 /** The frame's overlay: `Sprite_Set(g_frameSprite, g_mouseX - 0x18, g_mouseY - 0x14, RAMKA)`; null when it is parked. */
-export function frameOverlay(image: Surface16 | null, env: FrameEnv, mouseX: number, mouseY: number): { x: number; y: number; image: Surface16 } | null {
+export function frameOverlay(
+  image: Surface16 | null,
+  env: FrameEnv,
+  mouseX: number,
+  mouseY: number,
+): { x: number; y: number; image: Surface16 } | null {
   if (!image || !frameVisible(env)) return null;
   return { x: mouseX - 0x18, y: mouseY - 0x14, image };
 }

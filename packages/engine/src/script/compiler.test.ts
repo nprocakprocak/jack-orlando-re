@@ -1,13 +1,23 @@
 import { describe, expect, it } from "vitest";
 import {
-  DONOTHING, JACK, MAX_COMMANDS, MAX_MACROS, MacroError, NAMES, WORDS, compileMcc,
-  findMacro, macroCommands, parseVariables, problemsOf, stripBrackets,
+  DONOTHING,
+  JACK,
+  MAX_COMMANDS,
+  MAX_MACROS,
+  MacroError,
+  NAMES,
+  WORDS,
+  compileMcc,
+  findMacro,
+  macroCommands,
+  parseVariables,
+  problemsOf,
+  stripBrackets,
 } from "./compiler";
 
 const bytes = (s: string) => new Uint8Array([...s].map((c) => c.charCodeAt(0)));
 const compile = (s: string) => compileMcc(bytes(s));
 const one = (s: string) => compile(`[M]\r\n${s}\r\n`).commands[0];
-
 
 describe("word table", () => {
   it("has the 155 words of the compiler and codes 1..0xa3 without the gaps", () => {
@@ -30,7 +40,10 @@ describe("structure", () => {
       { name: "PRE", start: 0, count: 1, line: 1 },
       { name: "INIT", start: 1, count: 1, line: 4 },
     ]);
-    expect(p.commands.map((c) => [c.code, c.word, c.line])).toEqual([[0x1a, "LET", 2], [0x14, "GOTOSCENE", 5]]);
+    expect(p.commands.map((c) => [c.code, c.word, c.line])).toEqual([
+      [0x1a, "LET", 2],
+      [0x14, "GOTOSCENE", 5],
+    ]);
     expect(findMacro(p, "INIT")).toBe(1);
     expect(macroCommands(p, "INIT")?.[0].n1).toBe("SC006");
     expect(macroCommands(p, "NONE")).toBeNull();
@@ -52,7 +65,10 @@ describe("structure", () => {
 
   it("an unknown word compiles to DONOTHING and eats one number", () => {
     const p = compile("[M] Foo 7 Stay X");
-    expect(p.commands.map((c) => [c.code, c.word, c.a[0]])).toEqual([[DONOTHING, "FOO", 7], [0x4a, "STAY", 0]]);
+    expect(p.commands.map((c) => [c.code, c.word, c.a[0]])).toEqual([
+      [DONOTHING, "FOO", 7],
+      [0x4a, "STAY", 0],
+    ]);
   });
 
   it("keeps one If counter for the whole file (not per macro)", () => {
@@ -112,10 +128,18 @@ describe("errors", () => {
 
 describe("arguments", () => {
   it("SetPosition: numbers, *VARIABLES and JACK", () => {
-    expect(one("SetPosition JACK 472 425")).toMatchObject({ n1: "JACK", a: [472, 425, JACK, 0, 0, 0, 0], refs: [] });
+    expect(one("SetPosition JACK 472 425")).toMatchObject({
+      n1: "JACK",
+      a: [472, 425, JACK, 0, 0, 0, 0],
+      refs: [],
+    });
     const c = one("SetPosition KOT *JACKX *JACKY");
     expect(c.a).toEqual([0, 0, 0, 1, 1, 0, 0]);
-    expect(c.refs).toEqual([[0, "var", "JACKX"], [1, "var", "JACKY"], [2, "person", "KOT"]]);
+    expect(c.refs).toEqual([
+      [0, "var", "JACKX"],
+      [1, "var", "JACKY"],
+      [2, "person", "KOT"],
+    ]);
   });
 
   it("WalkTo / WalkToDir: flag char and flag slots", () => {
@@ -146,13 +170,18 @@ describe("arguments", () => {
     expect(one("Talk RIGHT 150 2 -").a.slice(0, 3)).toEqual([150, 2, -11]);
     expect(one("Talk JACK 5 2 +").a.slice(0, 3)).toEqual([5, 2, JACK]);
     expect(one("Talk POS 5 2 +").a.slice(0, 3)).toEqual([5, 2, -12]);
-    expect(one("Talk OLDLADY 10 2 -").refs).toEqual([[0, "line", 10], [2, "person", "OLDLADY"]]);
+    expect(one("Talk OLDLADY 10 2 -").refs).toEqual([
+      [0, "line", 10],
+      [2, "person", "OLDLADY"],
+    ]);
     expect(one("TalkRandom LEFT 300 1 -").refs).toEqual([[0, "dialog", 300]]);
     expect(one("TalkRandomIndex KOT 300 4 2 -")).toMatchObject({ a: [300, 2, 0, 4, 0, 0, 0] });
   });
 
   it("If / IfF / IfAnswer / IfMouseX", () => {
-    const p = compile("[M] If LAST 4 IfF LAST > 3 IfF LAST = 3 IfF LAST < 3 IfF LAST ! 3 IfAnswer 1900 2 IfMouseXM 100 IfMouseXW 200 EndIf EndIf EndIf EndIf EndIf EndIf EndIf EndIf");
+    const p = compile(
+      "[M] If LAST 4 IfF LAST > 3 IfF LAST = 3 IfF LAST < 3 IfF LAST ! 3 IfAnswer 1900 2 IfMouseXM 100 IfMouseXW 200 EndIf EndIf EndIf EndIf EndIf EndIf EndIf EndIf",
+    );
     const [iff, gt, eq, lt, bad, ans, xm, xw] = p.commands;
     expect(iff).toMatchObject({ a: [4, 0, 0, 0, 0, 0, 0], refs: [[2, "var", "LAST"]] });
     expect([gt.a[3], eq.a[3], lt.a[3], bad.a[3]]).toEqual([0, 1, 2, 0]);
@@ -176,10 +205,18 @@ describe("arguments", () => {
     expect(one("ShowShadow EXTRA 1 2 0.5")).toMatchObject({ a: [-1, 1, 2, 0, 0, 0, 0], f: 0.5 });
     expect(one("HideShadow KOT").refs).toEqual([[0, "person", "KOT"]]);
     expect(one("AnimaShadow A1 JACK NULL 3").a).toEqual([0, JACK, -1, 3, 0, 0, 0]);
-    expect(one("AnimaShadow A1 KOT S1 3").refs).toEqual([[0, "anim", "A1"], [1, "person", "KOT"], [2, "shadow", "S1"]]);
+    expect(one("AnimaShadow A1 KOT S1 3").refs).toEqual([
+      [0, "anim", "A1"],
+      [1, "person", "KOT"],
+      [2, "shadow", "S1"],
+    ]);
     expect(one("Effect DZW 1 2 3").a).toEqual([1, 0, 3, 3, 0, 0, 0]);
     expect(one("EffectVolume DZW 1 9").a).toEqual([9, 0, 9, 0, 0, 0, 0]);
-    expect(one("PinArea KOT DRZWI 1 V1").refs).toEqual([[0, "person", "KOT"], [1, "area", "DRZWI"], [2, "var", "V1"]]);
+    expect(one("PinArea KOT DRZWI 1 V1").refs).toEqual([
+      [0, "person", "KOT"],
+      [1, "area", "DRZWI"],
+      [2, "var", "V1"],
+    ]);
     expect(one("SetPositionE GAZ.000 *X 500").a).toEqual([0, 500, 0, 1, 0, 0, 0]);
     expect(one("AnyKey KEY").refs).toEqual([[0, "var", "KEY"]]);
     expect(one("Take PET.001").refs).toEqual([[1, "object", "PET.001"]]);
@@ -197,10 +234,16 @@ describe("problems", () => {
       'line 1 WALKTO: flag "-xyz" overruns the compiler\'s stack',
     ]);
     expect(problemsOf(p, vars, new Set(["NOPE"]))).toHaveLength(2);
-    expect(problemsOf(compile(`[${"M".repeat(60)}] Stay X`), vars)).toEqual([`[${"M".repeat(60)}]: name longer than 59`]);
+    expect(problemsOf(compile(`[${"M".repeat(60)}] Stay X`), vars)).toEqual([
+      `[${"M".repeat(60)}]: name longer than 59`,
+    ]);
   });
 
   it("parseVariables reads name/value pairs, the first of a name wins", () => {
-    expect([...parseVariables(bytes("XXX 0\r\nLAST 5\r\nSLAP  0\r\nLAST 9\r\n"))]).toEqual([["XXX", 0], ["LAST", 5], ["SLAP", 0]]);
+    expect([...parseVariables(bytes("XXX 0\r\nLAST 5\r\nSLAP  0\r\nLAST 9\r\n"))]).toEqual([
+      ["XXX", 0],
+      ["LAST", 5],
+      ["SLAP", 0],
+    ]);
   });
 });

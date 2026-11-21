@@ -2,16 +2,16 @@ import { describe, expect, it } from "vitest";
 import { type Image16 } from "../formats/bm";
 import { BUNDLED_REMAP } from "../play/facewin";
 import { approximateShadowTables } from "../scene/shadow";
-import {
-  darken,
-  darkenPixel,
-  maskBufferPixels,
-  PersonShadow,
-  shadowEnabledByMode,
-  type ShadowInput,
-} from "./shadow";
+import { darken, darkenPixel, maskBufferPixels, PersonShadow, shadowEnabledByMode, type ShadowInput } from "./shadow";
 
-const IN: ShadowInput = { x: 300, y: 400, personScale: 1, lightScale: 1, maskWidth: 100, maskHeight: 20 };
+const IN: ShadowInput = {
+  x: 300,
+  y: 400,
+  personScale: 1,
+  lightScale: 1,
+  maskWidth: 100,
+  maskHeight: 20,
+};
 
 function mask(width: number, height: number, set: (x: number, y: number) => boolean): Image16 {
   const pixels = new Uint16Array(width * height);
@@ -187,14 +187,28 @@ describe("darkening", () => {
   it("does nothing for an empty rectangle (the early return of the game)", () => {
     const back = new Uint16Array(4).fill(0x000a);
     const draw = { width: 0, height: 2, level: 1, stepInt: 1, stepFrac: 0 } as Parameters<typeof darken>[1];
-    expect(darken(back, draw, mask(2, 2, () => true), T)).toBe(false);
+    expect(
+      darken(
+        back,
+        draw,
+        mask(2, 2, () => true),
+        T,
+      ),
+    ).toBe(false);
     expect([...back]).toEqual([10, 10, 10, 10]);
   });
 
   it("reads zero beyond the mask instead of failing", () => {
     const back = new Uint16Array(6).fill(0x000a);
     const draw = { width: 3, height: 2, level: 1, stepInt: 2, stepFrac: 0 } as Parameters<typeof darken>[1];
-    expect(() => darken(back, draw, mask(2, 1, () => true), T)).not.toThrow();
+    expect(() =>
+      darken(
+        back,
+        draw,
+        mask(2, 1, () => true),
+        T,
+      ),
+    ).not.toThrow();
   });
 
   it("level 0 of the colour tables keeps a pixel, level 8 makes a white pixel darker", () => {

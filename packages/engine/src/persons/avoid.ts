@@ -92,8 +92,16 @@ export function escapeCandidates(jack: AvoidJack, person: AvoidPerson, px: numbe
   ay = nz(s16(ftol(-person.velX)));
   const c1 = mk(s16(ftol((ax * radius) / norm + jack.x)), s16(ftol((ay * radius) / (norm * Y_FACTOR) + jack.y)));
   const side = ftol(f32(SIDE_STEP) * jack.scale);
-  const c2: Candidate = { x: s16(ftol(jack.x - f32(SIDE_STEP) * jack.scale)), y: s16(ftol(jack.y)), rank: s16(side) };
-  const c3: Candidate = { x: s16(ftol(f32(SIDE_STEP) * jack.scale + jack.x)), y: s16(ftol(jack.y)), rank: s16(side) };
+  const c2: Candidate = {
+    x: s16(ftol(jack.x - f32(SIDE_STEP) * jack.scale)),
+    y: s16(ftol(jack.y)),
+    rank: s16(side),
+  };
+  const c3: Candidate = {
+    x: s16(ftol(f32(SIDE_STEP) * jack.scale + jack.x)),
+    y: s16(ftol(jack.y)),
+    rank: s16(side),
+  };
   const out = [c0, c1, c2, c3];
   sortCandidates(out);
   return out;

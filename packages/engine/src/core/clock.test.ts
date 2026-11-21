@@ -58,7 +58,9 @@ describe("GameTimer (Game_TimerTick)", () => {
     expect(ticks.filter((t) => t.extra)).toEqual([{ index: 11, ticks5ms: 33, extra: true }]);
     expect(ticks[10]).toEqual({ index: 10, ticks5ms: 33, extra: false });
     // the extra body counts too (counter -> 1), so the next double is 10 slots later
-    const doubles = run(3 * 41).filter((t) => t.extra).map((t) => t.ticks5ms / 3);
+    const doubles = run(3 * 41)
+      .filter((t) => t.extra)
+      .map((t) => t.ticks5ms / 3);
     expect(doubles).toEqual([11, 21, 31, 41]);
   });
 

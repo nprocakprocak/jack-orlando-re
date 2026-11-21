@@ -1,7 +1,7 @@
 // Dialogue files .DCN and face lists .FCC of a scene.
 // Same as the external checker.
 import { cAtoi, cUpper, s16, Tokens } from "./global";
-import { Pak } from "./pak";
+import type { Pak } from "./pak";
 import { decodeText, decrypt } from "./textcrypt";
 
 export const LINE_TEXT_MAX = 0x103; // 0x118-byte entry: text 0x104 bytes with NUL, then the sound name
@@ -79,7 +79,8 @@ export function parseDcn(plain: Uint8Array): Dcn {
   const dialogs: DcnDialog[] = [];
 
   const entry = (id: number, text: string, width: number, sound: string) => {
-    if (sound.length > SOUND_MAX) throw new DialogError(`sound name too long (${sound.length} > ${SOUND_MAX}): ${sound}`);
+    if (sound.length > SOUND_MAX)
+      throw new DialogError(`sound name too long (${sound.length} > ${SOUND_MAX}): ${sound}`);
     const bytes = Uint8Array.from(text.replaceAll("_", " "), (c) => c.charCodeAt(0));
     entries.push({ id, text: decodeText(bytes), width, sound });
   };
@@ -93,7 +94,8 @@ export function parseDcn(plain: Uint8Array): Dcn {
       const first = entries.length;
       for (let i = 0; i < count; i++) {
         const text = r.word("option text");
-        if (text.length > LINE_TEXT_MAX) throw new DialogError(`option text too long (${text.length}) in dialog ${did}`);
+        if (text.length > LINE_TEXT_MAX)
+          throw new DialogError(`option text too long (${text.length}) in dialog ${did}`);
         const width = r.number("option width");
         entry(s16(did + i), text, width, r.word("option sound"));
       }

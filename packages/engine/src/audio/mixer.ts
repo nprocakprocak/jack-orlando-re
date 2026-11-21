@@ -89,10 +89,10 @@ export class Mixer {
   constructor(private readonly backend: AudioBackend) {}
 
   /**
- * Plays on a channel 1..6. A busy channel is cut off first: Snd_PlayBuffer calls
- * (stop + release the DirectSound buffer) when the channel already has one.
- * Returns null where the exe returns an error (bad channel, empty sound).
- */
+   * Plays on a channel 1..6. A busy channel is cut off first: Snd_PlayBuffer calls
+   * (stop + release the DirectSound buffer) when the channel already has one.
+   * Returns null where the exe returns an error (bad channel, empty sound).
+   */
   play(channel: number, sound: PreparedSound, opts: PlayOptions = {}): Playback | null {
     if (!Number.isInteger(channel) || channel < FIRST_CHANNEL || channel > LAST_CHANNEL) return null;
     if (!sound.channels.length || sound.channels[0].length === 0) return null;
@@ -101,9 +101,9 @@ export class Mixer {
   }
 
   /**
- * Like `play`, for a stream produced on demand (music). Same channel rules: a busy
- * channel is cut off, `null` for a bad channel.
- */
+   * Like `play`, for a stream produced on demand (music). Same channel rules: a busy
+   * channel is cut off, `null` for a bad channel.
+   */
   playStream(channel: number, source: StreamSource, opts: PlayOptions = {}): Playback | null {
     if (!Number.isInteger(channel) || channel < FIRST_CHANNEL || channel > LAST_CHANNEL) return null;
     return this.install(channel, opts, (params, onEnded) => this.backend.startStream(source, params, onEnded));

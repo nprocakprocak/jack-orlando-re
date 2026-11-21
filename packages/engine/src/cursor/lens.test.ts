@@ -1,11 +1,22 @@
 import { describe, expect, it } from "vitest";
 import { type Image16 } from "../formats/bm";
 import {
-  blend565, boxScale, composeLens, lensSourceRect, readRegion, renderLens, tintRegion, zoomImage, zoomStep,
+  blend565,
+  boxScale,
+  composeLens,
+  lensSourceRect,
+  readRegion,
+  renderLens,
+  tintRegion,
+  zoomImage,
+  zoomStep,
 } from "./lens";
 
 const img = (w: number, h: number, px: number[]): Image16 => ({
-  width: w, height: h, kind: "rgb565", pixels: Uint16Array.from(px),
+  width: w,
+  height: h,
+  kind: "rgb565",
+  pixels: Uint16Array.from(px),
 });
 
 describe("lens geometry", () => {
@@ -57,7 +68,11 @@ describe("tint", () => {
 });
 
 describe("composeLens", () => {
-  const lupa = img(5, 5, Array.from({ length: 25 }, (_, i) => (i === 0 || i === 24 ? 0x1111 : 0)));
+  const lupa = img(
+    5,
+    5,
+    Array.from({ length: 25 }, (_, i) => (i === 0 || i === 24 ? 0x1111 : 0)),
+  );
   it("puts the region at (3,3), LUPA keyed on top, the rest transparent", () => {
     const small = img(2, 2, [0, 0, 0, 0]);
     const out = composeLens(Uint16Array.from([7, 0, 8, 9]), small, lupa);
@@ -112,7 +127,7 @@ describe("zoom scaler", () => {
     const px = [0x0800, 0x1000, 0x1800, 0x2000, 0x2800, 0x3000];
     const out = boxScale(img(6, 1, px), 4, 1, 1, 0x8000);
     // rows: frac 0 + 1.5 -> 1 row; columns: 1.5 -> 1 px (frac .5), 2 px (frac 0), 1, 2
-    expect([...out]).toEqual([0x0800, (0x1000 + 0x1800) / 2 & 0xf800, 0x2000, (0x2800 + 0x3000) / 2 & 0xf800]);
+    expect([...out]).toEqual([0x0800, ((0x1000 + 0x1800) / 2) & 0xf800, 0x2000, ((0x2800 + 0x3000) / 2) & 0xf800]);
   });
 
   it("mirror writes right to left", () => {

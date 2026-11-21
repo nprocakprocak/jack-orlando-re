@@ -14,23 +14,23 @@ export function globalFilmTarget(x: number, y: number, jack: { x: number; y: num
 }
 
 export function run(this: HostState, cmd: Command, ctx: CommandContext): CommandResult {
-    switch (cmd.code) {
-      case 0x23: // RUNFILMP film x y mode (Film_Play: blocks the whole game, the script goes on afterwards)
-        if (!this.env.runFilm) return "unhandled";
-        this.env.runFilm(cmd.n1, ctx.arg(0), ctx.arg(1), ctx.arg(2));
-        return "done";
-      case 0x6e: {
-        // RUNGLOBALFILMP film x y mode (Script_ExecStep case 0x6d -> Film_Play(1): the film is a section of GLOBAL.FCM)
-        if (!this.env.runFilm) return "unhandled";
-        const [x, y] = globalFilmTarget(ctx.arg(0), ctx.arg(1), this.env.scene.pose());
-        this.env.runFilm(cmd.n1, x, y, ctx.arg(2), true);
-        return "done";
-      }
-      case 0x83: // RUNAVX film scene
-        if (!this.env.runMovie) return "unhandled";
-        this.env.runMovie(cmd.n1, cmd.n2);
-        return "done";
-      default:
-        return "unhandled";
+  switch (cmd.code) {
+    case 0x23: // RUNFILMP film x y mode (Film_Play: blocks the whole game, the script goes on afterwards)
+      if (!this.env.runFilm) return "unhandled";
+      this.env.runFilm(cmd.n1, ctx.arg(0), ctx.arg(1), ctx.arg(2));
+      return "done";
+    case 0x6e: {
+      // RUNGLOBALFILMP film x y mode (Script_ExecStep case 0x6d -> Film_Play(1): the film is a section of GLOBAL.FCM)
+      if (!this.env.runFilm) return "unhandled";
+      const [x, y] = globalFilmTarget(ctx.arg(0), ctx.arg(1), this.env.scene.pose());
+      this.env.runFilm(cmd.n1, x, y, ctx.arg(2), true);
+      return "done";
     }
+    case 0x83: // RUNAVX film scene
+      if (!this.env.runMovie) return "unhandled";
+      this.env.runMovie(cmd.n1, cmd.n2);
+      return "done";
+    default:
+      return "unhandled";
+  }
 }

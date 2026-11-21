@@ -2,8 +2,24 @@
 // Pure logic, no DOM. The host fills a `SaveState` from the running game and applies a `LoadedState` back.
 import { viewOf } from "../formats/bytes";
 import {
-  ITEM_PIXELS_MAX, SaveError, VAR_SLOTS, acceptedBy, copyTemp, currentHeader, cstr, encodeCstr, itemImage, itemName,
-  itemSize, musicName, parseSave, savedMusic, sceneName, writeSave, type SaveGame, type SaveItem,
+  ITEM_PIXELS_MAX,
+  SaveError,
+  VAR_SLOTS,
+  acceptedBy,
+  copyTemp,
+  currentHeader,
+  cstr,
+  encodeCstr,
+  itemImage,
+  itemName,
+  itemSize,
+  musicName,
+  parseSave,
+  savedMusic,
+  sceneName,
+  writeSave,
+  type SaveGame,
+  type SaveItem,
 } from "../formats/save";
 import type { Inventory, SavedSlot } from "../inventory/model";
 import type { Surface16 } from "../render/surface";
@@ -77,7 +93,8 @@ export function putHandAway(inv: Inventory): void {
 
 /** Save fields of the *current* state (`Save_WriteState(path, 0)`): pose byte 1. */
 export function buildSave(s: SaveState): SaveGame {
-  if (s.varCount !== VAR_COUNT_DC) throw new SaveError(`varCount ${s.varCount}, the game has ${VAR_COUNT_DC} variables`);
+  if (s.varCount !== VAR_COUNT_DC)
+    throw new SaveError(`varCount ${s.varCount}, the game has ${VAR_COUNT_DC} variables`);
   if (s.vars.length < VAR_SLOTS) throw new SaveError(`vars: ${s.vars.length} slots, need ${VAR_SLOTS}`);
   const items: SaveItem[] = s.inventory.snapshot().map((it: SavedSlot) => ({
     slot: it.slot,
@@ -149,7 +166,8 @@ export interface LoadedState {
   header: string;
 }
 
-export type ReadResult = { ok: true; state: LoadedState } | { ok: false; reason: "version" | "format"; message: string };
+export type ReadResult =
+  { ok: true; state: LoadedState } | { ok: false; reason: "version" | "format"; message: string };
 
 /**
  * `Save_LoadState`: a file of the other version (easy / normal) is refused silently (`reason: "version"`);
@@ -164,7 +182,8 @@ export function readSave(data: Uint8Array, light: boolean, checkVersion = true):
     if (e instanceof SaveError) return { ok: false, reason: "format", message: e.message };
     throw e;
   }
-  if (checkVersion && !acceptedBy(g, light)) return { ok: false, reason: "version", message: "save of the other game version" };
+  if (checkVersion && !acceptedBy(g, light))
+    return { ok: false, reason: "version", message: "save of the other game version" };
   return {
     ok: true,
     state: {
@@ -172,7 +191,11 @@ export function readSave(data: Uint8Array, light: boolean, checkVersion = true):
       music: musicName(g),
       vars: g.varValues.slice(),
       varCount: g.varCount,
-      inventory: g.items.map((it) => ({ slot: it.slot, name: itemName(it), image: itemImageToSurface(it) })),
+      inventory: g.items.map((it) => ({
+        slot: it.slot,
+        name: itemName(it),
+        image: itemImageToSurface(it),
+      })),
       light,
       autoInc: { min: g.autoincMin, max: g.autoincMax, variable: g.autoincVar },
       restorePose: g.restorePose === 1,

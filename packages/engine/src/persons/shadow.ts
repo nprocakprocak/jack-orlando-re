@@ -31,7 +31,9 @@ export interface ShadowTables {
 
 /** one RGB565 pixel through the tables of `level`. */
 export function darkenPixel(p: number, level: number, t: ShadowTables): number {
-  return t.blue[level * 0x80 + (p & 0x1f)] | t.green[level * 64 + ((p >> 5) & 0x3f)] | t.red[level * 64 + ((p >> 11) & 0x1f)];
+  return (
+    t.blue[level * 0x80 + (p & 0x1f)] | t.green[level * 64 + ((p >> 5) & 0x3f)] | t.red[level * 64 + ((p >> 11) & 0x1f)]
+  );
 }
 
 /**
@@ -63,9 +65,9 @@ export interface ShadowDraw {
   stepInt: number;
   stepFrac: number;
   /**
- * Render_ComposeRegionNoFlag arguments: the backdrop is copied from `(srcX, y)` with `srcWidth` columns into the
- * buffer at column `dstX` (the part left of the screen stays empty), `height` rows, buffer width `width`.
- */
+   * Render_ComposeRegionNoFlag arguments: the backdrop is copied from `(srcX, y)` with `srcWidth` columns into the
+   * buffer at column `dstX` (the part left of the screen stays empty), `height` rows, buffer width `width`.
+   */
   backdrop: { srcX: number; srcWidth: number; dstX: number };
 }
 
@@ -78,9 +80,9 @@ export interface ShadowInput {
   /** PCS field 4, (also multiplies the light range) */
   lightScale: number;
   /**
- * factor of the fade-out level: 1 for persons (Person_DrawShadow); Jack_DrawShadow also multiplies it by
- * g_jackShadowScale
- */
+   * factor of the fade-out level: 1 for persons (Person_DrawShadow); Jack_DrawShadow also multiplies it by
+   * g_jackShadowScale
+   */
   levelScale?: number;
   /** size of the mask image (round `CIEN1.BM` or the image of `SETSPECSHADOW`) */
   maskWidth: number;
@@ -124,9 +126,9 @@ export class PersonShadow {
   }
 
   /**
- * `SETSHADOW p n` (opcode 0x13): cancels a fade; n = 0 switches the shadow off (and the game removes its sprite when
- * shadows are on), otherwise on with strength n (stored as a signed byte).
- */
+   * `SETSHADOW p n` (opcode 0x13): cancels a fade; n = 0 switches the shadow off (and the game removes its sprite when
+   * shadows are on), otherwise on with strength n (stored as a signed byte).
+   */
   setShadow(n: number): ShadowEvent {
     this.fadingOut = false;
     this.fadingIn = false;
@@ -160,19 +162,19 @@ export class PersonShadow {
   }
 
   /**
- * `ShowShadow p x y scale` (opcode 0x9b): the shadow at a given point and scale, anchor (60, 15)
- * (floats), the scale taken as given (no person scale, no 0.99 cap), strength, no fades.
- * `inp.personScale` and `lightScale` are ignored.
- */
+   * `ShowShadow p x y scale` (opcode 0x9b): the shadow at a given point and scale, anchor (60, 15)
+   * (floats), the scale taken as given (no person scale, no 0.99 cap), strength, no fades.
+   * `inp.personScale` and `lightScale` are ignored.
+   */
   show(inp: ShadowInput, scale: number): ShadowDraw {
     return shape(inp, f32(scale), this.strength, SHOW_SHADOW_ANCHOR, false);
   }
 
   /**
- * Person_DrawShadow for `g_shadowsOn`: advances the fades and returns what to draw, or null when nothing is
- * drawn this call (shadow off). The normal and fade-out cases need `enabled && !fadingIn`, the fade-in case
- * `fadingIn` only.
- */
+   * Person_DrawShadow for `g_shadowsOn`: advances the fades and returns what to draw, or null when nothing is
+   * drawn this call (shadow off). The normal and fade-out cases need `enabled && !fadingIn`, the fade-in case
+   * `fadingIn` only.
+   */
   draw(shadowsOn: boolean, inp: ShadowInput): ShadowDraw | null {
     if (!shadowsOn) return null;
     if (this.enabled && !this.fadingIn) {
@@ -220,7 +222,13 @@ export function shadowExtent(
 }
 
 /** Scale cap and anchor; the size and steps are `shadowExtent`. */
-function shape(inp: ShadowInput, rawScale: number, level: number, anchor: readonly [number, number] = PERSON_SHADOW_ANCHOR, cap = true): ShadowDraw {
+function shape(
+  inp: ShadowInput,
+  rawScale: number,
+  level: number,
+  anchor: readonly [number, number] = PERSON_SHADOW_ANCHOR,
+  cap = true,
+): ShadowDraw {
   const scale = cap && rawScale > f32(SHADOW_SCALE_MAX) ? f32(SHADOW_SCALE_MAX) : rawScale;
   const x = (ftol(inp.x - anchor[0] * scale) << 16) >> 16;
   const y = (ftol(inp.y - anchor[1] * scale) << 16) >> 16;

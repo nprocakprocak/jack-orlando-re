@@ -39,11 +39,11 @@ export class FlxAnimation {
   private done = false;
 
   /**
- * @param flx the animation (record `rec` of the object)
- * @param loop ANIMA mode 6 (cycles) instead of 5 (once)
- * @param restart the FLX a mode 6 loop restarts with: the game takes record 0 of the object
- * (`[anim * 300]`) whatever record was playing — pass it to reproduce that
- */
+   * @param flx the animation (record `rec` of the object)
+   * @param loop ANIMA mode 6 (cycles) instead of 5 (once)
+   * @param restart the FLX a mode 6 loop restarts with: the game takes record 0 of the object
+   * (`[anim * 300]`) whatever record was playing — pass it to reproduce that
+   */
   constructor(
     flx: Flx,
     readonly loop: boolean,
@@ -87,10 +87,10 @@ export class FlxAnimation {
   }
 
   /**
- * Blit_Copy16 of Game_Run: mode 2 cuts (0, 0, w, h) of the buffer (the frame is cropped to the
- * rectangle), other modes cut (x, y, w, h); the sprite sits at the rectangle's (x, y) either way.
- * A rectangle reaching 1 column past the width (31_SAM3) reads on into the next row.
- */
+   * Blit_Copy16 of Game_Run: mode 2 cuts (0, 0, w, h) of the buffer (the frame is cropped to the
+   * rectangle), other modes cut (x, y, w, h); the sprite sits at the rectangle's (x, y) either way.
+   * A rectangle reaching 1 column past the width (31_SAM3) reads on into the next row.
+   */
   private cut(h: FlxHeader): FlxSprite | null {
     const [x, y, w, hh] = this.rect;
     if (w <= 0 || hh <= 0) return null;

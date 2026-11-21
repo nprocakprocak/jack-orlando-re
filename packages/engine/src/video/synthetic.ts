@@ -10,7 +10,22 @@ export function u32(v: number): number[] {
 }
 
 export function flxHeader(frames: number, width: number, height: number, fps = 10, mode = 0, pal16 = 1): number[] {
-  return [0x46, 0x4c, 0x58, 0, ...u16(frames), ...u16(width), ...u16(height), ...u16(fps), 1, mode, pal16, 0, ...u16(0), ...u16(0)];
+  return [
+    0x46,
+    0x4c,
+    0x58,
+    0,
+    ...u16(frames),
+    ...u16(width),
+    ...u16(height),
+    ...u16(fps),
+    1,
+    mode,
+    pal16,
+    0,
+    ...u16(0),
+    ...u16(0),
+  ];
 }
 
 /** chunk 4 with the given RGB565 colours (the rest 0) */
@@ -55,21 +70,32 @@ export interface SynthSegment {
 /** AVX: header, zero preroll (silence), one block holding every record. */
 export function buildAvx(segments: SynthSegment[], soundBytes = 8): Uint8Array {
   const out: number[] = [...u16(segments.length), 4, 16];
-  const codec = [...u32(0x33), ...u32(0x7fffffff), ...u32(0x7fffffff), ...u32(0x7fffffff), ...u16(0), 0, 0, ...u16(0), 0, 0];
+  const codec = [
+    ...u32(0x33),
+    ...u32(0x7fffffff),
+    ...u32(0x7fffffff),
+    ...u32(0x7fffffff),
+    ...u16(0),
+    0,
+    0,
+    ...u16(0),
+    0,
+    0,
+  ];
   out.push(...codec);
   out.push(...new Array(AVX_PREROLL - codec.length).fill(0));
   const records: number[] = [];
   for (const seg of segments) {
     seg.frames.forEach((f, i) => {
       const body: number[] = [];
-      if (i === 0) body.push(...flxHeader(seg.frames.length, seg.width, seg.height, seg.fps, seg.mode ?? 0, seg.pal16 ?? 1));
+      if (i === 0)
+        body.push(...flxHeader(seg.frames.length, seg.width, seg.height, seg.fps, seg.mode ?? 0, seg.pal16 ?? 1));
       for (const c of f.chunks) body.push(...c);
       const n = f.sound ?? soundBytes;
       body.push(...u32(4 + n));
       for (let k = 0; k < n; k++) body.push(0);
       records.push(...u32(body.length));
       for (const b of body) records.push(b); // no spread: long records would overflow the call stack
-
     });
   }
   out.push(...u32(4 + records.length));

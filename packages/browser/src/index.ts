@@ -1,19 +1,7 @@
 // Browser play session. The engine has no DOM: this module feeds it files, time, the mouse and the
 // keyboard, and draws what it returns. The page supplies the files and the status line.
-import {
-  gameVolumeToLevel,
-  Mixer,
-  MUSIC_CHANNEL,
-  MusicPlayer,
-  WebAudioBackend,
-} from "jack-orlando-re/audio";
-import {
-  attachDisplay,
-  clientToScreen,
-  EngineLoop,
-  runLoop,
-  type FrameInfo,
-} from "jack-orlando-re/core";
+import { gameVolumeToLevel, Mixer, MUSIC_CHANNEL, MusicPlayer, WebAudioBackend } from "jack-orlando-re/audio";
+import { attachDisplay, clientToScreen, EngineLoop, runLoop, type FrameInfo } from "jack-orlando-re/core";
 import { drawCursor } from "jack-orlando-re/cursor";
 import { GuiWindow, HAND_TIP, TEXTS_PL } from "jack-orlando-re/gui";
 import {
@@ -35,18 +23,8 @@ import {
   type MainMenuAssets,
   type MainMenuEvent,
 } from "jack-orlando-re/mainmenu";
-import {
-  bindPause,
-  browserStorage,
-  readPauseOnBlur,
-  type PauseBinding,
-} from "jack-orlando-re/pause";
-import {
-  drawOverlays,
-  PlayGame,
-  type GameFiles,
-  type PlayInput,
-} from "jack-orlando-re/play";
+import { bindPause, browserStorage, readPauseOnBlur, type PauseBinding } from "jack-orlando-re/pause";
+import { drawOverlays, PlayGame, type GameFiles, type PlayInput } from "jack-orlando-re/play";
 import {
   blitCopy,
   createSurface,
@@ -56,13 +34,7 @@ import {
   windowToRgba,
   type Surface16,
 } from "jack-orlando-re/render";
-import {
-  BrowserFilePicker,
-  IDB_SLOTS,
-  IdbStore,
-  SaveManager,
-  windowPickerEnv,
-} from "jack-orlando-re/save";
+import { BrowserFilePicker, IDB_SLOTS, IdbStore, SaveManager, windowPickerEnv } from "jack-orlando-re/save";
 import { ConfigStore, type GameConfig } from "jack-orlando-re/settings";
 import {
   Disposables,
@@ -184,7 +156,14 @@ export function mountPlayer(options: MountOptions): PlayerHandle {
   const filmClick = new ClickSkip();
   const introClick = new ClickSkip();
   let leftCtrl = false;
-  const input: PlayInput = { x: 320, y: 240, pressed: false, down: false, inWindow: false, escape: false };
+  const input: PlayInput = {
+    x: 320,
+    y: 240,
+    pressed: false,
+    down: false,
+    inWindow: false,
+    escape: false,
+  };
   let stopped = false;
   let stopping: Promise<void> | null = null;
   const offs: Array<() => void> = [];
@@ -483,11 +462,14 @@ export function mountPlayer(options: MountOptions): PlayerHandle {
         // Same pointer/key/touch events as WebAudioBackend.unlockOnGesture, held here so stop() can remove them.
         const events = ["pointerdown", "keydown", "touchend"];
         const handler = (): void => {
-          void b.unlock().then(() => {
-            if (b.ctx.state === "running") {
-              for (const type of events) window.removeEventListener(type, handler);
-            }
-          }, () => undefined);
+          void b.unlock().then(
+            () => {
+              if (b.ctx.state === "running") {
+                for (const type of events) window.removeEventListener(type, handler);
+              }
+            },
+            () => undefined,
+          );
         };
         for (const type of events) listen(window, type, handler);
       }
@@ -521,8 +503,14 @@ export function mountPlayer(options: MountOptions): PlayerHandle {
 
   function resetScreens(): void {
     Object.assign(input, {
-      pressed: false, down: false, escape: false, right: false, middle: false,
-      rightPressed: false, middlePressed: false, ctrl: false,
+      pressed: false,
+      down: false,
+      escape: false,
+      right: false,
+      middle: false,
+      rightPressed: false,
+      middlePressed: false,
+      ctrl: false,
     });
     launchFx = null;
     menu = null;
@@ -672,7 +660,14 @@ export function mountPlayer(options: MountOptions): PlayerHandle {
     if (!m) return;
     m.clockMs += dtMs;
     const s = m.player.step(Math.floor(m.clockMs / 5), m.esc.update(input.escape === true) || introClick.take(true));
-    windowToRgba({ width: SCREEN_W, height: SCREEN_H, pixels: m.player.screen.pixels }, 0, 0, SCREEN_W, SCREEN_H, image.data);
+    windowToRgba(
+      { width: SCREEN_W, height: SCREEN_H, pixels: m.player.screen.pixels },
+      0,
+      0,
+      SCREEN_W,
+      SCREEN_H,
+      image.data,
+    );
     ctx.putImageData(image, 0, 0);
     if (!s.end) return;
     introFrame = copyOf({ width: SCREEN_W, height: SCREEN_H, pixels: m.player.screen.pixels });

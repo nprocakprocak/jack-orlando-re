@@ -42,7 +42,13 @@ class FakeContext {
     return { copyToChannel() {} };
   }
   createBufferSource() {
-    return Object.assign(new FakeNode(), { buffer: null, loop: false, onended: null, start() {}, stop() {} });
+    return Object.assign(new FakeNode(), {
+      buffer: null,
+      loop: false,
+      onended: null,
+      start() {},
+      stop() {},
+    });
   }
   suspend(): Promise<void> {
     this.calls.push("suspend");
@@ -117,7 +123,8 @@ describe("WebAudioBackend pause", () => {
 });
 
 describe("WebAudioBackend music bus", () => {
-  const gainsOf = (b: WebAudioBackend) => (b.stereoFx as unknown as { gains: { gain: { value: number } }[] }).gains.map((g) => g.gain.value);
+  const gainsOf = (b: WebAudioBackend) =>
+    (b.stereoFx as unknown as { gains: { gain: { value: number } }[] }).gains.map((g) => g.gain.value);
   const endSource = { rate: 22050, channels: 2, read: () => [] as Float32Array[] };
   const sound = { channels: [new Float32Array(4)], rate: 22050, loopStart: 0, loopLength: 0 };
 

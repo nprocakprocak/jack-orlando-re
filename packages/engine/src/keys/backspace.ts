@@ -29,7 +29,13 @@ export const BACKSPACE_TABLE: readonly BackspaceEntry[] = [
   { scene: 13, target: 11, file: "SC005B.CCG" },
   { scene: 14, target: 11, file: "SC005B.CCG" },
   { scene: 3, target: 0, file: "SC005B.CCG", cond: { variable: "ROZMZINSP", value: 1 } },
-  { scene: 3, target: 3, file: "SC000B.CCG", cond: { variable: "ROZMZINSP", value: 0 }, secondary: true },
+  {
+    scene: 3,
+    target: 3,
+    file: "SC000B.CCG",
+    cond: { variable: "ROZMZINSP", value: 0 },
+    secondary: true,
+  },
   { scene: 4, target: 2, file: "SC006.CCG" },
   { scene: 2, target: 2, file: "SC006.CCG" },
   { scene: 8, target: 8, file: "SC006.CCG" },
@@ -127,9 +133,11 @@ export function backspaceTarget(scene: number, getVar: (name: string) => number)
   const first = find(scene, false);
   if (!first) return undefined;
   const ok = (e: BackspaceEntry) => !e.cond || getVar(e.cond.variable) === e.cond.value;
-  const pick = ok(first) ? first : (() => {
-    const second = find(scene, true);
-    return second && ok(second) ? second : undefined;
-  })();
+  const pick = ok(first)
+    ? first
+    : (() => {
+        const second = find(scene, true);
+        return second && ok(second) ? second : undefined;
+      })();
   return pick && { file: pick.file, last: pick.target };
 }

@@ -29,11 +29,23 @@ export const BUNDLED_REMAP: Remap = {
 
 /** One pixel through the tables of `level`. */
 export function remapPixel(p: number, level: number, t: Remap): number {
-  return t.blue[level * 0x80 + (p & 0x1f)] | t.green[level * 64 + ((p >> 5) & 0x3f)] | t.red[level * 64 + ((p >> 11) & 0x1f)];
+  return (
+    t.blue[level * 0x80 + (p & 0x1f)] | t.green[level * 64 + ((p >> 5) & 0x3f)] | t.red[level * 64 + ((p >> 11) & 0x1f)]
+  );
 }
 
-function remapRect(px: Uint16Array, w: number, x: number, y: number, rw: number, rh: number, level: number, t: Remap): void {
-  for (let r = 0; r < rh; r++) for (let c = 0; c < rw; c++) px[(y + r) * w + x + c] = remapPixel(px[(y + r) * w + x + c], level, t);
+function remapRect(
+  px: Uint16Array,
+  w: number,
+  x: number,
+  y: number,
+  rw: number,
+  rh: number,
+  level: number,
+  t: Remap,
+): void {
+  for (let r = 0; r < rh; r++)
+    for (let c = 0; c < rw; c++) px[(y + r) * w + x + c] = remapPixel(px[(y + r) * w + x + c], level, t);
 }
 
 /**

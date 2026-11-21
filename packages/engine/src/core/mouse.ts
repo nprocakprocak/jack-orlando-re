@@ -48,10 +48,14 @@ export function clientToScreen(
 /** DOM MouseEvent.button -> game button bit. */
 export function domButtonToMask(button: number): number {
   switch (button) {
-    case 0: return MOUSE_LEFT;
-    case 1: return MOUSE_MIDDLE;
-    case 2: return MOUSE_RIGHT;
-    default: return 0;
+    case 0:
+      return MOUSE_LEFT;
+    case 1:
+      return MOUSE_MIDDLE;
+    case 2:
+      return MOUSE_RIGHT;
+    default:
+      return 0;
   }
 }
 
@@ -96,10 +100,10 @@ export class Mouse {
   }
 
   /**
- * Input_SetAcquired(1) zeroes the button mask and flags when focus returns.
- * [hypothesis: it does so only when the DirectInput device exists; here always,
- * since a browser may never deliver the button-up that happened outside the page.]
- */
+   * Input_SetAcquired(1) zeroes the button mask and flags when focus returns.
+   * [hypothesis: it does so only when the DirectInput device exists; here always,
+   * since a browser may never deliver the button-up that happened outside the page.]
+   */
   setAcquired(acquired: boolean): void {
     if (acquired) this.buttons = 0;
   }

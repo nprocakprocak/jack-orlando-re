@@ -10,7 +10,9 @@ export const SCROLL_STEP = 4;
 
 /** Video_Present copies the 640x480 window at (scrollX, scrollY) of the work buffer. */
 export function presentRgba(
-  framebuffer: Surface16, scrollX: number, scrollY = 0,
+  framebuffer: Surface16,
+  scrollX: number,
+  scrollY = 0,
   out?: Uint8ClampedArray,
 ): Uint8ClampedArray {
   return windowToRgba(framebuffer, scrollX, scrollY, SCREEN_WIDTH, SCREEN_HEIGHT, out);

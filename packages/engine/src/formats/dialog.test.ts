@@ -16,7 +16,6 @@ import { encrypt } from "./textcrypt";
 const ascii = (s: string) => new Uint8Array([...s].map((c) => c.charCodeAt(0)));
 const text = (...l: string[]) => ascii(l.join("\r\n") + "\r\n");
 
-
 // --- synthetic data ----------------------------------------------------------
 
 const dcn = (...l: string[]) => parseDcn(text(...l));
@@ -33,8 +32,36 @@ describe("parseDcn on synthetic data", () => {
   });
 
   it("reads Q and R blocks: options get consecutive ids, lines stay in one table", () => {
-    const d = dcn("5", "A", "100", "T1.SND", "Q 1000", "2", "B", "110", "T2.SND", "C", "120", "T3.SND", "R 2000 1", "D", "130", "T4.SND", "6", "E", "140", "T5.SND", "");
-    expect(d.entries.map((e) => [e.id, e.text])).toEqual([[5, "A"], [1000, "B"], [1001, "C"], [2000, "D"], [6, "E"]]);
+    const d = dcn(
+      "5",
+      "A",
+      "100",
+      "T1.SND",
+      "Q 1000",
+      "2",
+      "B",
+      "110",
+      "T2.SND",
+      "C",
+      "120",
+      "T3.SND",
+      "R 2000 1",
+      "D",
+      "130",
+      "T4.SND",
+      "6",
+      "E",
+      "140",
+      "T5.SND",
+      "",
+    );
+    expect(d.entries.map((e) => [e.id, e.text])).toEqual([
+      [5, "A"],
+      [1000, "B"],
+      [1001, "C"],
+      [2000, "D"],
+      [6, "E"],
+    ]);
     expect(d.dialogs).toEqual([
       { id: 1000, kind: "Q", first: 1, count: 2 },
       { id: 2000, kind: "R", first: 3, count: 1 },
@@ -100,7 +127,20 @@ describe("parseDcn on synthetic data", () => {
 });
 
 describe("parseFcc on synthetic data", () => {
-  const face = (name: string) => [name, "F.PBM", "1 2", "o1.pbm", "O2.PBM", "O3.PBM", "3 -4", "U1", "U2", "U3", "U4", "U5"];
+  const face = (name: string) => [
+    name,
+    "F.PBM",
+    "1 2",
+    "o1.pbm",
+    "O2.PBM",
+    "O3.PBM",
+    "3 -4",
+    "U1",
+    "U2",
+    "U3",
+    "U4",
+    "U5",
+  ];
 
   it("reads faces; eye frames are upper-cased, the others are kept", () => {
     const f = fcc(...face("[AB]"), "", ...face("[CD]"), "");
@@ -179,6 +219,10 @@ describe("parseSceneDialogs on a synthetic archive", () => {
 
   it("an empty file parses as an empty list", () => {
     const pak = pakOf({ "SC9.DCN": new Uint8Array(0), "SC9.FCC": new Uint8Array(0) });
-    expect(parseSceneDialogs(pak, "SC9")).toEqual({ scene: "SC9", dcn: { entries: [], dialogs: [] }, fcc: [] });
+    expect(parseSceneDialogs(pak, "SC9")).toEqual({
+      scene: "SC9",
+      dcn: { entries: [], dialogs: [] },
+      fcc: [],
+    });
   });
 });

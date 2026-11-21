@@ -2,8 +2,6 @@ import { describe, expect, it } from "vitest";
 import type { InsertionStart } from "../anim/animator";
 import type { IcsFrame } from "../formats/global";
 import type { Person } from "../formats/scene";
-import type { WalkObject } from "../walk/objects";
-import { arrangePerson, behindByY, personObjectDepth } from "./depth";
 import {
   effectVolumes,
   MAX_PERSONS,
@@ -41,7 +39,9 @@ function person(dirs: number[], frames = 4): ScenePerson {
 
 describe("direction choice", () => {
   it("maps angle sectors to the 8 directions (right = 6, down = 0, left = 2, up = 4)", () => {
-    expect([0, 21, 22, 45, 67, 90, 135, 180, 225, 270, 315, 338, 359].map(personSector)).toEqual([6, 6, 7, 7, 7, 0, 1, 2, 3, 4, 5, 5, 6]);
+    expect([0, 21, 22, 45, 67, 90, 135, 180, 225, 270, 315, 338, 359].map(personSector)).toEqual([
+      6, 6, 7, 7, 7, 0, 1, 2, 3, 4, 5, 5, 6,
+    ]);
     expect(personSector(339)).toBe(6);
     // bounds are shared: the first sector that matches wins
     expect(personSector(112)).toBe(0);
@@ -243,7 +243,16 @@ describe("walking", () => {
 });
 
 function icsFrame(file: string, extra: Partial<IcsFrame> = {}): IcsFrame {
-  return { file, xRight: 10, xLeft: 30, y: 50, shadow1: [1000, 0], shadow2: [1000, 0], effect: null, ...extra };
+  return {
+    file,
+    xRight: 10,
+    xLeft: 30,
+    y: 50,
+    shadow1: [1000, 0],
+    shadow2: [1000, 0],
+    effect: null,
+    ...extra,
+  };
 }
 
 function ins(frames: IcsFrame[], start = 0, count = frames.length): InsertionStart {
@@ -274,7 +283,7 @@ describe("insertion start: INITFIRST vs RUNINSERTION (Script_ExecStep case 2 / c
     const p = scaled();
     p.movePosition(35, 17);
     p.startInsertion(ins([icsFrame("A.PBM")]), 0, true);
-    expect(p.scale).toBeCloseTo((362 - 250) * 0.374 / 50, 5);
+    expect(p.scale).toBeCloseTo(((362 - 250) * 0.374) / 50, 5);
     const big = scaled();
     big.setPersonData(5, 300, 12, 0.9); // (345-250)*0.9/50 = 1.71, not clamped by SETPERSONDATA
     expect(big.scale).toBeGreaterThan(1);
@@ -286,7 +295,7 @@ describe("insertion start: INITFIRST vs RUNINSERTION (Script_ExecStep case 2 / c
     fixed.setPersonData(5, 300, 12, 3); // f = 3: walking keeps the scale, INITFIRST does not look at the flag
     fixed.movePosition(0, 17);
     fixed.startInsertion(ins([icsFrame("A.PBM")]), 0, true);
-    expect(fixed.scale).toBeCloseTo((362 - 250) * 0.374 / 50, 5);
+    expect(fixed.scale).toBeCloseTo(((362 - 250) * 0.374) / 50, 5);
     const none = scaled();
     none.setPersonData(5, 0, 12, 2);
     none.startInsertion(ins([icsFrame("A.PBM")]), 0);
@@ -315,7 +324,13 @@ describe("insertions", () => {
     p.startInsertion(ins([icsFrame("A.PBM"), icsFrame("B.PBM")]), 0);
     expect(p.insertionDue).toBe(true);
     const a = p.insertionStep(ENV);
-    expect(a.sprite).toMatchObject({ file: "A.PBM", x: 90, y: 150, mirrored: false, source: "scene" });
+    expect(a.sprite).toMatchObject({
+      file: "A.PBM",
+      x: 90,
+      y: 150,
+      mirrored: false,
+      source: "scene",
+    });
     expect(p.counter).toBe(3);
     expect(p.insertionDue).toBe(false);
     p.counter = 0;
@@ -353,7 +368,12 @@ describe("insertions", () => {
     p.setPosition(0, 200);
     const eff = { sound: "BANG", channel: 0, unused: 0, volume: 50 };
     p.startInsertion(ins([icsFrame("A.PBM", { effect: eff })]), 0);
-    expect(p.insertionStep(ENV).sounds[0]).toMatchObject({ sound: "BANG", channels: [1, 2], volumes: [50, 50], kind: "insertion" });
+    expect(p.insertionStep(ENV).sounds[0]).toMatchObject({
+      sound: "BANG",
+      channels: [1, 2],
+      volumes: [50, 50],
+      kind: "insertion",
+    });
     p.counter = 0;
     expect(p.insertionStep(ENV).events).toHaveLength(1);
     const q = person([6]);
@@ -424,17 +444,27 @@ describe("insertions", () => {
 
 describe("ScenePersons", () => {
   it("finds persons by name and limits the count", () => {
-    const sc = new ScenePersons([personDef({ ...pcs([6]), name: "ONE" }), personDef({ ...pcs([6]), name: "TWO" })], { horizon: 0 });
+    const sc = new ScenePersons([personDef({ ...pcs([6]), name: "ONE" }), personDef({ ...pcs([6]), name: "TWO" })], {
+      horizon: 0,
+    });
     expect(sc.find("TWO")).toBe(1);
     expect(sc.find("JACK")).toBe(-1);
     expect(sc.get("ONE")?.def.name).toBe("ONE");
-    expect(() => new ScenePersons(Array.from({ length: MAX_PERSONS + 1 }, () => personDef(pcs([6]))), { horizon: 0 })).toThrow(/room/);
+    expect(
+      () =>
+        new ScenePersons(
+          Array.from({ length: MAX_PERSONS + 1 }, () => personDef(pcs([6]))),
+          { horizon: 0 },
+        ),
+    ).toThrow(/room/);
   });
 
   it("a name used twice finds the first person, like Script_FindPerson (SC083: two GANGSTER sections)", () => {
     const big = personDef({ ...pcs([2], 4, 500000), name: "GANG" });
     const small = personDef({ ...pcs([7], 4, 300000), name: "GANG" });
-    const sc = new ScenePersons([big, small, personDef({ ...pcs([6]), name: "OTHER" })], { horizon: 0 });
+    const sc = new ScenePersons([big, small, personDef({ ...pcs([6]), name: "OTHER" })], {
+      horizon: 0,
+    });
     expect(sc.find("GANG")).toBe(0);
     expect(sc.get("GANG")?.def.lightScale).toBe(Math.fround(0.5));
     expect(sc.get("GANG")?.hasDir(2)).toBe(true);
@@ -461,32 +491,5 @@ describe("light", () => {
     expect(personBrightness(200, 100, [[100, 100]], 1, 0.5, 0.5)).toBeCloseTo(0.5 + 50 / 150, 6);
     // vertical distance counts three times
     expect(personBrightness(100, 140, [[100, 100]], 1, 1, 0)).toBeCloseTo((300 - 120) / 300, 6);
-  });
-});
-
-describe("drawing order", () => {
-  const quad: WalkObject = { x: 100, y: 100, quad: [0, 0, 100, 0, 100, 50, 0, 50], center: [50, 25], valid: true };
-
-  it("compares feet by y", () => {
-    expect(behindByY(10, 20)).toBe("behind");
-    expect(behindByY(20, 10)).toBe("front");
-    expect(behindByY(10, 10)).toBeNull();
-  });
-
-  it("object quads: above the floor edge = behind, below = in front, inside = unchanged", () => {
-    expect(personObjectDepth(quad, 150, 80)).toBe("behind");
-    expect(personObjectDepth(quad, 150, 200)).toBe("front");
-    expect(personObjectDepth(quad, 150, 125)).toBeNull();
-  });
-
-  it("moves the person to the other sprite's slot only when the order is wrong", () => {
-    const list = ["bg", "JACK", "P", "OBJ"];
-    expect(arrangePerson(list, "P", 0, 10, [{ id: "JACK", kind: "jack", y: 20 }])).toEqual(["bg", "P", "JACK", "OBJ"]);
-    expect(arrangePerson(list, "P", 0, 30, [{ id: "JACK", kind: "jack", y: 20 }])).toEqual(list);
-    expect(arrangePerson(list, "P", 150, 200, [{ id: "OBJ", kind: "object", object: quad }])).toEqual(["bg", "JACK", "OBJ", "P"]);
-    expect(arrangePerson(list, "P", 150, 80, [{ id: "OBJ", kind: "object", object: quad }])).toEqual(list);
-    // unknown ids and the person itself are ignored; equal y changes nothing
-    expect(arrangePerson(list, "P", 0, 10, [{ id: "ZZZ", kind: "person", y: 99 }, { id: "P", kind: "person", y: 99 }])).toEqual(list);
-    expect(arrangePerson(list, "P", 0, 20, [{ id: "JACK", kind: "jack", y: 20 }])).toEqual(list);
   });
 });

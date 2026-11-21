@@ -7,7 +7,11 @@ import { deathAhead, isDeathFilm } from "./predicates";
 describe("play: the death sequence hides the cursor (synthetic)", () => {
   const make = (text: string, vars: Record<string, number> = {}) => {
     const host = { command: () => ({ done: true }) } as never;
-    return new Interpreter(compileMcc(new Uint8Array([...text].map((c) => c.charCodeAt(0)))), host, new Variables(new Map(Object.entries(vars))));
+    return new Interpreter(
+      compileMcc(new Uint8Array([...text].map((c) => c.charCodeAt(0)))),
+      host,
+      new Variables(new Map(Object.entries(vars))),
+    );
   };
 
   it("every film but OUTRO is a death film", () => {
@@ -32,7 +36,9 @@ describe("play: the death sequence hides the cursor (synthetic)", () => {
     expect(deathAhead(it)).toBe(false);
   });
   it("a wait before the death macro leaves the player free (CZEKAJ), OUTRO never counts", () => {
-    const it = make("[CZEKAJ] Unlock DoNothing 400 ActiveMacro ZABJACK [ZABJACK] RunAvx Z51.AVX NULL [KONIEC] RunAvx OUTRO.AVX NULL");
+    const it = make(
+      "[CZEKAJ] Unlock DoNothing 400 ActiveMacro ZABJACK [ZABJACK] RunAvx Z51.AVX NULL [KONIEC] RunAvx OUTRO.AVX NULL",
+    );
     it.start("CZEKAJ");
     expect(deathAhead(it)).toBe(false);
     it.start("ZABJACK");

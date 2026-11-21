@@ -36,9 +36,9 @@ export interface ThrottleOptions {
   /** no animation frame for this long, seen by the watchdog timer, means throttling (ms); default 400 */
   stallMs?: number;
   /**
- * the watchdog counts only when its own previous call was at most this long ago (ms): a late timer means the
- * main thread was busy (a long task delays rAF and timers alike), not that the browser throttles rAF; default 400
- */
+   * the watchdog counts only when its own previous call was at most this long ago (ms): a late timer means the
+   * main thread was busy (a long task delays rAF and timers alike), not that the browser throttles rAF; default 400
+   */
   maxCheckGapMs?: number;
   /** consecutive gaps of at most `normalGapMs` needed to call the page normal again; default 3 */
   recoverFrames?: number;
@@ -142,7 +142,12 @@ export class PauseController {
     opts: ThrottleOptions = {},
   ) {
     this.detector = new ThrottleDetector(opts);
-    this.inputs = { focused: init.focused ?? true, hidden: init.hidden ?? false, pauseOnBlur: init.pauseOnBlur, throttled: false };
+    this.inputs = {
+      focused: init.focused ?? true,
+      hidden: init.hidden ?? false,
+      pauseOnBlur: init.pauseOnBlur,
+      throttled: false,
+    };
     this.current = pauseReason(this.inputs);
   }
 

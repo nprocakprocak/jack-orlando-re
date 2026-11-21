@@ -4,7 +4,14 @@ import { MODE_INTRO } from "../video";
 import { ClickSkip, IntroEscape, INTRO_AVX, INTRO_DLG, openIntro } from "./intro";
 
 const avxBytes = () =>
-  buildAvx([{ width: 4, height: 2, fps: 20, frames: [{ chunks: [paletteChunk([0, 0xf800]), deltaChunk(0, [[0, [1, 1, 1, 1, 1, 1, 1, 1]]])] }] }]);
+  buildAvx([
+    {
+      width: 4,
+      height: 2,
+      fps: 20,
+      frames: [{ chunks: [paletteChunk([0, 0xf800]), deltaChunk(0, [[0, [1, 1, 1, 1, 1, 1, 1, 1]]])] }],
+    },
+  ]);
 
 const settings = { dialogText: true, sound: null, level: 127 };
 

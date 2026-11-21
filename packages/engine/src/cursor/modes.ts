@@ -42,11 +42,16 @@ export function isVerbMode(mode: number): boolean {
 /** Cursor_SetVerbName: the verb prefix of the VERB-NAME macros; unknown modes -> POKAZANIE. */
 export function verbName(mode: number): string {
   switch (mode) {
-    case CursorMode.Look: return "PATRZENIE";
-    case CursorMode.Hit: return "UDERZENIE";
-    case CursorMode.Shoot: return "STRZELANIE";
-    case CursorMode.Take: return "BRANIE";
-    default: return "POKAZANIE";
+    case CursorMode.Look:
+      return "PATRZENIE";
+    case CursorMode.Hit:
+      return "UDERZENIE";
+    case CursorMode.Shoot:
+      return "STRZELANIE";
+    case CursorMode.Take:
+      return "BRANIE";
+    default:
+      return "POKAZANIE";
   }
 }
 
@@ -57,11 +62,16 @@ export function verbName(mode: number): string {
  */
 export function hotspotOffset(mode: number, flag = false): { dx: number; dy: number } {
   switch (mode) {
-    case CursorMode.Point: return { dx: -9, dy: -12 };
-    case CursorMode.Look: return { dx: -4, dy: -4 };
-    case CursorMode.Hit: return { dx: -7, dy: -10 };
-    case CursorMode.Shoot: return { dx: 0, dy: 0 };
-    case CursorMode.Take: return flag ? { dx: -9, dy: -12 } : { dx: -10, dy: 8 };
+    case CursorMode.Point:
+      return { dx: -9, dy: -12 };
+    case CursorMode.Look:
+      return { dx: -4, dy: -4 };
+    case CursorMode.Hit:
+      return { dx: -7, dy: -10 };
+    case CursorMode.Shoot:
+      return { dx: 0, dy: 0 };
+    case CursorMode.Take:
+      return flag ? { dx: -9, dy: -12 } : { dx: -10, dy: 8 };
     default:
       return isZoneMode(mode) || flag ? { dx: -9, dy: -12 } : { dx: 0, dy: 0 };
   }
@@ -81,20 +91,34 @@ export function hotspotInImage(mode: number, w: number, h: number, flag = false)
 /** Frame file name of a mode ("" when the mode has no animated set). Indices are 0-based frame numbers. */
 export function frameName(mode: number, frame: number): string {
   switch (mode) {
-    case 0: return `WSK${pad2(frame)}.BM`;
-    case 1: return `LUPA${pad2(frame + 1)}.BM`;
-    case 2: return `FIS${pad2(frame)}.BM`;
-    case 3: return `KOLT${pad2(frame + 1)}.BM`;
-    case 4: return `HAN${pad2(frame + 1)}.BM`;
-    case 10: return `LEFT0${pad2(frame + 1)}.BM`;
-    case 11: return `RIGHT${pad2(frame + 1)}.BM`;
-    case 13: return `STDN00${pad2(frame + 1)}.BM`;
-    case 14: return `TOIN00${pad2(frame + 1)}.BM`;
-    case 15: return `STUP00${pad2(frame + 1)}.BM`;
-    case 17: return `TOUT00${pad2(frame + 1)}.BM`;
-    case 20: return `SCLF00${pad2(frame + 1)}.BM`;
-    case 21: return `SCRG00${pad2(frame + 1)}.BM`;
-    default: return "";
+    case 0:
+      return `WSK${pad2(frame)}.BM`;
+    case 1:
+      return `LUPA${pad2(frame + 1)}.BM`;
+    case 2:
+      return `FIS${pad2(frame)}.BM`;
+    case 3:
+      return `KOLT${pad2(frame + 1)}.BM`;
+    case 4:
+      return `HAN${pad2(frame + 1)}.BM`;
+    case 10:
+      return `LEFT0${pad2(frame + 1)}.BM`;
+    case 11:
+      return `RIGHT${pad2(frame + 1)}.BM`;
+    case 13:
+      return `STDN00${pad2(frame + 1)}.BM`;
+    case 14:
+      return `TOIN00${pad2(frame + 1)}.BM`;
+    case 15:
+      return `STUP00${pad2(frame + 1)}.BM`;
+    case 17:
+      return `TOUT00${pad2(frame + 1)}.BM`;
+    case 20:
+      return `SCLF00${pad2(frame + 1)}.BM`;
+    case 21:
+      return `SCRG00${pad2(frame + 1)}.BM`;
+    default:
+      return "";
   }
 }
 
@@ -122,7 +146,21 @@ export function lensMaskFiles(): string[] {
 /** All image files the cursor can show (PAK: Resource/Resource.pak), for preloading. */
 export function allCursorFiles(): string[] {
   const out: string[] = [];
-  const counts: [number, number][] = [[0, 9], [1, 9], [2, 10], [3, 4], [4, 10], [10, 15], [11, 15], [13, 15], [14, 15], [15, 15], [17, 15], [20, 15], [21, 15]];
+  const counts: [number, number][] = [
+    [0, 9],
+    [1, 9],
+    [2, 10],
+    [3, 4],
+    [4, 10],
+    [10, 15],
+    [11, 15],
+    [13, 15],
+    [14, 15],
+    [15, 15],
+    [17, 15],
+    [20, 15],
+    [21, 15],
+  ];
   for (const [mode, n] of counts) for (let i = 0; i < n; i++) out.push(frameName(mode, i));
   for (let i = 9; i <= 13; i++) out.push(lensHotName(i));
   for (let i = 0; i < 10; i++) out.push(busyName(i));

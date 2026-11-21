@@ -9,11 +9,18 @@ import { hoverBox, mapClickAreas, rectTriangles } from "./clickzones";
 const bytes = (s: string) => new Uint8Array([...s].map((c) => c.charCodeAt(0)));
 const box = (n: string, x0: number, x1: number, y0: number, y1: number) =>
   `[${n}] UnLock IfF MOUSEX < ${x1} IfF MOUSEX > ${x0} IfF MOUSEY < ${y1} IfF MOUSEY > ${y0} Anima L 0 3 3 0 - EndIf EndIf EndIf EndIf ActiveMacro CALL_${n} `;
-const program = compileMcc(bytes(
-  box("CZYHAF", 590, 770, 2, 75) + box("CZYJACK", 541, 641, 254, 314) + box("CZYSTAD", 238, 347, 123, 185) +
-  "[POKAZANIE-HAFFEN] DoNothing 1 [POKAZANIE-JACKH] DoNothing 1 [POKAZANIE-STAD13.BM] DoNothing 1",
-));
-const tri = (x0: number, y0: number, x1: number, y1: number): number[][] => [[x0, y1, x0, y0, x1, y1], [x0, y0, x1, y1, x1, y0]];
+const program = compileMcc(
+  bytes(
+    box("CZYHAF", 590, 770, 2, 75) +
+      box("CZYJACK", 541, 641, 254, 314) +
+      box("CZYSTAD", 238, 347, 123, 185) +
+      "[POKAZANIE-HAFFEN] DoNothing 1 [POKAZANIE-JACKH] DoNothing 1 [POKAZANIE-STAD13.BM] DoNothing 1",
+  ),
+);
+const tri = (x0: number, y0: number, x1: number, y1: number): number[][] => [
+  [x0, y1, x0, y0, x1, y1],
+  [x0, y0, x1, y1, x1, y0],
+];
 const areas: Area[] = [
   { name: "HAFFEN", exit: false, triangles: tri(591, 3, 769, 74) },
   { name: "JACKH", exit: false, triangles: tri(541, 254, 641, 314) },
@@ -38,14 +45,20 @@ describe("hoverBox", () => {
 });
 
 describe("rectTriangles hit exactly the rectangle (Area_Contains half-plane test)", () => {
-  for (const r of [{ x0: 11, x1: 19, y0: 101, y1: 129 }, { x0: 0, x1: 0, y0: 5, y1: 5 }, { x0: 239, x1: 346, y0: 124, y1: 184 }, { x0: 591, x1: 769, y0: 3, y1: 74 }]) {
+  for (const r of [
+    { x0: 11, x1: 19, y0: 101, y1: 129 },
+    { x0: 0, x1: 0, y0: 5, y1: 5 },
+    { x0: 239, x1: 346, y0: 124, y1: 184 },
+    { x0: 591, x1: 769, y0: 3, y1: 74 },
+  ]) {
     it(JSON.stringify(r), () => {
       const t = rectTriangles(r);
       const bad: string[] = [];
-      for (let y = r.y0 - 3; y <= r.y1 + 3; y++) for (let x = r.x0 - 3; x <= r.x1 + 3; x++) {
-        const want = x >= r.x0 && x <= r.x1 && y >= r.y0 && y <= r.y1;
-        if (t.some((tt) => insideTriangleSides(tt, x, y)) !== want) bad.push(`${x},${y}`);
-      }
+      for (let y = r.y0 - 3; y <= r.y1 + 3; y++)
+        for (let x = r.x0 - 3; x <= r.x1 + 3; x++) {
+          const want = x >= r.x0 && x <= r.x1 && y >= r.y0 && y <= r.y1;
+          if (t.some((tt) => insideTriangleSides(tt, x, y)) !== want) bad.push(`${x},${y}`);
+        }
       expect(bad).toEqual([]);
     });
   }
@@ -68,11 +81,24 @@ describe("mapClickAreas: the click lands where the label lights", () => {
 
   for (const [name, macro, x0, x1, y0, y1] of places) {
     it(`${name}: every corner runs ${macro} and lights the hand; one pixel outside does nothing`, () => {
-      for (const [x, y] of [[x0, y0], [x1, y0], [x0, y1], [x1, y1], [(x0 + x1) >> 1, (y0 + y1) >> 1]]) {
+      for (const [x, y] of [
+        [x0, y0],
+        [x1, y0],
+        [x0, y1],
+        [x1, y1],
+        [(x0 + x1) >> 1, (y0 + y1) >> 1],
+      ]) {
         expect(click(x, y).macro).toBe(macro);
         expect(hand(x, y)).toMatchObject({ over: true, exists: true, label: macro });
       }
-      for (const [x, y] of [[x0 - 1, y0], [x1 + 1, y0], [x0, y0 - 1], [x1, y1 + 1], [x0 - 1, y1 + 1], [x1 + 1, y1 + 1]]) {
+      for (const [x, y] of [
+        [x0 - 1, y0],
+        [x1 + 1, y0],
+        [x0, y0 - 1],
+        [x1, y1 + 1],
+        [x0 - 1, y1 + 1],
+        [x1 + 1, y1 + 1],
+      ]) {
         expect(click(x, y)).toMatchObject({ area: -1, handled: false, macro: null });
         expect(hand(x, y).over).toBe(false);
       }
@@ -80,7 +106,14 @@ describe("mapClickAreas: the click lands where the label lights", () => {
   }
 
   it("the original oddities are gone: the top strip and the empty left of the map do nothing", () => {
-    for (const [x, y] of [[300, 40], [60, 30], [100, 100], [100, 400], [500, 400]]) expect(click(x, y).handled).toBe(false);
+    for (const [x, y] of [
+      [300, 40],
+      [60, 30],
+      [100, 100],
+      [100, 400],
+      [500, 400],
+    ])
+      expect(click(x, y).handled).toBe(false);
   });
 
   it("the lower-left half of the port box, dead in the original, now works", () => {

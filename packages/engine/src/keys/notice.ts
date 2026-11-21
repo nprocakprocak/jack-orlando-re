@@ -125,10 +125,10 @@ export class NoticeStrip {
   }
 
   /**
- * The strip's picture for the current fade level: the scene underneath (copied again every step), the text bitmap
- * blended over it by `wipe / 32` (non-zero text pixels only). Right after show() it is the scene with the shadow
- * (darkened, +1/+1, `Text_PrintfAtRemapAlt(1, 1, 10, 6)`) and no text yet. Null when no strip is shown.
- */
+   * The strip's picture for the current fade level: the scene underneath (copied again every step), the text bitmap
+   * blended over it by `wipe / 32` (non-zero text pixels only). Right after show() it is the scene with the shadow
+   * (darkened, +1/+1, `Text_PrintfAtRemapAlt(1, 1, 10, 6)`) and no text yet. Null when no strip is shown.
+   */
   picture(scene: Surface16, scrollX: number): Surface16 | null {
     if (!this.shown || !this.font) return null;
     const out = createSurface(this.width, NOTICE_HEIGHT);

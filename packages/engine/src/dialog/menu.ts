@@ -27,7 +27,14 @@ export interface MenuRow {
  * with a strict `<`, so equal widths keep the file order. Row k is at y + 24 * k. At most 8 options
  * (the game's arrays); more are ignored here, the game would overwrite its stack.
  */
-export function buildMenu(options: DcnEntry[], hidden: boolean[], measure: Measure, scrollX: number, scrollY: number, top: number): MenuRow[] {
+export function buildMenu(
+  options: DcnEntry[],
+  hidden: boolean[],
+  measure: Measure,
+  scrollX: number,
+  scrollY: number,
+  top: number,
+): MenuRow[] {
   const items = options.slice(0, MENU_SLOTS).map((e, index) => {
     if (hidden[index]) return { index: -1, width: HIDDEN_WIDTH };
     const w = measure(e.text) + 4;
@@ -41,7 +48,13 @@ export function buildMenu(options: DcnEntry[], hidden: boolean[], measure: Measu
   }
   return items
     .filter((it) => it.index >= 0)
-    .map((it, k) => ({ index: it.index, text: options[it.index].text, width: it.width, x: MENU_X + scrollX, y: k * ROW_PITCH + scrollY + top }));
+    .map((it, k) => ({
+      index: it.index,
+      text: options[it.index].text,
+      width: it.width,
+      x: MENU_X + scrollX,
+      y: k * ROW_PITCH + scrollY + top,
+    }));
 }
 
 /** Number of options shown: those without the hidden flag. */
@@ -70,9 +83,9 @@ export class MenuPointer {
   constructor(readonly rows: MenuRow[]) {}
 
   /**
- * Position of the row under (x, y) in world pixels, or -1. (x, y) is the click point g_clickX/g_clickY
- * (mouse + the cursor's hotspot offset), which compares - not the mouse position.
- */
+   * Position of the row under (x, y) in world pixels, or -1. (x, y) is the click point g_clickX/g_clickY
+   * (mouse + the cursor's hotspot offset), which compares - not the mouse position.
+   */
   hit(x: number, y: number): number {
     // rows overlap by 1 px (pitch 24, height 25): the later row is drawn on top
     for (let i = this.rows.length - 1; i >= 0; i--) {
@@ -100,7 +113,10 @@ export class MenuPointer {
  * pressed (button held over it) = no shadow, text white and moved to (+1, +1), i.e. onto the shadow
  * (state 0/1 and ; the white of the pressed colour pair is a hypothesis matching the user's observation).
  */
-export function rowStyle(pressed: boolean, normalFill: number): { dx: number; dy: number; shadow: boolean; fill: number } {
+export function rowStyle(
+  pressed: boolean,
+  normalFill: number,
+): { dx: number; dy: number; shadow: boolean; fill: number } {
   return pressed ? { dx: 1, dy: 1, shadow: false, fill: 0xffff } : { dx: 0, dy: 0, shadow: true, fill: normalFill };
 }
 

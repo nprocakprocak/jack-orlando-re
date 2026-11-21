@@ -87,7 +87,11 @@ export function shootInsertion(arg: number, jack: JackInfo): GlobalInsertionRequ
   const pre = jack.uniform ? "SW" : "SP";
   const right = jack.facing === 1;
   const name =
-    jack.dir === 1 ? `${pre}PR${right ? "L" : "P"}` : jack.dir === 3 ? `${pre}SP${right ? "L" : "P"}` : `${pre}ST${right ? "P" : "L"}`;
+    jack.dir === 1
+      ? `${pre}PR${right ? "L" : "P"}`
+      : jack.dir === 3
+        ? `${pre}SP${right ? "L" : "P"}`
+        : `${pre}ST${right ? "P" : "L"}`;
   return req(`${name}${arg}`, 1);
 }
 
@@ -133,8 +137,8 @@ export function allGestureInsertions(): string[] {
 export class Gestures {
   state: GestureState = 0;
   /** false (default): engine fix - only a gesture's own insertion (state 1) sets state 2, so an
- * idle insertion that ends no longer makes the next gesture skip its animation (user decision
- * 2026-11-07). true: the original - every global insertion end sets state 2. */
+   * idle insertion that ends no longer makes the next gesture skip its animation (user decision
+   * 2026-11-07). true: the original - every global insertion end sets state 2. */
   readonly originalIdleBug: boolean;
 
   constructor(opts: { originalIdleBug?: boolean } = {}) {
@@ -164,7 +168,7 @@ export class Gestures {
   }
 
   /** PICKUP, GIVE, SHOOTF: 1 -> wait; 0 -> start, state 1, wait; 2 -> state 0, go on. A null
- * insertion (SHOOTF n > 1) still sets state 1, and nothing will ever end it: the macro hangs. */
+   * insertion (SHOOTF n > 1) still sets state 1, and nothing will ever end it: the macro hangs. */
   private simple(pick: () => GlobalInsertionRequest | null): GestureStep {
     let repeat = this.state === 1;
     let start: GlobalInsertionRequest | undefined;
@@ -178,8 +182,8 @@ export class Gestures {
   }
 
   /** SLAPF (case 0x93), only for dir 1/3/4: 1 -> wait; 0 or 3 -> SLAP = 1, state 1, start
- * phase n; n == 1: pc + 1 and state 3 (the command does not wait, the guard loops); else wait;
- * 2 -> state 0, go on. */
+   * phase n; n == 1: pc + 1 and state 3 (the command does not wait, the guard loops); else wait;
+   * 2 -> state 0, go on. */
   private slap(arg: number, jack: JackInfo): GestureStep {
     if (!weaponDir(jack.dir)) return { result: "done" };
     let repeat = this.state === 1;

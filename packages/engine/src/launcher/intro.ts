@@ -18,20 +18,29 @@ export interface IntroSettings {
  * Opens the intro; null when INTRO.AVX is missing or damaged (the menu then goes on without it). A missing or damaged
  * INTRO.DLG only means no subtitles.
  */
-export async function openIntro(read: (rel: string) => Promise<Uint8Array>, s: IntroSettings): Promise<MoviePlayer | null> {
+export async function openIntro(
+  read: (rel: string) => Promise<Uint8Array>,
+  s: IntroSettings,
+): Promise<MoviePlayer | null> {
   let avx: Avx;
   try {
     avx = new Avx(await read(INTRO_AVX));
   } catch {
     return null;
   }
-  let subtitles: SubtitleTrack | null = null;
+  let subtitles: SubtitleTrack | null;
   try {
     subtitles = new SubtitleTrack(parseSubtitles(await read(INTRO_DLG), true), true);
   } catch {
     subtitles = null;
   }
-  return new MoviePlayer(avx, { mode: MODE_INTRO, subtitles, dialogTextOn: s.dialogText, sound: s.sound, level: s.level });
+  return new MoviePlayer(avx, {
+    mode: MODE_INTRO,
+    subtitles,
+    dialogTextOn: s.dialogText,
+    sound: s.sound,
+    level: s.level,
+  });
 }
 
 /**

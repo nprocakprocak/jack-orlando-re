@@ -67,7 +67,13 @@ export function copyRect(scene: Surface16, dst: Surface16, x: number, y: number,
  * `remap[1]` (Text_PrintfAtRemap, used for the shadow).
  */
 export function drawText(
-  s: Surface16, font: Font, text: Uint8Array, x: number, y: number, outline: number, fill: number,
+  s: Surface16,
+  font: Font,
+  text: Uint8Array,
+  x: number,
+  y: number,
+  outline: number,
+  fill: number,
   remap?: readonly [number, number],
 ): void {
   const stride = strideOf(s);
@@ -87,7 +93,13 @@ export function drawText(
 
 /** Shadow (darkened +1,+1: outline 10, fill 6) and the text itself. */
 export function drawTextShadowed(
-  s: Surface16, font: Font, text: Uint8Array, x: number, y: number, outline: number, fill: number,
+  s: Surface16,
+  font: Font,
+  text: Uint8Array,
+  x: number,
+  y: number,
+  outline: number,
+  fill: number,
 ): void {
   drawText(s, font, text, x + 1, y + 1, 0, 0, [10, 6]);
   drawText(s, font, text, x, y, outline, fill);

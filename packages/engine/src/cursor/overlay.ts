@@ -55,7 +55,8 @@ export function drawCursor(
   } else if (masks) {
     const maskName = lensMaskName(draw.image);
     const mask = maskName ? masks.get(maskName) : undefined;
-    if (mask) img = renderLens(rgbaTo565(rgba, width, height), width, ox + (img.width >> 1), oy + (img.height >> 1), mask, img);
+    if (mask)
+      img = renderLens(rgbaTo565(rgba, width, height), width, ox + (img.width >> 1), oy + (img.height >> 1), mask, img);
   }
   const px = rgb565ToRgba(img.pixels);
   for (let y = 0; y < img.height; y++) {

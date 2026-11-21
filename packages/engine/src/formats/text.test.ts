@@ -15,7 +15,6 @@ import { encrypt } from "./textcrypt";
 const bytes = (s: string) => Uint8Array.from(s, (c) => c.charCodeAt(0));
 const crlf = (...l: string[]) => bytes(l.join("\r\n") + "\r\n");
 
-
 // --- synthetic data ---------------------------------------------------------
 
 describe("VARIABLE.ALL", () => {
@@ -58,7 +57,9 @@ describe("VARIABLE.ALL", () => {
   });
 
   it("verify reports duplicates, missing specials and bad line ends", () => {
-    const base = ["GUN", "LAST", "RAND", "MOUSEX", "MOUSEY", "JACKX", "JACKY", "MENU", "SHOOT", "SLAP"].map((n) => `${n} 0`);
+    const base = ["GUN", "LAST", "RAND", "MOUSEX", "MOUSEY", "JACKX", "JACKY", "MENU", "SHOOT", "SLAP"].map(
+      (n) => `${n} 0`,
+    );
     expect(verifyText("VARIABLE.ALL", crlf(...base))).toEqual([]);
     expect(verifyText("VARIABLE.ALL", crlf(...base, "GUN 1"))).toEqual(["duplicate variable GUN"]);
     expect(verifyText("VARIABLE.ALL", crlf(...base.slice(1)))).toEqual(["variable GUN missing"]);

@@ -1,7 +1,16 @@
 // Cursor logic of the original, separate from any canvas: the animation step (Cursor_AnimateStep),
 // the per-present decision of what to draw and where (Cursor_DrawOnPresent),
 // and the mode-switch zoom.
-import { CursorMode, busyName, frameName, hotspotOffset, imageOrigin, isVerbMode, lensHotName, verbName } from "./modes";
+import {
+  CursorMode,
+  busyName,
+  frameName,
+  hotspotOffset,
+  imageOrigin,
+  isVerbMode,
+  lensHotName,
+  verbName,
+} from "./modes";
 
 /** What to draw on top of the presented frame. */
 export interface CursorDraw {
@@ -85,10 +94,10 @@ export class Cursor {
   }
 
   /**
- * g_cursorIdle as Game_Run (l. 779) sees it for RAMKA: the original's Cursor_DrawOnPresent sets it to 1 at the first
- * present after a mode change and for the whole switch zoom; a mode set by the script (TAKE: mode 5) but not yet presented, or while the
- * cursor is not drawn (locked player), must not show the frame - the stale value would draw an empty frame before the item appears.
- */
+   * g_cursorIdle as Game_Run (l. 779) sees it for RAMKA: the original's Cursor_DrawOnPresent sets it to 1 at the first
+   * present after a mode change and for the whole switch zoom; a mode set by the script (TAKE: mode 5) but not yet presented, or while the
+   * cursor is not drawn (locked player), must not show the frame - the stale value would draw an empty frame before the item appears.
+   */
   get frameIdle(): boolean {
     // no present() since the last read = the cursor was not drawn in this render (player locked by a macro after the click): no item image, so no frame
     const drawn = this.presents !== this.presentsSeen;
@@ -112,9 +121,9 @@ export class Cursor {
   }
 
   /**
- * Game_Run l. 440, at every scene start: `if (g_verbMode == 0) { g_cursorMode = 0; g_cursorModePrev = 0; }`. With another verb
- * picked in the menu (e.g. the take verb whose macro ends in GOTOSCENE, SC105 BRANIE-MUNDUR.PBM) the cursor keeps its mode.
- */
+   * Game_Run l. 440, at every scene start: `if (g_verbMode == 0) { g_cursorMode = 0; g_cursorModePrev = 0; }`. With another verb
+   * picked in the menu (e.g. the take verb whose macro ends in GOTOSCENE, SC105 BRANIE-MUNDUR.PBM) the cursor keeps its mode.
+   */
   sceneStart(verbMode: number): void {
     if (verbMode !== 0) return;
     this.mode = 0;
@@ -122,10 +131,10 @@ export class Cursor {
   }
 
   /**
- * Result of the hit tests (Cursor_HitTestSprites/Areas): `overReaction` = a VERB-NAME macro
- * exists for the thing under the click point, `overObject` = any opaque sprite pixel is there.
- * Sets g_cursorIdle as Cursor_DrawOnPresent does.
- */
+   * Result of the hit tests (Cursor_HitTestSprites/Areas): `overReaction` = a VERB-NAME macro
+   * exists for the thing under the click point, `overObject` = any opaque sprite pixel is there.
+   * Sets g_cursorIdle as Cursor_DrawOnPresent does.
+   */
   setTargets(overReaction: boolean, overObject = overReaction): void {
     const hot = this.mode === 5 ? overObject : isVerbMode(this.mode) && overReaction;
     this.idle = !hot;
@@ -174,8 +183,14 @@ export class Cursor {
       case CursorMode.Item:
         this.image = "item";
         break;
-      case CursorMode.ZoneLeft: case CursorMode.ZoneRight: case CursorMode.ZoneDown: case CursorMode.ZoneIn:
-      case CursorMode.ZoneUp: case CursorMode.ZoneOut: case CursorMode.ScrollLeft: case CursorMode.ScrollRight:
+      case CursorMode.ZoneLeft:
+      case CursorMode.ZoneRight:
+      case CursorMode.ZoneDown:
+      case CursorMode.ZoneIn:
+      case CursorMode.ZoneUp:
+      case CursorMode.ZoneOut:
+      case CursorMode.ScrollLeft:
+      case CursorMode.ScrollRight:
         this.zonePingPong();
         this.image = frameName(m, this.animFrame);
         break;
@@ -240,10 +255,10 @@ export class Cursor {
   }
 
   /**
- * Shared body of modes 2-4: when not over a reaction and on the rest frame the animation holds
- * (direction forced up), otherwise it advances on the calls `advance(counter)` accepts and
- * ping-pongs between 0 and `turn` (past `over` the frame is set to `turn` and the direction reverses).
- */
+   * Shared body of modes 2-4: when not over a reaction and on the rest frame the animation holds
+   * (direction forced up), otherwise it advances on the calls `advance(counter)` accepts and
+   * ping-pongs between 0 and `turn` (past `over` the frame is set to `turn` and the direction reverses).
+   */
   private rest(atRest: boolean, over: number, turn: number, advance: (c: number) => boolean): void {
     if (this.idle && atRest) {
       this.animDir = 1;
@@ -262,9 +277,9 @@ export class Cursor {
   }
 
   /**
- * Cursor_DrawOnPresent: what to draw for this present, or null for nothing (outside the window,
- * paused, no image yet, or the last step of the switch animation).
- */
+   * Cursor_DrawOnPresent: what to draw for this present, or null for nothing (outside the window,
+   * paused, no image yet, or the last step of the switch animation).
+   */
   present(mouseX: number, mouseY: number): CursorDraw | null {
     if (!this.inWindow || this.suspended) return null;
     this.presents++;

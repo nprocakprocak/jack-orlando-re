@@ -29,8 +29,18 @@ export interface GameConfig {
 }
 
 export const DEFAULT_CONFIG: Readonly<GameConfig> = {
-  sound: 1, talkInterrupt: 1, showText: 1, walkSpeed: 1, showBullet: 1,
-  musicVol: 0x23, sfxVol: 0x20, talkVol: 0x40, reverseStereo: 0, intro: 1, surround: 1, musicDown: 1,
+  sound: 1,
+  talkInterrupt: 1,
+  showText: 1,
+  walkSpeed: 1,
+  showBullet: 1,
+  musicVol: 0x23,
+  sfxVol: 0x20,
+  talkVol: 0x40,
+  reverseStereo: 0,
+  intro: 1,
+  surround: 1,
+  musicDown: 1,
 };
 
 export const WALK_SPEED_MAX = 6;
@@ -39,9 +49,18 @@ export const VOLUME_MAX = 64;
 type Range = readonly [number, number];
 const BOOL: Range = [0, 1];
 const RANGES: Record<keyof GameConfig, Range> = {
-  sound: BOOL, talkInterrupt: BOOL, showText: BOOL, walkSpeed: [0, WALK_SPEED_MAX], showBullet: BOOL,
-  musicVol: [0, VOLUME_MAX], sfxVol: [0, VOLUME_MAX], talkVol: [0, VOLUME_MAX], reverseStereo: BOOL,
-  intro: BOOL, surround: BOOL, musicDown: BOOL,
+  sound: BOOL,
+  talkInterrupt: BOOL,
+  showText: BOOL,
+  walkSpeed: [0, WALK_SPEED_MAX],
+  showBullet: BOOL,
+  musicVol: [0, VOLUME_MAX],
+  sfxVol: [0, VOLUME_MAX],
+  talkVol: [0, VOLUME_MAX],
+  reverseStereo: BOOL,
+  intro: BOOL,
+  surround: BOOL,
+  musicDown: BOOL,
 };
 
 export function defaultConfig(): GameConfig {

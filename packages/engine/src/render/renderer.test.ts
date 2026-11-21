@@ -163,8 +163,15 @@ describe("Renderer: dirty rectangles", () => {
     const bg = background();
     const r = make(bg);
     let seed = 1;
-    const rnd = (n: number) => ((seed = (seed * 1103515245 + 12345) & 0x7fffffff) % n);
-    const imgs = [solid(5, 7, 0x1111, [[2, 3]]), solid(9, 4, 0x2222), solid(3, 3, 0x3333, [[0, 0], [2, 2]])];
+    const rnd = (n: number) => (seed = (seed * 1103515245 + 12345) & 0x7fffffff) % n;
+    const imgs = [
+      solid(5, 7, 0x1111, [[2, 3]]),
+      solid(9, 4, 0x2222),
+      solid(3, 3, 0x3333, [
+        [0, 0],
+        [2, 2],
+      ]),
+    ];
     // the topmost sprite is a 16-bit one, so the "last sprite" quirk does not apply
     const ids = [r.add(imgs[0], 5), r.add(imgs[1], 3), r.add(imgs[2], 5), r.add(imgs[1], 9)];
     for (let n = 0; n < 300; n++) {
@@ -181,7 +188,7 @@ describe("Renderer: dirty rectangles", () => {
     const bg = background();
     const r = make(bg);
     let seed = 7;
-    const rnd = (n: number) => ((seed = (seed * 1103515245 + 12345) & 0x7fffffff) % n);
+    const rnd = (n: number) => (seed = (seed * 1103515245 + 12345) & 0x7fffffff) % n;
     const img = createSurface(10, 8);
     img.pixels.forEach((_, i) => (img.pixels[i] = i % 7 === 0 ? 0 : 0x4000 + i));
     const ids = [r.add(img, 1, 1), r.add(img, 2, 0.5), r.add(solid(6, 6, 0x2222), 3)];
@@ -203,7 +210,12 @@ describe("Renderer: scaling and mirroring", () => {
     const r = make();
     const id = r.add(img, 1, 0.5);
     r.set(id, 0, 0, img, 0.5);
-    expect(r.sprite(id)).toMatchObject({ w: 4, h: 2, kind: "pal8", step: stepForScale(0.5, false) });
+    expect(r.sprite(id)).toMatchObject({
+      w: 4,
+      h: 2,
+      kind: "pal8",
+      step: stepForScale(0.5, false),
+    });
     expect(at(r.framebuffer, 1, 1)).toBe(at(img, 2, 2));
   });
 

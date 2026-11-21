@@ -17,7 +17,11 @@ function make() {
 describe("MenuMusic", () => {
   it("plays a preloaded track and maps the volume to the channel level", async () => {
     const { m, log } = make();
-    expect(await m.preload("TR02-22.PMS", async (rel) => (rel === "Music/TR02-22.PMS" ? new Uint8Array(3) : Promise.reject(new Error("x"))))).toBe(true);
+    expect(
+      await m.preload("TR02-22.PMS", async (rel) =>
+        rel === "Music/TR02-22.PMS" ? new Uint8Array(3) : Promise.reject(new Error("x")),
+      ),
+    ).toBe(true);
     m.handle({ op: "stop" });
     m.handle({ op: "start", file: "TR02-22.PMS" });
     m.handle({ op: "volume", value: 5 });

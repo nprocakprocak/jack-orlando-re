@@ -17,7 +17,13 @@ export const WALK_FRAME_AFTER_STAND = 3;
 /** Standing frames in RESOURCE.PAK (buffers + dir * 0x36b6). */
 export const STAND_FRAMES = ["SSFR2.PBM", "SSPR2.PBM", "SSBA2.PBM", "SSSP2.PBM", "SSST2.PBM"] as const;
 /** Hard-coded hot spots of the standing frames: [xRight, y]; xLeft = width - xRight. */
-export const STAND_HOT: readonly (readonly [number, number])[] = [[46, 264], [23, 262], [50, 266], [36, 264], [46, 260]];
+export const STAND_HOT: readonly (readonly [number, number])[] = [
+  [46, 264],
+  [23, 262],
+  [50, 266],
+  [36, 264],
+  [46, 260],
+];
 
 /**
  * The uniform set (Jack_LoadWalkFramesUniform, script EXTRA 6): the same buffers get FRONW..SKBAW01..12
@@ -25,8 +31,20 @@ export const STAND_HOT: readonly (readonly [number, number])[] = [[46, 264], [23
  * frames ST*W13.PBM with their own hard-coded hot spots. Shadows (SH_*), OBPL / PROPRO (walk-start turns) stay.
  */
 export const WALK_SERIES_UNIFORM = ["FRONW", "PROFW", "BACKW", "SKFRW", "SKBAW"] as const;
-export const STAND_FRAMES_UNIFORM = ["STFRW13.PBM", "STPRW13.PBM", "STBAW13.PBM", "STSFW13.PBM", "STSBW13.PBM"] as const;
-export const STAND_HOT_UNIFORM: readonly (readonly [number, number])[] = [[47, 268], [24, 262], [46, 264], [39, 266], [49, 263]];
+export const STAND_FRAMES_UNIFORM = [
+  "STFRW13.PBM",
+  "STPRW13.PBM",
+  "STBAW13.PBM",
+  "STSFW13.PBM",
+  "STSBW13.PBM",
+] as const;
+export const STAND_HOT_UNIFORM: readonly (readonly [number, number])[] = [
+  [47, 268],
+  [24, 262],
+  [46, 264],
+  [39, 266],
+  [49, 263],
+];
 
 /** Jack_Stand multiplies the perspective scale by this: [civilian, uniform (g_jackUniform)] by direction. */
 export const STAND_SCALE: readonly (readonly [number, number])[] = [
@@ -84,14 +102,22 @@ export function standHotSpot(dir: JackDir, width: number, uniform = false): HotS
 /** eight-way index of dir * facing, used to pick shadow offsets. */
 export function shadowDirIndex(dir: number, facing: number): number {
   switch (dir * facing) {
-    case 1: return 2;
-    case 2: return 4;
-    case 3: return 1;
-    case 4: return 5;
-    case -4: return 3;
-    case -3: return 7;
-    case -1: return 6;
-    default: return 0; // also 0 and -2 (back, mirrored)
+    case 1:
+      return 2;
+    case 2:
+      return 4;
+    case 3:
+      return 1;
+    case 4:
+      return 5;
+    case -4:
+      return 3;
+    case -3:
+      return 7;
+    case -1:
+      return 6;
+    default:
+      return 0; // also 0 and -2 (back, mirrored)
   }
 }
 
@@ -111,9 +137,9 @@ export interface FrameSprite {
   /** size factor: the drawn image is trunc(w * scale) x trunc(h * scale) */
   scale: number;
   /**
- * g_jackScale · g_jackShadowScale without the 0.7 of the lone round shadow and without the 0.99 limit. The fade-out/in branches of
- * Jack_DrawShadow build their size from this product only (no 0.7), so the fading draw must use it.
- */
+   * g_jackScale · g_jackShadowScale without the 0.7 of the lone round shadow and without the 0.99 limit. The fade-out/in branches of
+   * Jack_DrawShadow build their size from this product only (no 0.7), so the fading draw must use it.
+   */
   fadeBase?: number;
   mirrored: boolean;
 }
@@ -123,7 +149,14 @@ export interface FrameSprite {
  * xLeft for -1 (the hot spot of the mirrored image). Insertion frames round (+0.5),
  * walk and standing frames truncate.
  */
-export function placeFrame(px: number, py: number, hot: HotSpot, facing: Facing, scale: number, round: boolean): [number, number] {
+export function placeFrame(
+  px: number,
+  py: number,
+  hot: HotSpot,
+  facing: Facing,
+  scale: number,
+  round: boolean,
+): [number, number] {
   const hx = facing === 1 ? hot[0] : hot[1];
   const r = round ? 0.5 : 0;
   return [ftol(px - hx * scale + r), ftol(py - hot[2] * scale + r)];
@@ -161,9 +194,9 @@ export interface ShadowSprite {
   y: number;
   scale: number;
   /**
- * g_jackScale · g_jackShadowScale without the 0.7 of the lone round shadow and without the 0.99 limit: the fade-out/in branches of
- * Jack_DrawShadow build their size from this product only, so a fading draw must use it.
- */
+   * g_jackScale · g_jackShadowScale without the 0.7 of the lone round shadow and without the 0.99 limit: the fade-out/in branches of
+   * Jack_DrawShadow build their size from this product only, so a fading draw must use it.
+   */
   fadeBase?: number;
   mirrored: boolean;
 }
@@ -180,7 +213,8 @@ export function jackShadow(r: ShadowRequest): ShadowSprite {
   if (shadowSlot === 16) file = ROUND_SHADOW;
   else if (r.walkFrame !== null) {
     // out-of-range -> SH_FR04 after a "!!!!!" debug print
-    file = validDir && r.walkFrame >= 0 && r.walkFrame <= 11 ? shadowFile(r.dir as JackDir, r.walkFrame) : shadowFile(0, 3);
+    file =
+      validDir && r.walkFrame >= 0 && r.walkFrame <= 11 ? shadowFile(r.dir as JackDir, r.walkFrame) : shadowFile(0, 3);
   } else if (!r.directional || r.twoShadows) file = ROUND_SHADOW;
   else file = validDir ? shadowFile(r.dir as JackDir, STILL_SHADOW_FRAME) : shadowFile(0, 3);
   const round = file === ROUND_SHADOW;
@@ -192,9 +226,19 @@ export function jackShadow(r: ShadowRequest): ShadowSprite {
   if (r.walkFrame === null) {
     if (round || shadowSlot > 7) [dx, dy] = SHADOW_OFFSET_ROUND;
     else [dx, dy] = [SHADOW_OFFSET_STILL_X[shadowSlot], SHADOW_OFFSET_STILL_Y[shadowSlot]];
-  } else if (shadowSlot === 16) [dx, dy] = SHADOW_OFFSET_ROUND; // bytes 16 of both walk tables
+  } else if (shadowSlot === 16)
+    [dx, dy] = SHADOW_OFFSET_ROUND; // bytes 16 of both walk tables
   else [dx, dy] = [SHADOW_OFFSET_WALK_X[shadowSlot], SHADOW_OFFSET_WALK_Y[shadowSlot]];
-  return { index: r.index, file, round, x: ftol(r.x - dx * s), y: ftol(r.y - dy * s), scale: s, fadeBase, mirrored: r.facing < 0 };
+  return {
+    index: r.index,
+    file,
+    round,
+    x: ftol(r.x - dx * s),
+    y: ftol(r.y - dy * s),
+    scale: s,
+    fadeBase,
+    mirrored: r.facing < 0,
+  };
 }
 
 /** Footstep volumes: [channel 1, channel 2], panned by Jack's x on the visible screen. */
@@ -218,7 +262,13 @@ export interface IdleChoice {
  * rand: one value of the C rand(); koltVar: value of the game variable GUN (g_varIdxGun; KOLT only if non-zero).
  * The STAY cases do not reset the idle counter (only the switch branch writes 700).
  */
-export function idleChoice(dir: JackDir, facing: Facing, uniform: boolean, rand: number, koltVar: number): IdleChoice | null {
+export function idleChoice(
+  dir: JackDir,
+  facing: Facing,
+  uniform: boolean,
+  rand: number,
+  koltVar: number,
+): IdleChoice | null {
   const odd = rand % 2 !== 0;
   if (uniform) {
     const df = dir * facing;
@@ -229,7 +279,9 @@ export function idleChoice(dir: JackDir, facing: Facing, uniform: boolean, rand:
   }
   switch (dir) {
     case 0:
-      return !odd && koltVar !== 0 ? { section: "KOLT", facing: 1, scaleMul: f32(0.985) } : { section: "KLFR", facing: 1, scaleMul: f32(0.97) };
+      return !odd && koltVar !== 0
+        ? { section: "KOLT", facing: 1, scaleMul: f32(0.985) }
+        : { section: "KLFR", facing: 1, scaleMul: f32(0.97) };
     case 1:
       return { section: "KLPRO", facing, scaleMul: 1 };
     case 2:

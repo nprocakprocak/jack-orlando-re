@@ -1,8 +1,14 @@
 import { viewOf } from "./bytes";
 import { imaStep } from "./sound-codec";
 import {
-  FLX_HEADER_SIZE, Flx, FrameBuffer, MediaError, decodeFrame, parseFlxHeader,
-  type FlxHeader, type Frame,
+  FLX_HEADER_SIZE,
+  Flx,
+  FrameBuffer,
+  MediaError,
+  decodeFrame,
+  parseFlxHeader,
+  type FlxHeader,
+  type Frame,
 } from "./media-flx";
 
 export const AVX_HEADER_SIZE = 4;
@@ -148,7 +154,13 @@ export class Avx {
         if (r + 4 > end) throw new MediaError(`record length truncated at ${r}`);
         const rend = r + 4 + v.getUint32(r, true);
         if (rend > end) throw new MediaError(`record at ${r} runs past its block`);
-        this.records.push({ block: this.blocks.length - 1, offset: r, video: r + 4, audio: -1, end: rend });
+        this.records.push({
+          block: this.blocks.length - 1,
+          offset: r,
+          video: r + 4,
+          audio: -1,
+          end: rend,
+        });
         r = rend;
       }
       pos = end;
@@ -183,11 +195,21 @@ export class Avx {
       const h = header as FlxHeader;
       const r = decodeFrame(buf, d, pos, rec.end, h.pal16, false);
       rec.audio = r.next;
-      yield { number: number++, segment: seg, index: h.frames - left, header: h, frame: r.frame, fb: buf, record: rec };
+      yield {
+        number: number++,
+        segment: seg,
+        index: h.frames - left,
+        header: h,
+        frame: r.frame,
+        fb: buf,
+        record: rec,
+      };
       left--;
     }
     if (seg + 1 !== this.segments || left) {
-      throw new MediaError(`movie ends in segment ${seg} with ${left} frames missing (${this.segments} segments in header)`);
+      throw new MediaError(
+        `movie ends in segment ${seg} with ${left} frames missing (${this.segments} segments in header)`,
+      );
     }
   }
 
@@ -229,9 +251,7 @@ export function rectProblems(h: FlxHeader, i: number, rect: [number, number, num
   const [x, y, w, hh] = rect;
   if (w <= 0 || hh <= 0) return [];
   const ok =
-    h.mode === 2
-      ? w <= h.width && hh <= h.height
-      : x >= 0 && y >= 0 && x + w <= h.width + 1 && y + hh <= h.height;
+    h.mode === 2 ? w <= h.width && hh <= h.height : x >= 0 && y >= 0 && x + w <= h.width + 1 && y + hh <= h.height;
   return ok ? [] : [`frame ${i}: rect ${rect.join(",")} does not fit ${h.width}x${h.height} (mode ${h.mode})`];
 }
 
@@ -245,7 +265,8 @@ export function verifyMedia(name: string, data: Uint8Array): string[] {
     if (isAvx(name)) {
       const avx = new Avx(data);
       for (const f of avx.frames()) {
-        if (avx.audioChunk(f.record).length % 8) problems.push(`record at ${f.record.offset}: sound not a multiple of 8 bytes`);
+        if (avx.audioChunk(f.record).length % 8)
+          problems.push(`record at ${f.record.offset}: sound not a multiple of 8 bytes`);
       }
       return problems;
     }

@@ -68,7 +68,9 @@ describe("bm on synthetic data", () => {
   });
 
   it("rejects a size that fits neither variant", () => {
-    expect(() => decodeBm(new Uint8Array([...header(2, 2), 0, 0, 0]))).toThrow(/fits neither 2x2 RGB565 \(12\) nor 8-bit \(264\)/);
+    expect(() => decodeBm(new Uint8Array([...header(2, 2), 0, 0, 0]))).toThrow(
+      /fits neither 2x2 RGB565 \(12\) nor 8-bit \(264\)/,
+    );
   });
 
   it("rejects odd palette offsets", () => {
@@ -90,12 +92,7 @@ describe("bm on synthetic data", () => {
   it("converts RGB565 to RGBA with bit replication and color key 0", () => {
     const rgba = rgb565ToRgba(new Uint16Array([0xffff, 0, 0xf800, 0x07e0, 0x001f, 0x0841]));
     expect([...rgba]).toEqual([
-      255, 255, 255, 255,
-      0, 0, 0, 0,
-      255, 0, 0, 255,
-      0, 255, 0, 255,
-      0, 0, 255, 255,
-      8, 8, 8, 255,
+      255, 255, 255, 255, 0, 0, 0, 0, 255, 0, 0, 255, 0, 255, 0, 255, 0, 0, 255, 255, 8, 8, 8, 255,
     ]);
     expect([...rgb565ToRgba(new Uint16Array([0]), false)]).toEqual([0, 0, 0, 255]);
   });

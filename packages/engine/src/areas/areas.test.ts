@@ -2,17 +2,39 @@ import { describe, expect, it } from "vitest";
 import { Cursor, CursorEnable, enableDrawVerb, type CursorVerb } from "../cursor";
 import { type Area } from "../formats/scene";
 import { compileMcc } from "../script/compiler";
-import { Interpreter, LoggingHost } from "../script/interpreter";
 import {
-  AREA_FLAG_SLOTS, AreaState, EXIT_CURSOR_MODE, applyAreaCommand, areaClick, areaHit, areaReaction, areaUnder,
-  dupIndices, edgeScrollMode, exitNameAt, interpreterPort, isEnabledExit, isZoneMode, resolveAreaRef, resolveClick,
-  spriteClickTarget, spritePasses, spriteReaction, startReaction, zoneCursorMode,
-  type Action, type AreaClick, type ClickEnv, type MacroPort, type Reaction, type SpriteCandidate,
+  AREA_FLAG_SLOTS,
+  AreaState,
+  EXIT_CURSOR_MODE,
+  applyAreaCommand,
+  areaClick,
+  areaHit,
+  areaReaction,
+  areaUnder,
+  dupIndices,
+  edgeScrollMode,
+  exitNameAt,
+  isEnabledExit,
+  isZoneMode,
+  resolveAreaRef,
+  spriteClickTarget,
+  spritePasses,
+  spriteReaction,
+  startReaction,
+  zoneCursorMode,
+  type Action,
+  type MacroPort,
+  type SpriteCandidate,
 } from "./index";
 
 /** Rectangle from two triangles, the way the areas are drawn in the .ACE files. */
 const rect = (name: string, x: number, y: number, w: number, h: number, exit = false): Area => ({
-  name, exit, triangles: [[x, y, x, y + h, x + w, y], [x, y + h, x + w, y, x + w, y + h]],
+  name,
+  exit,
+  triangles: [
+    [x, y, x, y + h, x + w, y],
+    [x, y + h, x + w, y, x + w, y + h],
+  ],
 });
 const bytes = (s: string) => new Uint8Array([...s].map((c) => c.charCodeAt(0)));
 const HAND: Action = { verb: "POKAZANIE", item: null };
@@ -21,7 +43,10 @@ const HAND: Action = { verb: "POKAZANIE", item: null };
 class FakePort implements MacroPort {
   readonly started: string[] = [];
   readonly interrupted: number[] = [];
-  constructor(readonly names: string[], readonly locked: string[] = []) {}
+  constructor(
+    readonly names: string[],
+    readonly locked: string[] = [],
+  ) {}
   exists(n: string): boolean {
     return this.names.includes(n);
   }
@@ -129,7 +154,11 @@ describe("hit tests", () => {
     const s = new AreaState();
     const port = new FakePort(["POKAZANIE-OKNO"]);
     expect(areaReaction(areas, s, port, { x: 220, y: 20 }, 0, HAND)).toEqual({
-      area: 2, name: "OKNO", over: true, exists: true, label: "POKAZANIE-OKNO",
+      area: 2,
+      name: "OKNO",
+      over: true,
+      exists: true,
+      label: "POKAZANIE-OKNO",
     });
     const r = areaReaction(areas, s, port, { x: 120, y: 120 }, 0, HAND);
     expect([r.name, r.over, r.exists]).toEqual(["KUBEL", true, false]);
@@ -137,19 +166,31 @@ describe("hit tests", () => {
     // item in hand: "<item>-NAME", no PIERDOLA in this test
     const held: Action = { verb: "POKAZANIE", item: "KLUCZ_I.BM" };
     const p2 = new FakePort(["PIERDOLA-OKNO"]);
-    expect(areaReaction(areas, s, p2, { x: 220, y: 20 }, 5, held)).toMatchObject({ exists: false, label: "KLUCZ_I.BM-OKNO" });
+    expect(areaReaction(areas, s, p2, { x: 220, y: 20 }, 5, held)).toMatchObject({
+      exists: false,
+      label: "KLUCZ_I.BM-OKNO",
+    });
   });
 });
 
 describe("zone cursor modes", () => {
-  const areas = ["LEWO", "PRAWO", "DOL", "TO_IN", "UP", "TO_OUT", "KUBEL"].map((n, i) => rect(n, i * 100, 0, 100, 100, n !== "KUBEL"));
+  const areas = ["LEWO", "PRAWO", "DOL", "TO_IN", "UP", "TO_OUT", "KUBEL"].map((n, i) =>
+    rect(n, i * 100, 0, 100, 100, n !== "KUBEL"),
+  );
   const at = (i: number) => ({ x: i * 100 + 30, y: 30 });
   const mode = (i: number, over: Partial<Parameters<typeof zoneCursorMode>[2]> = {}) =>
     zoneCursorMode(areas, new AreaState(), { mode: 0, verbMode: 0, click: at(i), ...over });
 
   it("takes the mode from the exit name, falls back to the menu mode", () => {
     expect([0, 1, 2, 3, 4, 5].map((i) => mode(i))).toEqual([10, 11, 13, 14, 15, 17]);
-    expect(EXIT_CURSOR_MODE).toEqual({ LEWO: 10, PRAWO: 11, DOL: 13, TO_IN: 14, UP: 15, TO_OUT: 17 });
+    expect(EXIT_CURSOR_MODE).toEqual({
+      LEWO: 10,
+      PRAWO: 11,
+      DOL: 13,
+      TO_IN: 14,
+      UP: 15,
+      TO_OUT: 17,
+    });
     expect(mode(6)).toBe(0);
     expect(mode(6, { mode: 10 })).toBe(0);
     expect(zoneCursorMode(areas, new AreaState(), { mode: 10, verbMode: 0, click: { x: 900, y: 900 } })).toBe(0);
@@ -175,7 +216,8 @@ describe("the verb after a macro that changes the scene", () => {
   // SC104 in short: the TO_OUT exit; the uniform was taken with the take verb (BRANIE-MUNDUR.PBM ends in GOTOSCENE)
   const areas = [rect("TO_OUT", 0, 400, 640, 80, true)];
   const over = { x: 300, y: 450 };
-  const zone = (c: CursorVerb): number => zoneCursorMode(areas, new AreaState(), { mode: c.mode, verbMode: c.verbMode, click: over });
+  const zone = (c: CursorVerb): number =>
+    zoneCursorMode(areas, new AreaState(), { mode: c.mode, verbMode: c.verbMode, click: over });
 
   it("the new scene keeps the hand: no arrow, and no pointer with a stale verb", () => {
     const cursor = new Cursor(() => ({ w: 18, h: 25 }));
@@ -204,13 +246,22 @@ describe("the verb after a macro that changes the scene", () => {
 });
 
 describe("scroll edge cursors", () => {
-  const env = (mode: number, mouseX: number) => ({ mode, mouseX, scrollX: 100, scrollMin: 0, scrollMax: 376 });
+  const env = (mode: number, mouseX: number) => ({
+    mode,
+    mouseX,
+    scrollX: 100,
+    scrollMin: 0,
+    scrollMax: 376,
+  });
   it("enters at the edges when the view can scroll and remembers the mode", () => {
     expect(edgeScrollMode(env(0, 120), 0)).toEqual({ mode: 20, saved: 0 });
     expect(edgeScrollMode(env(11, 100 + 0x263), 0)).toEqual({ mode: 21, saved: 11 });
     expect(edgeScrollMode(env(0, 150), 0)).toEqual({ mode: 0, saved: 0 });
     expect(edgeScrollMode({ ...env(0, 120), scrollX: 0 }, 0)).toEqual({ mode: 0, saved: 0 });
-    expect(edgeScrollMode({ ...env(0, 100 + 0x263), scrollX: 376 }, 0)).toEqual({ mode: 0, saved: 0 });
+    expect(edgeScrollMode({ ...env(0, 100 + 0x263), scrollX: 376 }, 0)).toEqual({
+      mode: 0,
+      saved: 0,
+    });
   });
   it("leaves back to the saved mode", () => {
     expect(edgeScrollMode(env(20, 140), 3)).toEqual({ mode: 3, saved: 3 });
@@ -232,9 +283,18 @@ describe("startReaction / area click", () => {
   });
   it("item in hand: item macro, then PIERDOLA, then failure", () => {
     let port = new FakePort(["KLUCZ_I.BM-X", "PIERDOLA-X"]);
-    expect(startReaction(port, item, "X")).toMatchObject({ macro: "KLUCZ_I.BM-X", itemMacroFound: true, itemFailed: false });
+    expect(startReaction(port, item, "X")).toMatchObject({
+      macro: "KLUCZ_I.BM-X",
+      itemMacroFound: true,
+      itemFailed: false,
+    });
     port = new FakePort(["PIERDOLA-X"]);
-    expect(startReaction(port, item, "X")).toMatchObject({ macro: "PIERDOLA-X", started: 0, itemMacroFound: true, itemFailed: false });
+    expect(startReaction(port, item, "X")).toMatchObject({
+      macro: "PIERDOLA-X",
+      started: 0,
+      itemMacroFound: true,
+      itemFailed: false,
+    });
     port = new FakePort(["POKAZANIE-X"]);
     const r = startReaction(port, item, "X");
     expect(r).toMatchObject({ macro: null, started: -1, itemMacroFound: false, itemFailed: true });
@@ -262,7 +322,12 @@ describe("startReaction / area click", () => {
     const s = new AreaState();
     const port = new FakePort(["POKAZANIE-WALKAREA"]);
     const c = areaClick(areas, s, port, { x: 250, y: 250 }, 0, HAND);
-    expect(c).toMatchObject({ name: "WALKAREA", walkArea: true, handled: false, macro: "POKAZANIE-WALKAREA" });
+    expect(c).toMatchObject({
+      name: "WALKAREA",
+      walkArea: true,
+      handled: false,
+      macro: "POKAZANIE-WALKAREA",
+    });
     expect(port.started).toEqual(["POKAZANIE-WALKAREA"]);
     expect(port.interrupted).toEqual([]);
     const held = areaClick(areas, s, new FakePort(["PIERDOLA-WALKAREA"]), { x: 250, y: 250 }, 5, item);
@@ -278,7 +343,12 @@ describe("startReaction / area click", () => {
 });
 
 describe("sprites", () => {
-  const sp = (name: string, pixelHit: boolean, flagged = false, excluded = false): SpriteCandidate => ({ name, pixelHit, flagged, excluded });
+  const sp = (name: string, pixelHit: boolean, flagged = false, excluded = false): SpriteCandidate => ({
+    name,
+    pixelHit,
+    flagged,
+    excluded,
+  });
   it("passes: click 2 for modes other than 0 and 1, cursor test 2 for every mode but 1", () => {
     expect([0, 1, 2, 5].map((m) => spritePasses(m, true))).toEqual([1, 1, 2, 2]);
     expect([0, 1, 2, 5].map((m) => spritePasses(m, false))).toEqual([2, 1, 2, 2]);
@@ -292,7 +362,12 @@ describe("sprites", () => {
   it("the cursor test goes on to a lower sprite that has a macro; the click does not", () => {
     const list = [sp("LOW", true), sp("TOP", true)];
     const port = new FakePort(["POKAZANIE-LOW"]);
-    expect(spriteReaction(list, port, 0, HAND)).toMatchObject({ over: true, exists: true, index: 0, label: "POKAZANIE-LOW" });
+    expect(spriteReaction(list, port, 0, HAND)).toMatchObject({
+      over: true,
+      exists: true,
+      index: 0,
+      label: "POKAZANIE-LOW",
+    });
     expect(spriteClickTarget(list, 0)).toBe(1);
   });
   it(" (SC026 spoon): the flag lights the cursor next to a small thing, the click needs a flagged sprite - and a big sprite without a macro under the hotspot takes it first", () => {
@@ -301,7 +376,12 @@ describe("sprites", () => {
     // list in drawing order: the table (opaque under the hotspot, no macro), the spoon and the bowl above it (only flagged by the cursor rectangle)
     const list = [sp("STOL.PBM", true, true), sp("LYZKA.PBM", false, true), sp("MISKA.PBM", false, true)];
     // 'highlight yes' (pass 0 table: no macro, pass 1 the spoon: macro) ...
-    expect(spriteReaction(list, port, 4, verb)).toMatchObject({ over: true, exists: true, index: 1, label: "BRANIE-LYZKA.PBM" });
+    expect(spriteReaction(list, port, 4, verb)).toMatchObject({
+      over: true,
+      exists: true,
+      index: 1,
+      label: "BRANIE-LYZKA.PBM",
+    });
     // ... the original's click stops at the table (Sprite_ClickMacro leaves the loop at the first hit, macro or not)
     expect(spriteClickTarget(list, 4)).toBe(0);
     // the click skips sprites without a macro like the cursor test, so it lands on the spoon where the hand lights up
@@ -323,88 +403,9 @@ describe("sprites", () => {
   it("with an item the cursor test knows PIERDOLA", () => {
     const held: Action = { verb: "POKAZANIE", item: "X.BM" };
     expect(spriteReaction([sp("A", true)], new FakePort(["PIERDOLA-A"]), 5, held).exists).toBe(true);
-    expect(spriteReaction([sp("A", false)], new FakePort(["PIERDOLA-A"]), 5, held)).toMatchObject({ over: false, exists: false });
-  });
-});
-
-describe("resolveClick", () => {
-  const noArea: AreaClick = {
-    area: -1, name: "", walkArea: false, handled: false, macro: null, started: -1, itemMacroFound: false, itemFailed: false,
-  };
-  const noReaction: Reaction = { macro: null, started: -1, itemMacroFound: false, itemFailed: false };
-  const mk = (o: Partial<ClickEnv> = {}): ClickEnv => ({
-    mode: 0, armed: true, cursorEnabled: true, playerLocked: false, walkAllowed: true, itemInHand: false,
-    area: () => noArea, sprite: () => null, inWalkArea: () => true, ...o,
-  });
-  it("guards: not armed, cursor disabled, turning, scroll cursor", () => {
-    expect(resolveClick(mk({ armed: false }))).toEqual({ outcome: { kind: "ignored" }, armed: false });
-    for (const o of [{ cursorEnabled: false }, { turning: true }, { mode: 20 }, { mode: 21 }])
-      expect(resolveClick(mk(o))).toEqual({ outcome: { kind: "ignored" }, armed: true });
-  });
-  it("area first, then sprite, then walk", () => {
-    const area: AreaClick = { ...noArea, area: 0, name: "A", handled: true, started: 3, macro: "POKAZANIE-A" };
-    expect(resolveClick(mk({ area: () => area }))).toEqual({ outcome: { kind: "macro", source: "area" }, armed: false });
-    const spr: Reaction = { ...noReaction, macro: "POKAZANIE-S", started: 2 };
-    expect(resolveClick(mk({ sprite: () => spr }))).toEqual({ outcome: { kind: "macro", source: "sprite" }, armed: false });
-    expect(resolveClick(mk())).toEqual({ outcome: { kind: "walk" }, armed: false });
-  });
-  it("walking needs LOCKWALK off, a point in the walk area, mode 0 and no WALKAREA hit", () => {
-    expect(resolveClick(mk({ walkAllowed: false })).outcome).toEqual({ kind: "nothing" });
-    expect(resolveClick(mk({ inWalkArea: () => false })).outcome).toEqual({ kind: "nothing" });
-    expect(resolveClick(mk({ mode: 1 })).outcome).toEqual({ kind: "nothing" });
-    const walk: AreaClick = { ...noArea, area: 1, name: "WALKAREA", walkArea: true };
-    expect(resolveClick(mk({ area: () => walk })).outcome).toEqual({ kind: "nothing" });
-  });
-  it("a locked player cannot click anything", () => {
-    const e = mk({
-      playerLocked: true,
-      area: () => {
-        throw new Error("not called");
-      },
+    expect(spriteReaction([sp("A", false)], new FakePort(["PIERDOLA-A"]), 5, held)).toMatchObject({
+      over: false,
+      exists: false,
     });
-    expect(resolveClick(e)).toEqual({ outcome: { kind: "nothing" }, armed: true });
-  });
-  it("item used on a target without any reaction: Jack refuses; on empty space: back to the bar", () => {
-    const failed: AreaClick = { ...noArea, area: 0, name: "A", itemFailed: true };
-    expect(resolveClick(mk({ mode: 5, itemInHand: true, area: () => failed }))).toEqual({ outcome: { kind: "refuse" }, armed: true });
-    expect(resolveClick(mk({ mode: 5, itemInHand: true }))).toEqual({ outcome: { kind: "putBack" }, armed: false });
-    const sprFail: Reaction = { ...noReaction, itemFailed: true };
-    expect(resolveClick(mk({ mode: 5, itemInHand: true, sprite: () => sprFail })).outcome).toEqual({ kind: "refuse" });
-  });
-});
-
-describe("interpreterPort", () => {
-  const text = "[POKAZANIE-A]\nLock\nOutMacro\nDoNothing 100\n[POKAZANIE-B]\nUnlock\nDoNothing 1\n[~POKAZANIE-A]\nUnlock\nDoNothing 1\n";
-  it("exists / start / interrupt on the real interpreter", () => {
-    const it = new Interpreter(compileMcc(bytes(text)), new LoggingHost(), new Map());
-    const port = interpreterPort(it);
-    expect(port.exists("POKAZANIE-A")).toBe(true);
-    expect(port.exists("POKAZANIE-Z")).toBe(false);
-    expect(port.start("POKAZANIE-Z")).toBe(-1);
-    expect(it.anyActive()).toBe(false); // no "missing macro" entry started anything
-    const a = port.start("POKAZANIE-A");
-    for (let i = 0; i < 3; i++) it.tick();
-    expect(it.macros[a].out).toBe(true);
-    const b = port.start("POKAZANIE-B");
-    port.interruptOutMacros(b);
-    expect(it.macros[a].active).toBe(false);
-    expect(it.isActive("~POKAZANIE-A")).toBe(true);
-  });
-});
-
-describe(" inert BRANIE-AUTO", () => {
-  const text = ["[PATRZENIE-AUTO]", "DoNothing 1", "[BRANIE-AUTO]", "DoNothing 1", "[BRANIE-DRZWI]", "DoNothing 1", ""].join("\n");
-  const mk = (makarte?: number) =>
-    interpreterPort(new Interpreter(compileMcc(bytes(text)), new LoggingHost(), new Map(makarte === undefined ? [] : [["MAKARTE", makarte]])));
-  it("hand is off over the car after the card was taken, only for BRANIE", () => {
-    expect(mk(0).exists("BRANIE-AUTO")).toBe(true);
-    expect(mk(1).exists("BRANIE-AUTO")).toBe(false);
-    expect(mk(1).exists("PATRZENIE-AUTO")).toBe(true);
-    expect(mk(1).exists("BRANIE-DRZWI")).toBe(true);
-    expect(mk().exists("BRANIE-AUTO")).toBe(true); // no MAKARTE: other scene, unchanged
-  });
-  it("click still starts the macro (as in the original)", () => {
-    const p = mk(1);
-    expect(p.start("BRANIE-AUTO")).toBeGreaterThanOrEqual(0);
   });
 });

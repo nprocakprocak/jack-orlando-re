@@ -19,7 +19,11 @@ const FLOOR = [
   [0, 0, 0, 600, 1000, 600],
   [0, 0, 1000, 0, 1000, 600],
 ];
-const world = (walk: number[][] = FLOOR, objects: WalkObject[] = []): WalkWorld => ({ walk, objects, perspective: FLAT });
+const world = (walk: number[][] = FLOOR, objects: WalkObject[] = []): WalkWorld => ({
+  walk,
+  objects,
+  perspective: FLAT,
+});
 const box = (x: number, y: number, w: number, h: number): WalkObject => ({
   x,
   y,
@@ -120,15 +124,27 @@ describe("escape point", () => {
 
   it("skips candidates inside an object quad or outside the walk area", () => {
     const blockLeft = world(FLOOR, [box(240, 290, 20, 20)]);
-    expect((run(jack(), person(), blockLeft) as { target: unknown }).target).toEqual({ x: 750, y: 300 });
-    const noLeft = world([[350, 0, 350, 600, 1000, 600], [350, 0, 1000, 0, 1000, 600]]);
-    expect((run(jack(), person(), noLeft) as { target: unknown }).target).toEqual({ x: 750, y: 300 });
+    expect((run(jack(), person(), blockLeft) as { target: unknown }).target).toEqual({
+      x: 750,
+      y: 300,
+    });
+    const noLeft = world([
+      [350, 0, 350, 600, 1000, 600],
+      [350, 0, 1000, 0, 1000, 600],
+    ]);
+    expect((run(jack(), person(), noLeft) as { target: unknown }).target).toEqual({
+      x: 750,
+      y: 300,
+    });
     const both = world(FLOOR, [box(240, 290, 20, 20), box(740, 290, 20, 20)]);
     expect((run(jack(), person(), both) as { target: unknown }).target).toEqual({ x: 519, y: 366 });
   });
 
   it("no free candidate: nothing happens (and the flag stays clear, so the next step retries)", () => {
-    const closed = world([[490, 290, 490, 310, 510, 310], [490, 290, 510, 290, 510, 310]]);
+    const closed = world([
+      [490, 290, 490, 310, 510, 310],
+      [490, 290, 510, 290, 510, 310],
+    ]);
     expect(run(jack(), person(), closed).kind).toBe("none");
   });
 

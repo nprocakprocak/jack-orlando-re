@@ -88,7 +88,7 @@ describe("ThrottleDetector", () => {
     expect(d.frame((t += 1000))).toBe(true);
     expect(d.frame((t += 16.7))).toBe(true);
     expect(d.frame((t += 16.7))).toBe(true);
-    expect(d.frame((t += 16.7))).toBe(false);
+    expect(d.frame(t + 16.7)).toBe(false);
   });
 
   it("a single long frame between normal ones is not throttling", () => {
@@ -110,7 +110,7 @@ describe("ThrottleDetector", () => {
     d.frame((t += 16));
     d.frame((t += 16));
     expect(d.throttled).toBe(true);
-    d.frame((t += 16));
+    d.frame(t + 16);
     expect(d.throttled).toBe(false);
   });
 
@@ -184,7 +184,7 @@ describe("PauseController", () => {
     c.frame((t += 16));
     c.frame((t += 16));
     expect(c.paused).toBe(true);
-    c.frame((t += 16));
+    c.frame(t + 16);
     expect(c.paused).toBe(false);
     expect(calls.map((x) => x[0])).toEqual([true, false]);
   });
@@ -255,10 +255,11 @@ function fakeBrowser() {
         onFrame?.(now);
         nextFrame += frameMs;
       } else {
-        for (const t of timers) if (t.next === now) {
-          t.next += t.ms;
-          t.cb();
-        }
+        for (const t of timers)
+          if (t.next === now) {
+            t.next += t.ms;
+            t.cb();
+          }
       }
     }
     now = end;
@@ -268,7 +269,18 @@ function fakeBrowser() {
     now += ms;
     for (const t of timers) if (t.next < now) t.next = now;
   };
-  return { win, doc, env, run, block, get now() { return now; }, pendingFrames: () => frames.length, timerCount: () => timers.length };
+  return {
+    win,
+    doc,
+    env,
+    run,
+    block,
+    get now() {
+      return now;
+    },
+    pendingFrames: () => frames.length,
+    timerCount: () => timers.length,
+  };
 }
 
 describe("bindPause + EngineLoop", () => {
@@ -281,7 +293,11 @@ describe("bindPause + EngineLoop", () => {
       render: (_a, info) => (elapsed += info.elapsedMs),
     });
     const sound: boolean[] = [];
-    const binding = bindPause(b.win, b.doc, loop, { pauseOnBlur, onChange: (p) => sound.push(p), env: b.env });
+    const binding = bindPause(b.win, b.doc, loop, {
+      pauseOnBlur,
+      onChange: (p) => sound.push(p),
+      env: b.env,
+    });
     const play = (ms: number, frameMs = 1000 / 60) => b.run(ms, frameMs, (t) => loop.step(t));
     return { b, loop, binding, sound, play, elapsed: () => elapsed, logic: () => logic };
   }
@@ -374,7 +390,11 @@ describe("bindPause + EngineLoop", () => {
     b.doc.hidden = true;
     const loop = new EngineLoop();
     const sound: boolean[] = [];
-    const binding = bindPause(b.win, b.doc, loop, { pauseOnBlur: true, onChange: (p) => sound.push(p), env: b.env });
+    const binding = bindPause(b.win, b.doc, loop, {
+      pauseOnBlur: true,
+      onChange: (p) => sound.push(p),
+      env: b.env,
+    });
     expect(loop.active).toBe(false);
     expect(sound).toEqual([true]);
     binding.setPauseOnBlur(false);

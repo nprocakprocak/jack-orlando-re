@@ -3,8 +3,8 @@
 // `screen.pixels`; time is in ticks of 5 ms (the game's clock), `now` any monotonic tick counter.
 // src/video/README.md
 
-import { AVX_GAP, Avx, ImaStereoStream } from "../formats/media";
-import type { AvxFrame } from "../formats/media";
+import { AVX_GAP, ImaStereoStream } from "../formats/media";
+import type { AvxFrame, Avx } from "../formats/media";
 import type { SubtitleTrack } from "../formats/subtitles";
 import type { MovieSoundSink } from "./audio";
 import { MODE_OUTRO, MovieBuffer, MovieScreen, OUTRO_FADE_SEGMENT } from "./screen";
@@ -96,13 +96,19 @@ export class MoviePlayer {
   }
 
   /**
- * One Media_Step: draws at most one frame. `escapeDown` is the state of ESC
- * (`Input_IsKeyDown(1)`, Game_Run): the loop tests it after every step, so a key
- * that is already down ends the movie after its first frame.
- */
+   * One Media_Step: draws at most one frame. `escapeDown` is the state of ESC
+   * (`Input_IsKeyDown(1)`, Game_Run): the loop tests it after every step, so a key
+   * that is already down ends the movie after its first frame.
+   */
   step(now: number, escapeDown = false): MovieStep {
     if (!this.started) throw new Error("movie not started");
-    const out: MovieStep = { presented: false, number: -1, segment: -1, index: -1, end: this.result };
+    const out: MovieStep = {
+      presented: false,
+      number: -1,
+      segment: -1,
+      index: -1,
+      end: this.result,
+    };
     if (this.result) return out;
     const timeLeft = this.clock - (now - this.startTick);
     if (timeLeft < STALL_TICKS) {

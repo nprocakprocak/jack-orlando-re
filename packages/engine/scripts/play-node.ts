@@ -41,7 +41,11 @@ async function playFromPath(filePath: string): Promise<void> {
   let files: GameFiles | null;
   try {
     const st = fs.statSync(filePath);
-    files = st.isDirectory() ? openDirectory(filePath) : filePath.toLowerCase().endsWith(".zip") ? await openZipFile(filePath) : null;
+    files = st.isDirectory()
+      ? openDirectory(filePath)
+      : filePath.toLowerCase().endsWith(".zip")
+        ? await openZipFile(filePath)
+        : null;
   } catch (err) {
     console.error(err instanceof Error ? err.message : String(err));
     process.exitCode = 1;

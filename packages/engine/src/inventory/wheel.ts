@@ -13,9 +13,9 @@ export class WheelAccumulator {
   private sum = 0;
 
   /**
- * Adds one wheel event. Returns -1 (up), 0 (below the threshold) or 1 (down) — at most one notch per event, the
- * remainder (|sum| < NOTCH_PX) is kept. A change of direction drops the sum collected the other way.
- */
+   * Adds one wheel event. Returns -1 (up), 0 (below the threshold) or 1 (down) — at most one notch per event, the
+   * remainder (|sum| < NOTCH_PX) is kept. A change of direction drops the sum collected the other way.
+   */
   add(deltaY: number, deltaMode = 0): -1 | 0 | 1 {
     const px = deltaMode === 1 ? deltaY * LINE_PX : deltaMode === 2 ? deltaY * PAGE_PX : deltaY;
     if (!Number.isFinite(px) || px === 0) return 0;

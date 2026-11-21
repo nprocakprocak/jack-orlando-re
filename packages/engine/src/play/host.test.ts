@@ -398,7 +398,8 @@ describe("SceneHost: RUNFILMP and MOVEP", () => {
     expect(globalFilmTarget(5, -100, { x: 1, y: 2 })).toEqual([5, -100]);
     expect(globalFilmTarget(-100, -100, { x: 99.99, y: 100.99 })).toEqual([99, 0]);
     expect(globalFilmTarget(-100, -100, { x: -5.5, y: 20 })).toEqual([-5, -80]);
-    expect(globalFilmTarget(-100, -100, { x: 70000, y: 100 })).toEqual([4464, 0]);  });
+    expect(globalFilmTarget(-100, -100, { x: 70000, y: 100 })).toEqual([4464, 0]);
+  });
 
   it("MOVEP JACK only adds to g_jackX / g_jackY (floats): no scale, no walk state, no variables, no stand-still", () => {
     const s = setup("[A] MoveP JACK 10 -5");
@@ -415,7 +416,12 @@ describe("SceneHost: RUNFILMP and MOVEP", () => {
 
 describe("JACKX / JACKY follow Jack (the pigeons of SC003 wait on IFF JACKX > 320)", () => {
   it("writes the integer part of the position, only into variables that exist", () => {
-    const vars = new Variables(new Map([["JACKX", 0], ["JACKY", 0]]));
+    const vars = new Variables(
+      new Map([
+        ["JACKX", 0],
+        ["JACKY", 0],
+      ]),
+    );
     syncJackVars(vars, { x: 320.9, y: -4.5 });
     expect(vars.get("JACKX")).toBe(320);
     expect(vars.get("JACKY")).toBe(-4);

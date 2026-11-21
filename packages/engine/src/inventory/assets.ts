@@ -20,7 +20,11 @@ function version(global: Pak, v: "C" | "M"): CoatImages {
 
 /** `global` is Global.pak. `resource` is Resource.pak; the name strip uses `JACKM.FNT`. */
 export function loadCoatAssets(global: Pak, resource: Pak): CoatAssets {
-  return { civilian: version(global, "C"), uniform: version(global, "M"), font: parseFnt(resource.read("JACKM.FNT")) };
+  return {
+    civilian: version(global, "C"),
+    uniform: version(global, "M"),
+    font: parseFnt(resource.read("JACKM.FNT")),
+  };
 }
 
 /** Display names back to font bytes (`parseItems` decoded them). Same map as `encodeMazovia`, including `é` drawn as `e`. */

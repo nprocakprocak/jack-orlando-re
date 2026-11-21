@@ -8,7 +8,19 @@ export const VAR_MAX = 2024; // g_varValues (int16) 008a27d8 g_varNames 008a37a8
 export const ITEM_FILE_MAX = 13; // item bitmap names live in 0xe-byte slots (007bf0d8 + n * 0xe)
 
 /** Variables Var_LoadAll remembers the index. SHIFTX is not in the shipped file. */
-export const SPECIAL_VARS = ["GUN", "LAST", "RAND", "MOUSEX", "MOUSEY", "JACKX", "JACKY", "MENU", "SHOOT", "SLAP", "SHIFTX"];
+export const SPECIAL_VARS = [
+  "GUN",
+  "LAST",
+  "RAND",
+  "MOUSEX",
+  "MOUSEY",
+  "JACKX",
+  "JACKY",
+  "MENU",
+  "SHOOT",
+  "SLAP",
+  "SHIFTX",
+];
 
 /** TEKST.COD line kind -> row height in pixels. */
 export const CREDIT_ROW_HEIGHT: Readonly<Record<string, number>> = { "=": 13, "#": 9 };
@@ -99,7 +111,8 @@ export const PATTERNS = ["VARIABLE.ALL", "ELEM.LST", "ELEM.GER", "TEKST.COD"];
 
 function checkPlain(data: Uint8Array): string[] {
   const problems: string[] = [];
-  if (data.some((b) => b < 0x20 && b !== 0x0d && b !== 0x0a && b !== 0x09)) problems.push("control bytes in plain text");
+  if (data.some((b) => b < 0x20 && b !== 0x0d && b !== 0x0a && b !== 0x09))
+    problems.push("control bytes in plain text");
   let badEnds = false;
   for (let i = 0; i < data.length; i++) {
     if (data[i] === 0x0d && data[i + 1] !== 0x0a) badEnds = true;
@@ -122,7 +135,9 @@ export function verifyText(name: string, data: Uint8Array): string[] {
       const problems = checkPlain(data);
       const names = parseVariables(data).map((v) => v.name);
       problems.push(...duplicates(names).map((n) => `duplicate variable ${n}`));
-      problems.push(...SPECIAL_VARS.filter((n) => n !== "SHIFTX" && !names.includes(n)).map((n) => `variable ${n} missing`));
+      problems.push(
+        ...SPECIAL_VARS.filter((n) => n !== "SHIFTX" && !names.includes(n)).map((n) => `variable ${n} missing`),
+      );
       return problems;
     }
     if (upper === "ELEM.LST" || upper === "ELEM.GER") {

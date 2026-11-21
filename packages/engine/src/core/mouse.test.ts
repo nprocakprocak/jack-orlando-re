@@ -3,7 +3,10 @@ import { clientToScreen, domButtonToMask, Mouse, MOUSE_LEFT, MOUSE_MIDDLE, MOUSE
 
 describe("clientToScreen", () => {
   it("identity for an unscaled canvas at the origin", () => {
-    expect(clientToScreen(10, 20, { left: 0, top: 0, width: 640, height: 480 })).toEqual({ x: 10, y: 20 });
+    expect(clientToScreen(10, 20, { left: 0, top: 0, width: 640, height: 480 })).toEqual({
+      x: 10,
+      y: 20,
+    });
   });
 
   it("subtracts the canvas position and undoes CSS scaling", () => {
@@ -31,7 +34,10 @@ describe("clientToScreen", () => {
   });
 
   it("custom logical size", () => {
-    expect(clientToScreen(512, 240, { left: 0, top: 0, width: 1024, height: 480 }, 1024, 480)).toEqual({ x: 512, y: 240 });
+    expect(clientToScreen(512, 240, { left: 0, top: 0, width: 1024, height: 480 }, 1024, 480)).toEqual({
+      x: 512,
+      y: 240,
+    });
   });
 });
 

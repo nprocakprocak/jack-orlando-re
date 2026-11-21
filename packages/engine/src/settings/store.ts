@@ -21,7 +21,10 @@ function browserStorage(): KeyValueStorage | null {
 }
 
 export class ConfigStore {
-  constructor(private readonly storage: KeyValueStorage | null = browserStorage(), private readonly key = STORAGE_KEY) {}
+  constructor(
+    private readonly storage: KeyValueStorage | null = browserStorage(),
+    private readonly key = STORAGE_KEY,
+  ) {}
 
   /** Saved options; defaults when nothing usable is stored. */
   load(): GameConfig {

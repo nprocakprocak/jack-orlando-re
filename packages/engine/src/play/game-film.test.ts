@@ -11,7 +11,11 @@ describe("play: the music fade before a film (synthetic)", () => {
 
   it("lasts volume x 10 ms (Timer_Sleep(10) per volume step, Game_Run) and is silent without music", () => {
     expect(MOVIE_FADE_STEP_MS).toBe(10);
-    expect(shell({ audio: audio(35) }).beginMovieFade()).toEqual({ total: 350, left: 350, volume: 35 });
+    expect(shell({ audio: audio(35) }).beginMovieFade()).toEqual({
+      total: 350,
+      left: 350,
+      volume: 35,
+    });
     expect(shell({ audio: audio(64) }).beginMovieFade().total).toBe(640);
     expect(shell({ audio: audio(35, false) }).beginMovieFade().total).toBe(0);
     expect(shell({ audio: audio(0) }).beginMovieFade().total).toBe(0);

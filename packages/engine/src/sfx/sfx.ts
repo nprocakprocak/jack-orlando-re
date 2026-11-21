@@ -37,7 +37,12 @@ export function swapChannel(ch: number, swapped: boolean): number {
  * left edge of the screen - the original divides by scroll + 640 even though x is a
  * world position, so the pan leans to the left in scrolled scenes (kept). Truncated like __ftol.
  */
-export function stereoVolumes(volume: number, scale: number, x: number, scroll: number): { left: number; right: number } {
+export function stereoVolumes(
+  volume: number,
+  scale: number,
+  x: number,
+  scroll: number,
+): { left: number; right: number } {
   const total = volume * scale;
   const width = scroll + SCREEN_WIDTH;
   return {
@@ -112,11 +117,11 @@ export class SfxPlayer {
   }
 
   /**
- * New scene: its sound list replaces the old one and the per-scene tables are cleared
- * (Sound_LoadSceneSfx: g_sndStep1/2 = -1, then KROK1/KROK2 found by name; Game_Run start:
- * walk effects -1, reserved and speech flags 1..4 cleared, g_stepToggle = 0; channels 1..4 stopped at
- * the end of Scene_Load, channels 5+ (music) are left alone).
- */
+   * New scene: its sound list replaces the old one and the per-scene tables are cleared
+   * (Sound_LoadSceneSfx: g_sndStep1/2 = -1, then KROK1/KROK2 found by name; Game_Run start:
+   * walk effects -1, reserved and speech flags 1..4 cleared, g_stepToggle = 0; channels 1..4 stopped at
+   * the end of Scene_Load, channels 5+ (music) are left alone).
+   */
   loadScene(bank: SceneSounds | null): void {
     this.bank = bank;
     this.step1 = bank?.step1 ?? -1;
@@ -149,13 +154,13 @@ export class SfxPlayer {
   }
 
   /**
- * the scripts ask for a channel and get a free one. A request for 1 or 3 looks
- * at 1, 3, 2, 4 in this order, anything else at 2, 4, 1, 3; the first one that is idle, not
- * reserved and not speaking wins (or one marked by the first half of a pair, `forced`). With no
- * candidate the requested channel stays and cuts what plays there. A reserved or speaking
- * channel is then traded for the first of the list that is not. `found` is false when nothing
- * better than the request turned up (a footstep then plays nothing).
- */
+   * the scripts ask for a channel and get a free one. A request for 1 or 3 looks
+   * at 1, 3, 2, 4 in this order, anything else at 2, 4, 1, 3; the first one that is idle, not
+   * reserved and not speaking wins (or one marked by the first half of a pair, `forced`). With no
+   * candidate the requested channel stays and cuts what plays there. A reserved or speaking
+   * channel is then traded for the first of the list that is not. `found` is false when nothing
+   * better than the request turned up (a footstep then plays nothing).
+   */
   private pick(channel: number, flag: number): { channel: number; found: boolean } {
     const order = channel === 1 || channel === 3 ? LEFT_ORDER : RIGHT_ORDER;
     let found = false;
@@ -191,12 +196,12 @@ export class SfxPlayer {
   // ---- playing --------------------------------------------------------------------------
 
   /**
- * Sound_PlayIndexed: sound `sound` of the scene list on `channel` (1..10: asks for a free
- * channel; 11..16: exactly channel - 10, and reserves it), `volume` 0..64 (anything above is
- * dropped, the 16-bit wrap of negative values included), `flag` 1 = footstep (nothing plays when
- * no channel was found; the channel is then marked for the second half of the pair).
- * Returns true when something started.
- */
+   * Sound_PlayIndexed: sound `sound` of the scene list on `channel` (1..10: asks for a free
+   * channel; 11..16: exactly channel - 10, and reserves it), `volume` 0..64 (anything above is
+   * dropped, the 16-bit wrap of negative values included), `flag` 1 = footstep (nothing plays when
+   * no channel was found; the channel is then marked for the second half of the pair).
+   * Returns true when something started.
+   */
   playIndexed(channel: number, sound: number, volume: number, flag = 0): boolean {
     if (sound < 0 || !this.options.soundEnabled) return false;
     volume &= 0xffff;
@@ -227,9 +232,9 @@ export class SfxPlayer {
   }
 
   /**
- * EFFECT: channel 0 = both stereo channels (1 and 2, one after the other), otherwise the given one.
- * Insertion frames (`insertionFrame`) and ANIMAEFFECT (`animFrameShown`) use the same rule.
- */
+   * EFFECT: channel 0 = both stereo channels (1 and 2, one after the other), otherwise the given one.
+   * Insertion frames (`insertionFrame`) and ANIMAEFFECT (`animFrameShown`) use the same rule.
+   */
   effect(channel: number, sound: number, volume: number): void {
     if (channel === 0) {
       this.playIndexed(1, sound, volume);
@@ -248,10 +253,10 @@ export class SfxPlayer {
   }
 
   /**
- * EFFECTVOLUME: volume 0 stops the channel of the sound, any other value sets its volume (a
- * "game volume" doubled like in EFFECT, but neither capped at 64 nor scaled by SFXVol). It does
- * not check that the sound is still the one on the channel.
- */
+   * EFFECTVOLUME: volume 0 stops the channel of the sound, any other value sets its volume (a
+   * "game volume" doubled like in EFFECT, but neither capped at 64 nor scaled by SFXVol). It does
+   * not check that the sound is still the one on the channel.
+   */
   effectVolume(sound: number, volume: number): void {
     const ch = swapChannel(this.channelOf(sound), this.options.swapChannels);
     if (volume === 0) this.mixer.stop(ch);
@@ -259,10 +264,10 @@ export class SfxPlayer {
   }
 
   /**
- * WAITWHILEEFFECT: true while the sound plays on the channel it started on and that channel
- * still carries this sound (not replaced by another one); the command then runs again on the
- * next tick (case 0x67). Always false without sound.
- */
+   * WAITWHILEEFFECT: true while the sound plays on the channel it started on and that channel
+   * still carries this sound (not replaced by another one); the command then runs again on the
+   * next tick (case 0x67). Always false without sound.
+   */
   isEffectPlaying(sound: number): boolean {
     if (!this.options.soundEnabled || sound < 0) return false;
     const ch = this.channelOf(sound);
@@ -284,9 +289,9 @@ export class SfxPlayer {
   }
 
   /**
- * Called once per Game_Run pass: reservations and pair marks of the channels 1..4
- * that are no longer playing are dropped.
- */
+   * Called once per Game_Run pass: reservations and pair marks of the channels 1..4
+   * that are no longer playing are dropped.
+   */
   tick(): void {
     for (let ch = 1; ch <= 4; ch++) {
       if (!this.busy(ch)) {
@@ -312,18 +317,18 @@ export class SfxPlayer {
   }
 
   /**
- * WALKEFFECT JACK slot sound: slot 0 sets KROK1's index, any other slot KROK2's (a[0] == 0 in
- * case 0x41).
- */
+   * WALKEFFECT JACK slot sound: slot 0 sets KROK1's index, any other slot KROK2's (a[0] == 0 in
+   * case 0x41).
+   */
   setJackStep(slot: number, sound: number): void {
     if (slot === 0) this.step1 = sound;
     else this.step2 = sound;
   }
 
   /**
- * A person (not Jack) shows walk frame `frame`: its WALKEFFECT sound plays
- * as a stereo pair, volume `volume * scale` spread by `x`, flag 1.
- */
+   * A person (not Jack) shows walk frame `frame`: its WALKEFFECT sound plays
+   * as a stereo pair, volume `volume * scale` spread by `x`, flag 1.
+   */
   walkStep(person: number, frame: number, scale: number, x: number, scroll: number): void {
     if (person < 0 || person >= WALK_PERSONS || frame < 0 || frame >= WALK_FRAMES) return;
     const { sound, volume } = this.walkEffectOf(person, frame);
@@ -334,10 +339,10 @@ export class SfxPlayer {
   }
 
   /**
- * Jack_PlayStep: footstep of Jack, `scale` = g_jackScale (half of the scale at that call).
- * KROK2 and KROK1 alternate, starting with KROK2; right channel first, then left. The caller
- * decides when: see `jackStepFrame`.
- */
+   * Jack_PlayStep: footstep of Jack, `scale` = g_jackScale (half of the scale at that call).
+   * KROK2 and KROK1 alternate, starting with KROK2; right channel first, then left. The caller
+   * decides when: see `jackStepFrame`.
+   */
   jackStep(scale: number, jackX: number, scroll: number): void {
     const sound = this.stepToggle === 0 ? this.step2 : this.step1;
     const v = stereoVolumes(STEP_VOLUME, scale, jackX, scroll);
@@ -365,9 +370,9 @@ export class SfxPlayer {
   }
 
   /**
- * An object animation advances to `image` while it plays REC sequence `rec` (Game_Run,
- * once per frame change): the first entry with this image and sequence plays.
- */
+   * An object animation advances to `image` while it plays REC sequence `rec` (Game_Run,
+   * once per frame change): the first entry with this image and sequence plays.
+   */
   animFrameShown(anim: number, image: number, rec: number): boolean {
     for (const e of this.anima.get(anim) ?? []) {
       if (e.image === image && e.rec === rec) {

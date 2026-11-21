@@ -1,7 +1,15 @@
 import { describe, expect, it } from "vitest";
 import { INTRO_FLAG_KEY, markIntroShown, readStartupOptions } from "./intro-flag";
 import {
-  FADE_IN_TICKS, HOLD_TICKS, FADE_OUT_TICKS, LOGO_STEPS, LOGO_TICKS, LogoSequence, TICK_MS, TOTAL_MS, TOTAL_TICKS,
+  FADE_IN_TICKS,
+  HOLD_TICKS,
+  FADE_OUT_TICKS,
+  LOGO_STEPS,
+  LOGO_TICKS,
+  LogoSequence,
+  TICK_MS,
+  TOTAL_MS,
+  TOTAL_TICKS,
   positionAtTick,
 } from "./logos";
 
@@ -19,7 +27,11 @@ describe("timing (Media_Step case 5)", () => {
     expect(positionAtTick(0)).toEqual({ logo: 0, phase: "in", step: 1 });
     expect(positionAtTick(FADE_IN_TICKS - 1).step).toBe(1);
     expect(positionAtTick(FADE_IN_TICKS).step).toBe(2);
-    expect(positionAtTick(LOGO_STEPS * FADE_IN_TICKS - 1)).toEqual({ logo: 0, phase: "in", step: 32 });
+    expect(positionAtTick(LOGO_STEPS * FADE_IN_TICKS - 1)).toEqual({
+      logo: 0,
+      phase: "in",
+      step: 32,
+    });
     expect(positionAtTick(LOGO_STEPS * FADE_IN_TICKS).phase).toBe("hold");
     const out0 = LOGO_STEPS * FADE_IN_TICKS + HOLD_TICKS;
     expect(positionAtTick(out0 - 1).phase).toBe("hold");
@@ -84,7 +96,11 @@ describe("LogoSequence", () => {
 describe("startup options: logos always, intro on the first run (g_cfgPlayIntro)", () => {
   const store = (init?: string) => {
     const m = new Map<string, string>(init === undefined ? [] : [[INTRO_FLAG_KEY, init]]);
-    return { getItem: (k: string) => m.get(k) ?? null, setItem: (k: string, v: string) => void m.set(k, v), m };
+    return {
+      getItem: (k: string) => m.get(k) ?? null,
+      setItem: (k: string, v: string) => void m.set(k, v),
+      m,
+    };
   };
   it("first run: logos and intro; after the intro: logos only", () => {
     const s = store();
@@ -101,12 +117,22 @@ describe("startup options: logos always, intro on the first run (g_cfgPlayIntro)
   it("?intro= wins over ?logos= and the stored flag", () => {
     expect(readStartupOptions("?intro=1", store("0"))).toEqual({ logos: true, intro: true });
     expect(readStartupOptions("?intro=0", store())).toEqual({ logos: true, intro: false });
-    expect(readStartupOptions("?logos=0&intro=1", store("0"))).toEqual({ logos: false, intro: true });
+    expect(readStartupOptions("?logos=0&intro=1", store("0"))).toEqual({
+      logos: false,
+      intro: true,
+    });
     expect(readStartupOptions("?logos=1&intro=0", store())).toEqual({ logos: true, intro: false });
   });
   it("survives missing or throwing storage", () => {
     expect(readStartupOptions("", null)).toEqual({ logos: true, intro: true });
-    const bad = { getItem: () => { throw new Error("blocked"); }, setItem: () => { throw new Error("blocked"); } };
+    const bad = {
+      getItem: () => {
+        throw new Error("blocked");
+      },
+      setItem: () => {
+        throw new Error("blocked");
+      },
+    };
     expect(readStartupOptions("", bad)).toEqual({ logos: true, intro: true });
     expect(() => markIntroShown(bad)).not.toThrow();
     expect(() => markIntroShown(null)).not.toThrow();

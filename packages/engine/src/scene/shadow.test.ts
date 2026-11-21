@@ -16,7 +16,14 @@ const img = (width: number, height: number, f: (x: number, y: number) => number)
 describe("drawAt (synthetic)", () => {
   it("is the PersonShadow geometry for the same corner and scale", () => {
     const s = Math.fround(0.7);
-    const d = new PersonShadow(1).draw(true, { x: 300, y: 400, personScale: 0.7, lightScale: 1, maskWidth: 100, maskHeight: 40 })!;
+    const d = new PersonShadow(1).draw(true, {
+      x: 300,
+      y: 400,
+      personScale: 0.7,
+      lightScale: 1,
+      maskWidth: 100,
+      maskHeight: 40,
+    })!;
     expect(drawAt(d.x, d.y, s, 100, 40, 8)).toEqual(d);
   });
 
@@ -61,7 +68,6 @@ describe("composeShadow (synthetic)", () => {
   });
 });
 
-
 describe("SETPERSONDATA JACK f (synthetic)", () => {
   /** a ScenePlayer shell with the fields setJackData touches */
   const shell = () =>
@@ -70,7 +76,7 @@ describe("SETPERSONDATA JACK f (synthetic)", () => {
       world: { perspective: { horizonY: 200, refY: 422, refScale: 0.88 } },
       walker: { y: 391, scale: 0.77, speed: 0 },
       fixedScale: null,
-    }) as any;
+    }) as ScenePlayer;
 
   it("f = 2 only sets noScale: g_jackScale and g_perspRefScale stay (Script_ExecStep case 3), so the insertion shadows keep the walk scale", () => {
     const p = shell();

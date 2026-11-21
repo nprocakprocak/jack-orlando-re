@@ -21,9 +21,30 @@ export interface VerbTexts {
 
 /** Captions by language code. */
 export const VERB_TEXTS: Readonly<Record<"P" | "E" | "D", VerbTexts>> = {
-  P: { pointer: "Wskaźnik", take: "Zabierz", hit: "Uderz", look: "Sprawdź", gun: "Colt", title: "/3WYBIERZ" },
-  E: { pointer: "Pointer", take: "Take", hit: "Hit", look: "Examine", gun: "Colt", title: "/3SELECT" },
-  D: { pointer: "Gehe zu, Sprechen", take: "Nehmen", hit: "Schlagen", look: "Betrachten", gun: "Waffe", title: "/3AUSWAHL" },
+  P: {
+    pointer: "Wskaźnik",
+    take: "Zabierz",
+    hit: "Uderz",
+    look: "Sprawdź",
+    gun: "Colt",
+    title: "/3WYBIERZ",
+  },
+  E: {
+    pointer: "Pointer",
+    take: "Take",
+    hit: "Hit",
+    look: "Examine",
+    gun: "Colt",
+    title: "/3SELECT",
+  },
+  D: {
+    pointer: "Gehe zu, Sprechen",
+    take: "Nehmen",
+    hit: "Schlagen",
+    look: "Betrachten",
+    gun: "Waffe",
+    title: "/3AUSWAHL",
+  },
 };
 
 /** Cursor modes of the list items in order (g_verbMenuList): pointer 0, take 4, hit 2, look 1, gun 3. */
@@ -48,7 +69,12 @@ export function buttonName(i: number): string {
  * All text uses font 1, which is the small JACKM font (font != 0 = JACKM).
  */
 export function buildVerbWindow(
-  assets: WindowAssets, scene: Surface16, x: number, y: number, items: readonly string[], title: string,
+  assets: WindowAssets,
+  scene: Surface16,
+  x: number,
+  y: number,
+  items: readonly string[],
+  title: string,
 ): GuiWindow {
   let widest = items[0];
   for (const s of items) if (s.length > widest.length) widest = s;
@@ -57,7 +83,9 @@ export function buildVerbWindow(
   const ho = items.length * 27 + 50;
   const w = new GuiWindow(assets, scene, x, y, wo, ho, false);
   w.addLabel(title, true, 20, 13, COLOR_OUTLINE_BLACK, COLOR_YELLOW, false);
-  items.forEach((text, i) => w.addButton(buttonName(i), text, centerOffset(wo, wo - 40) - 1, 38 + 27 * i, wo - 40, 24, true, false));
+  items.forEach((text, i) =>
+    w.addButton(buttonName(i), text, centerOffset(wo, wo - 40) - 1, 38 + 27 * i, wo - 40, 24, true, false),
+  );
   return w;
 }
 
@@ -71,7 +99,14 @@ export class VerbMenu {
   done = false;
   result: VerbResult = null;
 
-  constructor(assets: WindowAssets, scene: Surface16, x: number, y: number, gun: boolean, texts: VerbTexts = VERB_TEXTS.P) {
+  constructor(
+    assets: WindowAssets,
+    scene: Surface16,
+    x: number,
+    y: number,
+    gun: boolean,
+    texts: VerbTexts = VERB_TEXTS.P,
+  ) {
     this.modes = verbMenuModes(gun);
     this.win = buildVerbWindow(assets, scene, x, y, verbMenuItems(texts, gun), texts.title);
   }
@@ -95,11 +130,23 @@ export class VerbMenu {
     }
   }
 
-  pointerDown(x: number, y: number): void { this.handle(this.win.pointerDown(x, y)); }
-  pointerMove(x: number, y: number): void { this.handle(this.win.pointerMove(x, y)); }
-  pointerUp(x: number, y: number): void { this.handle(this.win.pointerUp(x, y)); }
-  keyDown(key: string): void { this.handle(this.win.keyDown(key)); }
+  pointerDown(x: number, y: number): void {
+    this.handle(this.win.pointerDown(x, y));
+  }
+  pointerMove(x: number, y: number): void {
+    this.handle(this.win.pointerMove(x, y));
+  }
+  pointerUp(x: number, y: number): void {
+    this.handle(this.win.pointerUp(x, y));
+  }
+  keyDown(key: string): void {
+    this.handle(this.win.keyDown(key));
+  }
   /** Enter acts on release (Enter = button 1 = "Pointer"). */
-  keyUp(key: string): void { this.handle(this.win.keyUp(key)); }
-  draw(screen: Surface16): void { this.win.draw(screen); }
+  keyUp(key: string): void {
+    this.handle(this.win.keyUp(key));
+  }
+  draw(screen: Surface16): void {
+    this.win.draw(screen);
+  }
 }

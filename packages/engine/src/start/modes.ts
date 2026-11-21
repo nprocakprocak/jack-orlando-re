@@ -18,7 +18,11 @@ export interface GameModes {
   saves: "files" | "slots";
 }
 
-export const DEFAULT_MODES: Readonly<GameModes> = { inventory: "coat", easy: false, saves: "files" };
+export const DEFAULT_MODES: Readonly<GameModes> = {
+  inventory: "coat",
+  easy: false,
+  saves: "files",
+};
 
 export type ModeKey = keyof GameModes;
 
@@ -48,7 +52,10 @@ function pick<K extends ModeKey>(key: K, value: unknown): GameModes[K] {
 }
 
 /** Unknown keys dropped, bad values replaced by defaults, pending modes forced to their default. */
-export function sanitizeModes(raw: unknown, pending: { readonly [K in ModeKey]: string | null } = MODE_PENDING): GameModes {
+export function sanitizeModes(
+  raw: unknown,
+  pending: { readonly [K in ModeKey]: string | null } = MODE_PENDING,
+): GameModes {
   const o = raw && typeof raw === "object" ? (raw as Record<string, unknown>) : {};
   const out = defaultModes();
   for (const key of Object.keys(MODE_VALUES) as ModeKey[]) {
@@ -59,7 +66,11 @@ export function sanitizeModes(raw: unknown, pending: { readonly [K in ModeKey]: 
 }
 
 /** Next value of a mode (a click on its button); a pending mode does not change. */
-export function cycleMode(modes: GameModes, key: ModeKey, pending: { readonly [K in ModeKey]: string | null } = MODE_PENDING): GameModes {
+export function cycleMode(
+  modes: GameModes,
+  key: ModeKey,
+  pending: { readonly [K in ModeKey]: string | null } = MODE_PENDING,
+): GameModes {
   if (pending[key]) return modes;
   const values = MODE_VALUES[key] as readonly unknown[];
   const next = values[(values.indexOf(modes[key]) + 1) % values.length];

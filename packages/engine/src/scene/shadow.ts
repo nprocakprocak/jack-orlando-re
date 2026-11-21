@@ -27,7 +27,14 @@ export function approximateShadowTables(): ShadowTables {
  * What Jack_DrawShadow has computed already (image size from the mask, the anchor-shifted position and the capped scale)
  * as the `ShadowDraw` the pure code works with; the same sizes and steps as `PersonShadow` (`shape`).
  */
-export function drawAt(x: number, y: number, scale: number, maskWidth: number, maskHeight: number, level: number): ShadowDraw {
+export function drawAt(
+  x: number,
+  y: number,
+  scale: number,
+  maskWidth: number,
+  maskHeight: number,
+  level: number,
+): ShadowDraw {
   return { scale, x, y, level, ...shadowExtent(x, scale, maskWidth, maskHeight) };
 }
 
@@ -44,7 +51,12 @@ export function flipped(img: Image16): Image16 {
  * The sprite image of one shadow: the background rectangle of `draw` darkened under `mask`. Null when there is nothing to show
  * (width or height < 1: Blit_ShadowDarken returns at once and the sprite is empty). Parts outside the background stay 0.
  */
-export function composeShadow(backdrop: Image16, draw: ShadowDraw, mask: Image16, tables: ShadowTables): Image16 | null {
+export function composeShadow(
+  backdrop: Image16,
+  draw: ShadowDraw,
+  mask: Image16,
+  tables: ShadowTables,
+): Image16 | null {
   if (draw.width < 1 || draw.height < 1) return null;
   const buf = new Uint16Array(draw.width * draw.height);
   const { srcX, srcWidth, dstX } = draw.backdrop;

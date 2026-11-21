@@ -13,7 +13,7 @@ export interface MacroPort {
   /** Macro_Exists: a compiled macro of that name exists (also when BLOCKMACRO-ed). */
   exists(name: string): boolean;
   /** Script_FindMacro: starts the first macro of that name that is not BLOCKMACRO-ed.
- * Returns its index, -1 when there is none. */
+   * Returns its index, -1 when there is none. */
   start(name: string): number;
   /** Script_InterruptOutMacros */
   interruptOutMacros(except: number): void;
@@ -22,7 +22,9 @@ export interface MacroPort {
 export function interpreterPort(it: Interpreter): MacroPort {
   return {
     // exists() is used by the cursor tests only; start() still runs the macro as in the original
-    exists: (name) => it.macros.some((m) => m.name === name) && !isInertMacro(name, (v) => (it.vars.has(v) ? it.vars.get(v) : undefined)),
+    exists: (name) =>
+      it.macros.some((m) => m.name === name) &&
+      !isInertMacro(name, (v) => (it.vars.has(v) ? it.vars.get(v) : undefined)),
     start: (name) => (it.macros.some((m) => m.name === name && !m.locked) ? it.start(name) : -1),
     interruptOutMacros: (except) => it.interruptOutMacros(except),
   };
@@ -74,7 +76,12 @@ export function startReaction(port: MacroPort, action: Action, target: string, f
     }
   }
   if (fallback && started >= 0) port.interruptOutMacros(started);
-  return { macro, started, itemMacroFound, itemFailed: fallback && action.item !== null && started < 0 };
+  return {
+    macro,
+    started,
+    itemMacroFound,
+    itemFailed: fallback && action.item !== null && started < 0,
+  };
 }
 
 /** Exists-only version for the cursor tests (the area test has no fallback, see `areaReaction`). */
@@ -101,11 +108,22 @@ export interface AreaClick extends Reaction {
  * falls through to sprites and walking). `cursorMode` is g_cursorMode.
  */
 export function areaClick(
-  areas: readonly Area[], st: AreaState, port: MacroPort, p: Point, cursorMode: number, action: Action,
+  areas: readonly Area[],
+  st: AreaState,
+  port: MacroPort,
+  p: Point,
+  cursorMode: number,
+  action: Action,
 ): AreaClick {
   const none: AreaClick = {
-    area: -1, name: "", walkArea: false, handled: false,
-    macro: null, started: -1, itemMacroFound: false, itemFailed: false,
+    area: -1,
+    name: "",
+    walkArea: false,
+    handled: false,
+    macro: null,
+    started: -1,
+    itemMacroFound: false,
+    itemFailed: false,
   };
   const i = areaUnder(areas, st, p, cursorMode);
   if (i < 0) return none;
@@ -134,7 +152,12 @@ export interface AreaReaction {
  * scan goes on to the areas below; they still react to a click.
  */
 export function areaReaction(
-  areas: readonly Area[], st: AreaState, port: MacroPort, p: Point, cursorMode: number, action: Action,
+  areas: readonly Area[],
+  st: AreaState,
+  port: MacroPort,
+  p: Point,
+  cursorMode: number,
+  action: Action,
 ): AreaReaction {
   const i = areaUnder(areas, st, p, cursorMode, true);
   if (i < 0) return { area: -1, name: "", over: false, exists: false, label: "" };
@@ -190,7 +213,11 @@ function scanSprites(
  * lands where the hand lights up. When no hit sprite has a macro the result is the original's (the topmost hit sprite), because
  * the tail of Game_Run (the refusal of an item with no reaction) depends on a hit.
  */
-export function spriteClickTarget(list: readonly SpriteCandidate[], cursorMode: number, hasMacro?: (name: string) => boolean): number {
+export function spriteClickTarget(
+  list: readonly SpriteCandidate[],
+  cursorMode: number,
+  hasMacro?: (name: string) => boolean,
+): number {
   const passes = spritePasses(cursorMode, true);
   let first = -1;
   const found = scanSprites(list, passes, (c, i) => {
@@ -203,7 +230,10 @@ export function spriteClickTarget(list: readonly SpriteCandidate[], cursorMode: 
 
 /** Cursor_HitTestSprites: sprites are scanned until one with an existing macro is found. */
 export function spriteReaction(
-  list: readonly SpriteCandidate[], port: MacroPort, cursorMode: number, action: Action,
+  list: readonly SpriteCandidate[],
+  port: MacroPort,
+  cursorMode: number,
+  action: Action,
 ): { over: boolean; exists: boolean; index: number; label: string } {
   let over = false;
   const index = scanSprites(list, spritePasses(cursorMode, false), (c) => {
@@ -262,13 +292,11 @@ interface ClickProbe {
 /** Area, then sprite, then a walk, while the player is not locked. A walk finishes before the refusal tail. */
 function unlockedClick(env: ClickEnv): ClickProbe {
   let armed: boolean = env.armed;
-  let itemFailed = false;
-  let itemMacro = false;
+  const a = env.area();
+  let itemMacro = a.itemMacroFound;
+  let itemFailed = a.itemFailed;
   let outcome: ClickOutcome = { kind: "nothing" };
   let done = false;
-  const a = env.area();
-  itemMacro = a.itemMacroFound;
-  itemFailed = a.itemFailed;
   if (a.handled) {
     armed = false;
     outcome = { kind: "macro", source: "area" };
@@ -298,7 +326,13 @@ function unlockedClick(env: ClickEnv): ClickProbe {
  * `armed` is the new value.
  */
 export function resolveClick(env: ClickEnv): { outcome: ClickOutcome; armed: boolean } {
-  if (!env.armed || !env.cursorEnabled || env.turning || env.mode === CursorMode.ScrollLeft || env.mode === CursorMode.ScrollRight) {
+  if (
+    !env.armed ||
+    !env.cursorEnabled ||
+    env.turning ||
+    env.mode === CursorMode.ScrollLeft ||
+    env.mode === CursorMode.ScrollRight
+  ) {
     return { outcome: { kind: "ignored" }, armed: env.armed };
   }
   let armed: boolean = env.armed;

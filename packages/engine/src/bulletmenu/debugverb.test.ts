@@ -31,9 +31,10 @@ describe("debugVerbAllowed", () => {
     expect(debugVerbAllowed(9, { gun: true, itemInHand: false, menuOpen: false })).toBe(false);
   });
   it("nothing under an open menu", () => {
-    for (const gun of [false, true]) for (const verb of [0, 1, 2, 3, 4]) {
-      expect(debugVerbAllowed(verb, { gun, itemInHand: false, menuOpen: true })).toBe(false);
-    }
+    for (const gun of [false, true])
+      for (const verb of [0, 1, 2, 3, 4]) {
+        expect(debugVerbAllowed(verb, { gun, itemInHand: false, menuOpen: true })).toBe(false);
+      }
   });
 });
 
@@ -61,8 +62,20 @@ describe("the verb window has no digit shortcuts (Gui_RunWindow, Gui_ChoiceWindo
 
 describe("the bullet menu takes no keys but Esc (it reads only the mouse)", () => {
   const frame = (p: Partial<BulletFrameInput> = {}): BulletFrameInput => ({
-    mouseX: 300, mouseY: 240, scrollX: 0, clickX: 291, clickY: 228, leftDown: false, rightDown: false, esc: false,
-    cursorMode: 0, gun: false, showBullet: true, blocked: false, cursorEnabled: true, ...p,
+    mouseX: 300,
+    mouseY: 240,
+    scrollX: 0,
+    clickX: 291,
+    clickY: 228,
+    leftDown: false,
+    rightDown: false,
+    esc: false,
+    cursorMode: 0,
+    gun: false,
+    showBullet: true,
+    blocked: false,
+    cursorEnabled: true,
+    ...p,
   });
   for (const gun of [false, true]) {
     for (const cursorMode of [0, 5]) {

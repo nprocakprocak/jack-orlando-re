@@ -5,7 +5,6 @@ import { DEFAULT_CLIP, newSprite, Renderer, SCALE_KEEP, SpriteList, createSurfac
 import { arrangePerson, personObjectDepth, personObjectDepthInsertion } from "../persons/depth";
 import type { WalkObject } from "../walk/objects";
 
-
 describe("sprite list moves (synthetic)", () => {
   const img = createSurface(2, 2);
   const make = () => {
@@ -44,7 +43,13 @@ describe("sprite list moves (synthetic)", () => {
 // SC087, the guard's body (the last frame of JACKUDERZ2) must end up under the ledge GZYMS.PBM. Game_Run arranges
 // Jack after every frame of an insertion with the two edge tests; the data below are the quad of GZYMS.PBM (x 77, y 94) typed in by hand.
 describe("Jack against the ledge quad after an insertion frame (synthetic)", () => {
-  const gzyms: WalkObject = { x: 77, y: 94, quad: [1, 84, 323, 56, 325, 77, 4, 105], center: [163, 80], valid: true };
+  const gzyms: WalkObject = {
+    x: 77,
+    y: 94,
+    quad: [1, 84, 323, 56, 325, 77, 4, 105],
+    center: [163, 80],
+    valid: true,
+  };
   it("Jack standing at (302, 100), above every edge of the quad, is behind the ledge", () => {
     expect(personObjectDepth(gzyms, 302, 100)).toBe("behind");
   });
@@ -63,14 +68,26 @@ describe("Jack against the ledge quad after an insertion frame (synthetic)", () 
 });
 
 describe("person against an object after an insertion frame (Game_Run, synthetic)", () => {
-  const zero = (x: number, y: number): WalkObject => ({ x, y, quad: [0, 0, 0, 0, 0, 0, 0, 0], center: [0, 0], valid: false });
+  const zero = (x: number, y: number): WalkObject => ({
+    x,
+    y,
+    quad: [0, 0, 0, 0, 0, 0, 0, 0],
+    center: [0, 0],
+    valid: false,
+  });
   it("an all-zero quad compares the feet with the object's y: SC117 colonel (359) in front of the chair (247), behind a lower object", () => {
     expect(personObjectDepthInsertion(zero(103, 247), 359)).toEqual({ behind: false, front: true });
     expect(personObjectDepthInsertion(zero(0, 400), 359)).toEqual({ behind: true, front: false });
     expect(personObjectDepthInsertion(zero(0, 359), 359)).toEqual({ behind: false, front: false }); // equal: no move
   });
   it("uses corner 0 for behind and corner 2 for in front, plus the object's current y (SETPOSITIONE moves it)", () => {
-    const o: WalkObject = { x: 10, y: 100, quad: [0, 50, 40, 20, 40, 10, 0, 60], center: [0, 0], valid: true };
+    const o: WalkObject = {
+      x: 10,
+      y: 100,
+      quad: [0, 50, 40, 20, 40, 10, 0, 60],
+      center: [0, 0],
+      valid: true,
+    };
     expect(personObjectDepthInsertion(o, 140)).toEqual({ behind: true, front: true }); // 150 > 140, 110 < 140
     expect(personObjectDepthInsertion(o, 105)).toEqual({ behind: true, front: false });
     expect(personObjectDepthInsertion(o, 160)).toEqual({ behind: false, front: true });
@@ -78,7 +95,6 @@ describe("person against an object after an insertion frame (Game_Run, synthetic
     expect(personObjectDepth(zero(103, 247), 164, 359)).toBeNull();
   });
 });
-
 
 describe("person sprite z (synthetic)", () => {
   it("a new person's sprite lies under every object from index 2 up (Game_Run: Sprite_Add z = 2), Jack over all", async () => {

@@ -168,7 +168,10 @@ export function planWalk(
   world: WalkWorld,
   from: { x: number; y: number },
   click: Point,
-  opts: SearchOptions & { stats?: SmoothStats; /** WALKTO: a goal outside the area is not refused */ anyGoal?: boolean } = {},
+  opts: SearchOptions & {
+    stats?: SmoothStats;
+    /** WALKTO: a goal outside the area is not refused */ anyGoal?: boolean;
+  } = {},
 ): WalkPlan | null {
   if (!opts.anyGoal && findWalkTriangle(world.walk, click.x, click.y) < 0) return null;
   let start = { x: s16(ftol(from.x)), y: s16(ftol(from.y)) };
@@ -182,7 +185,12 @@ export function planWalk(
       r = findPath(world.walk, start, click, opts);
     }
   }
-  if (!r.path.length) return { path: [{ x: s16(ftol(from.x)), y: s16(ftol(from.y)) }, click], direct: true, fromOutside: false };
+  if (!r.path.length)
+    return {
+      path: [{ x: s16(ftol(from.x)), y: s16(ftol(from.y)) }, click],
+      direct: true,
+      fromOutside: false,
+    };
   const path = smoothPath(world, r.path, 1, opts.stats);
   if (!path.length) return null;
   if (fromOutside) path.unshift({ x: s16(ftol(from.x)), y: s16(ftol(from.y)) });

@@ -15,7 +15,10 @@ export class TextField {
   text: string;
   private elapsed = 0;
 
-  constructor(initial = "", readonly max = DESCRIPTION_MAX) {
+  constructor(
+    initial = "",
+    readonly max = DESCRIPTION_MAX,
+  ) {
     this.text = [...initial].slice(0, max).join("");
   }
 

@@ -29,7 +29,6 @@ import {
 } from "./scene";
 import { encrypt } from "./textcrypt";
 
-
 // --- synthetic data ----------------------------------------------------------
 
 const ascii = (s: string) => new Uint8Array([...s].map((c) => c.charCodeAt(0)));
@@ -125,12 +124,26 @@ describe("CCG on synthetic data", () => {
   it("reads background, objects, z order and the other sections", () => {
     const c = parseCcg(
       lines(
-        "[grafiki]", "DEK.BM", obj("a.pbm", 8, 10, 20), obj("FLX0", 16, 5, 6), obj("B.PBM", -8, 1, 2), "",
-        "[perspektywa]", "310 220 416 0.630000",
-        "[obszar_chodu]", "2", "0 0 10 -5 20 0", "1 2 3 4 5 6",
-        "[kolor_liter]", "1 65504 1 63480 1 63480",
-        "[swiatlo]", "320 0", "100 7",
-        "[elementy]", obj("IPODK.BM", 16, 0, 500), "[]",
+        "[grafiki]",
+        "DEK.BM",
+        obj("a.pbm", 8, 10, 20),
+        obj("FLX0", 16, 5, 6),
+        obj("B.PBM", -8, 1, 2),
+        "",
+        "[perspektywa]",
+        "310 220 416 0.630000",
+        "[obszar_chodu]",
+        "2",
+        "0 0 10 -5 20 0",
+        "1 2 3 4 5 6",
+        "[kolor_liter]",
+        "1 65504 1 63480 1 63480",
+        "[swiatlo]",
+        "320 0",
+        "100 7",
+        "[elementy]",
+        obj("IPODK.BM", 16, 0, 500),
+        "[]",
       ),
     );
     expect(c.background).toBe("DEK.BM");
@@ -138,19 +151,37 @@ describe("CCG on synthetic data", () => {
     expect(c.graphics).toBe(3);
     expect(c.count).toBe(4);
     expect(c.objects.map((o) => o.name)).toEqual(["A.PBM", "FLX0", "B.PBM", "IPODK.BM"]);
-    expect(c.objects[0]).toMatchObject({ kind: "graphic", type: 8, x: 10, y: 20, scale: 1000000, scaleB: 500000, flx: false });
+    expect(c.objects[0]).toMatchObject({
+      kind: "graphic",
+      type: 8,
+      x: 10,
+      y: 20,
+      scale: 1000000,
+      scaleB: 500000,
+      flx: false,
+    });
     expect(c.objects[1].flx).toBe(true);
     expect(c.objects[1].quad).toEqual([0, 0, 0, 0, 0, 0, 0, 0]);
     expect(c.objects[2].type).toBe(-8);
     expect(c.objects[3].kind).toBe("element");
     expect(c.perspective).toEqual({ a: 310, horizonY: 220, refY: 416, refScale: 630000 });
-    expect(c.walk).toEqual([[0, 0, 10, -5, 20, 0], [1, 2, 3, 4, 5, 6]]);
+    expect(c.walk).toEqual([
+      [0, 0, 10, -5, 20, 0],
+      [1, 2, 3, 4, 5, 6],
+    ]);
     expect(c.textColors).toEqual([1, -32, 1, -2056, 1, -2056]);
-    expect(c.lights).toEqual([[320, 0], [100, 7]]);
+    expect(c.lights).toEqual([
+      [320, 0],
+      [100, 7],
+    ]);
   });
 
   it("scrolled background: '+' suffix, start offset clamped to 0x178 and aligned to 4", () => {
-    expect(parseCcg(lines("[grafiki]", "DEK.BM+", "7", "[]"))).toMatchObject({ background: "DEK.BM", wide: true, scroll: 4 });
+    expect(parseCcg(lines("[grafiki]", "DEK.BM+", "7", "[]"))).toMatchObject({
+      background: "DEK.BM",
+      wide: true,
+      scroll: 4,
+    });
     expect(parseCcg(lines("[grafiki]", "DEK.BM+", "999", "[]")).scroll).toBe(0x178);
   });
 
@@ -163,13 +194,21 @@ describe("CCG on synthetic data", () => {
   });
 
   it("uses only the first [elementy] section", () => {
-    const c = parseCcg(lines("[grafiki]", "DEK.BM", "[elementy]", obj("I.BM", 16, 0, 500), "[elementy]", obj("J.BM", 16, 0, 500), "[]"));
+    const c = parseCcg(
+      lines("[grafiki]", "DEK.BM", "[elementy]", obj("I.BM", 16, 0, 500), "[elementy]", obj("J.BM", 16, 0, 500), "[]"),
+    );
     expect(c.objects.map((o) => o.name)).toEqual(["I.BM"]);
   });
 
   it("missing optional sections give defaults", () => {
     const c = parseCcg(lines("[grafiki]", "DEK.BM", "[]"));
-    expect(c).toMatchObject({ count: 0, perspective: null, lights: [], walk: [], textColors: null });
+    expect(c).toMatchObject({
+      count: 0,
+      perspective: null,
+      lights: [],
+      walk: [],
+      textColors: null,
+    });
   });
 });
 
@@ -219,33 +258,109 @@ describe("scene geometry", () => {
 describe("ACE, PCS, ICS, ACI, SSD, MCC on synthetic data", () => {
   it("ACE: areas, exits and the empty name", () => {
     const { areas, complete } = parseAce(lines("3", "[LEWO] 1 0 0 1 1 2 0", "[KUBEL] 0", "[] 0"));
-    expect(areas.map((a) => [a.name, a.exit, a.triangles.length])).toEqual([["LEWO", true, 1], ["KUBEL", false, 0], ["", true, 0]]);
+    expect(areas.map((a) => [a.name, a.exit, a.triangles.length])).toEqual([
+      ["LEWO", true, 1],
+      ["KUBEL", false, 0],
+      ["", true, 0],
+    ]);
     expect(complete).toBe(true);
     expect(parseAce(lines("1", "[UP] 0", "junk")).complete).toBe(false);
     expect(parseAce(new Uint8Array(0)).areas).toEqual([]);
   });
 
   it("PCS: person header and frames per direction", () => {
-    const p = parsePcs(lines("[POL2]", "2725 2 1 0.800000 1", "0", "A.PBM 1 2 3", "B.PBM 4 5 6", "2", "C.PBM 0 0 0", "d.pbm 9 9 9", "[X]", "5 1 0 1.0 0", "1", "E.PBM 7 8 9", "[]"));
+    const p = parsePcs(
+      lines(
+        "[POL2]",
+        "2725 2 1 0.800000 1",
+        "0",
+        "A.PBM 1 2 3",
+        "B.PBM 4 5 6",
+        "2",
+        "C.PBM 0 0 0",
+        "d.pbm 9 9 9",
+        "[X]",
+        "5 1 0 1.0 0",
+        "1",
+        "E.PBM 7 8 9",
+        "[]",
+      ),
+    );
     expect(p).toHaveLength(2);
-    expect(p[0]).toMatchObject({ name: "POL2", n: 2725, framesPerDir: 2, mode: 1, scale: 800000, flag: 1 });
+    expect(p[0]).toMatchObject({
+      name: "POL2",
+      n: 2725,
+      framesPerDir: 2,
+      mode: 1,
+      scale: 800000,
+      flag: 1,
+    });
     expect(p[0].directions.map((d) => d.dir)).toEqual([0, 2]);
     expect(p[0].directions[1].frames[1]).toEqual(["D.PBM", 9, 9, 9]);
     expect(p[1].directions[0].frames).toEqual([["E.PBM", 7, 8, 9]]);
   });
 
   it("ICS: frames with 7 values, effects before frames and at the section end", () => {
-    const s = parseIcs(lines("[a]", "F1.PBM 1 2 3 4 5 6 7", "Effect K.SND 0 30 31", "F2.PBM 0 0 0 0 0 1000 1000", "Effect L.SND 1 2 3", "[B]", "F3.PBM 1 1 1 1 1 1 1"));
+    const s = parseIcs(
+      lines(
+        "[a]",
+        "F1.PBM 1 2 3 4 5 6 7",
+        "Effect K.SND 0 30 31",
+        "F2.PBM 0 0 0 0 0 1000 1000",
+        "Effect L.SND 1 2 3",
+        "[B]",
+        "F3.PBM 1 1 1 1 1 1 1",
+      ),
+    );
     expect(s.map((x) => x.name)).toEqual(["A", "B"]);
-    expect(s[0].frames[1]).toEqual({ file: "F2.PBM", values: [0, 0, 0, 0, 0, 1000, 1000], effect: ["K.SND", 0, 31] });
+    expect(s[0].frames[1]).toEqual({
+      file: "F2.PBM",
+      values: [0, 0, 0, 0, 0, 1000, 1000],
+      effect: ["K.SND", 0, 31],
+    });
     expect(s[0].trailingEffect).toEqual(["L.SND", 1, 3]);
     expect(s[1].frames).toHaveLength(1);
   });
 
   it("ACI: REC sequences (first value made positive), images and shadows", () => {
-    const { anims, shadows } = parseAci(lines("[KA1.BM]", "3", "REC -4 4 3 END", "REC 1 END", "KA2.BM 1 2", "KA3.BM 0 0", "[NONE]", "1", "X.BM 0 0", "[SHAD1]", "10 20 30 40", "[]"), ["OTHER", "KA1.BM"]);
-    expect(anims).toEqual([{ object: 1, name: "KA1.BM", count: 3, recs: [[4, 4, 3], [1]], images: [["KA2.BM", 1, 2], ["KA3.BM", 0, 0]] }]);
-    expect(shadows).toEqual([{ index: 1, points: [[10, 20], [30, 40]] }]);
+    const { anims, shadows } = parseAci(
+      lines(
+        "[KA1.BM]",
+        "3",
+        "REC -4 4 3 END",
+        "REC 1 END",
+        "KA2.BM 1 2",
+        "KA3.BM 0 0",
+        "[NONE]",
+        "1",
+        "X.BM 0 0",
+        "[SHAD1]",
+        "10 20 30 40",
+        "[]",
+      ),
+      ["OTHER", "KA1.BM"],
+    );
+    expect(anims).toEqual([
+      {
+        object: 1,
+        name: "KA1.BM",
+        count: 3,
+        recs: [[4, 4, 3], [1]],
+        images: [
+          ["KA2.BM", 1, 2],
+          ["KA3.BM", 0, 0],
+        ],
+      },
+    ]);
+    expect(shadows).toEqual([
+      {
+        index: 1,
+        points: [
+          [10, 20],
+          [30, 40],
+        ],
+      },
+    ]);
   });
 
   it("SSD: sound names and the .PSD file loaded for each", () => {
@@ -257,9 +372,20 @@ describe("ACE, PCS, ICS, ACI, SSD, MCC on synthetic data", () => {
   it("MCC: sections, GoToScene targets without extension, Jack's start per LAST", () => {
     const m = parseMcc(
       lines(
-        "[PRE]", "SetPosition JACK 1 2", "If LAST 4", "  SetPosition JACK 5 6 / old: SetPosition JACK 0 0 /", "EndIf",
-        "[INIT]", "If LAST 6", "SetPosition JACK 7 8", "SetPosition JACK 9 10", "EndIf",
-        "[POKAZANIE-LEWO]", "SetPosition JACK 99 99", "GoToScene SC006", "GoToScene sc026.CFG",
+        "[PRE]",
+        "SetPosition JACK 1 2",
+        "If LAST 4",
+        "  SetPosition JACK 5 6 / old: SetPosition JACK 0 0 /",
+        "EndIf",
+        "[INIT]",
+        "If LAST 6",
+        "SetPosition JACK 7 8",
+        "SetPosition JACK 9 10",
+        "EndIf",
+        "[POKAZANIE-LEWO]",
+        "SetPosition JACK 99 99",
+        "GoToScene SC006",
+        "GoToScene sc026.CFG",
       ),
     );
     expect(m.sections).toEqual(["PRE", "INIT", "POKAZANIE-LEWO"]);
@@ -282,7 +408,15 @@ describe("parseScene on a synthetic archive", () => {
 
   it("combines the files and picks Jack's start", () => {
     const pak = pakOf({
-      "SC9.CCG": enc("[grafiki]", "D.BM", "O.BM 16 1 2 1 1 0 0 10 0 10 10 0 10", "[obszar_chodu]", "1", "0 0 5 9 10 0", "[]"),
+      "SC9.CCG": enc(
+        "[grafiki]",
+        "D.BM",
+        "O.BM 16 1 2 1 1 0 0 10 0 10 10 0 10",
+        "[obszar_chodu]",
+        "1",
+        "0 0 5 9 10 0",
+        "[]",
+      ),
       "SC9.MCC": enc("[PRE]", "SetPosition JACK 3 4", "[INIT]", "If LAST 2", "SetPosition JACK 5 6", "EndIf"),
       "SC9.ACE": enc("1", "[PRAWO] 0"),
       "SC9.SSD": enc("KROK1.SND"),

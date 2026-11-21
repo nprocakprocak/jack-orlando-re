@@ -3,7 +3,20 @@
 // encrypts and decrypts. Plain text is Mazovia (CP437 + Polish letters), CRLF lines.
 
 /** Extensions the game passes through Text_Decrypt. */
-export const ENCRYPTED_EXTENSIONS = ["ACE", "ACI", "CCG", "COD", "DCG", "DCN", "FCC", "FCM", "ICS", "MCC", "PCS", "SSD"];
+export const ENCRYPTED_EXTENSIONS = [
+  "ACE",
+  "ACI",
+  "CCG",
+  "COD",
+  "DCG",
+  "DCN",
+  "FCC",
+  "FCM",
+  "ICS",
+  "MCC",
+  "PCS",
+  "SSD",
+];
 
 /** Bytes 0x80..0xFF of the Mazovia code page. */
 const MAZOVIA_HIGH =

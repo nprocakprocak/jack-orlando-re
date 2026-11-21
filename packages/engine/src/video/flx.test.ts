@@ -13,7 +13,14 @@ describe("FlxAnimation (ANIMA modes 5/6)", () => {
   it("mode != 2 cuts the rectangle out of the full-size buffer", () => {
     const flx = new Flx(
       buildFlx(4, 3, 0, [
-        [pal, rectChunk(1, 1, 2, 2), deltaChunk(0, [[5, [1, 2]], [2, [2, 1]]])],
+        [
+          pal,
+          rectChunk(1, 1, 2, 2),
+          deltaChunk(0, [
+            [5, [1, 2]],
+            [2, [2, 1]],
+          ]),
+        ],
         [rectChunk(0, 0, 4, 3), emptyChunk()],
       ]),
     );
@@ -43,10 +50,7 @@ describe("FlxAnimation (ANIMA modes 5/6)", () => {
 
   it("deltas accumulate in the buffer, untouched pixels stay transparent (0)", () => {
     const flx = new Flx(
-      buildFlx(2, 2, 0, [
-        [pal, rectChunk(0, 0, 2, 2), deltaChunk(0, [[0, [1]]])],
-        [deltaChunk(3, [[0, [2]]])],
-      ]),
+      buildFlx(2, 2, 0, [[pal, rectChunk(0, 0, 2, 2), deltaChunk(0, [[0, [1]]])], [deltaChunk(3, [[0, [2]]])]]),
     );
     const anim = new FlxAnimation(flx, false);
     expect([...anim.step().sprite!.pixels]).toEqual([RED, 0, 0, 0]);
@@ -64,7 +68,9 @@ describe("FlxAnimation (ANIMA modes 5/6)", () => {
   });
 
   it("mode 6 wraps: counter back to 0, picture buffer kept, restart with the given FLX", () => {
-    const first = new Flx(buildFlx(2, 1, 0, [[pal, rectChunk(0, 0, 2, 1), deltaChunk(0, [[0, [1, 1]]])], [emptyChunk()]]));
+    const first = new Flx(
+      buildFlx(2, 1, 0, [[pal, rectChunk(0, 0, 2, 1), deltaChunk(0, [[0, [1, 1]]])], [emptyChunk()]]),
+    );
     const rec0 = new Flx(buildFlx(2, 1, 0, [[pal, rectChunk(0, 0, 2, 1), deltaChunk(0, [[1, [2]]])], [emptyChunk()]]));
     const anim = new FlxAnimation(first, true, rec0);
     expect(anim.step().finished).toBe(false);

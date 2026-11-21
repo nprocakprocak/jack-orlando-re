@@ -9,7 +9,12 @@ import { PlayGame } from "./game";
 import { TimedBackend, shell } from "./testing";
 
 describe("play: sound options of the menu (without the game files)", () => {
-  const prepared = (frames = 4000) => ({ rate: 22050, channels: [new Float32Array(frames)], loopLength: 0, loopStart: 0 });
+  const prepared = (frames = 4000) => ({
+    rate: 22050,
+    channels: [new Float32Array(frames)],
+    loopLength: 0,
+    loopStart: 0,
+  });
   const cfg = () => ({ ...defaultConfig() });
 
   it("applyConfig takes the options into the sound; applySetting stops the music below 5 and restarts it above 5", () => {
@@ -17,7 +22,13 @@ describe("play: sound options of the menu (without the game files)", () => {
     const a = new PlayAudio(backend);
     const c = { ...cfg(), sfxVol: 10, talkVol: 20, reverseStereo: 1, musicDown: 0, showText: 0 };
     a.applyConfig(c);
-    expect([a.config.sfxVolume, a.config.talkVolume, a.config.revStereo, a.config.musicDown, a.config.dialogText]).toEqual([10, 20, true, false, false]);
+    expect([
+      a.config.sfxVolume,
+      a.config.talkVolume,
+      a.config.revStereo,
+      a.config.musicDown,
+      a.config.dialogText,
+    ]).toEqual([10, 20, true, false, false]);
     expect(a.sfx.options.sfxVolume).toBe(10);
     expect(a.sfx.options.swapChannels).toBe(true);
 
@@ -97,7 +108,16 @@ describe("play: the cursor over the answer menu (synthetic)", () => {
 describe("play: RAMKA around the item cursor (synthetic)", () => {
   const FRAME = { width: 48, height: 41, pixels: new Uint16Array(48 * 41) };
   /** barOverlays on a stand-in WITHOUT the legacy bar (the default inventory mode is the coat): the frame overlay it returns. */
-  function overlaysFor(over: { idle?: boolean; mode?: number; barOpen?: boolean; menu?: boolean; caption?: boolean; bullet?: boolean; bar?: boolean; image?: boolean }) {
+  function overlaysFor(over: {
+    idle?: boolean;
+    mode?: number;
+    barOpen?: boolean;
+    menu?: boolean;
+    caption?: boolean;
+    bullet?: boolean;
+    bar?: boolean;
+    image?: boolean;
+  }) {
     const g = Object.create(PlayGame.prototype) as unknown as Record<string, unknown>;
     Object.assign(g, {
       bar: over.bar ? { isOpen: over.barOpen ?? false, overlays: () => [] } : null,
@@ -108,7 +128,10 @@ describe("play: RAMKA around the item cursor (synthetic)", () => {
       bullet: { open: over.bullet ?? false },
       lastInput: { x: 100, y: 80 },
     });
-    return (g as unknown as { barOverlays: (sc: unknown) => unknown[] }).barOverlays({ renderer: { framebuffer: null }, scrollX: 0 });
+    return (g as unknown as { barOverlays: (sc: unknown) => unknown[] }).barOverlays({
+      renderer: { framebuffer: null },
+      scrollX: 0,
+    });
   }
   it("is drawn in the default (coat) mode, at the mouse minus (0x18, 0x14)", () => {
     expect(overlaysFor({})).toEqual([{ x: 100 - 0x18, y: 80 - 0x14, image: FRAME }]);
@@ -125,7 +148,7 @@ describe("play: RAMKA around the item cursor (synthetic)", () => {
     expect(overlaysFor({ image: false })).toEqual([]);
   });
   it("no empty frame after TAKE - hidden until the item cursor has been presented and its zoom is over", () => {
-    const c = new Cursor(() => ({ w: 20, h: 20, hotspot: 0 } as never));
+    const c = new Cursor(() => ({ w: 20, h: 20, hotspot: 0 }) as never);
     c.inWindow = true;
     c.setTargets(true, true); // idle = false, as before the click on the object
     c.mode = 5; // TAKE: g_cursorMode = 5, nothing presented yet (player locked by the pick-up macro)
@@ -141,8 +164,16 @@ describe("play: RAMKA around the item cursor (synthetic)", () => {
 
 describe("play: MOUSEX / MOUSEY follow the cursor hotspot (synthetic)", () => {
   it("are set to the hotspot (scene coordinates), a game without the variables is left alone", () => {
-    const vars = new Variables(new Map([["MOUSEX", 0], ["MOUSEY", 0]]));
-    const g = Object.create(PlayGame.prototype) as unknown as { vars: Variables; syncMouseVars(c: { x: number; y: number }): void };
+    const vars = new Variables(
+      new Map([
+        ["MOUSEX", 0],
+        ["MOUSEY", 0],
+      ]),
+    );
+    const g = Object.create(PlayGame.prototype) as unknown as {
+      vars: Variables;
+      syncMouseVars(c: { x: number; y: number }): void;
+    };
     g.vars = vars;
     g.syncMouseVars({ x: 455, y: 301 });
     expect([vars.get("MOUSEX"), vars.get("MOUSEY")]).toEqual([455, 301]);
@@ -155,14 +186,35 @@ describe("play: MOUSEX / MOUSEY follow the cursor hotspot (synthetic)", () => {
 describe("play: MENU is 1 at every scene start (synthetic)", () => {
   it("resetMenuVar undoes SC000D's `LET MENU`, so the key conditions of the next scene hold", () => {
     const vars = new Variables(new Map([["MENU", 0]]));
-    const g = Object.create(PlayGame.prototype) as unknown as { vars: Variables; resetMenuVar(): void };
+    const g = Object.create(PlayGame.prototype) as unknown as {
+      vars: Variables;
+      resetMenuVar(): void;
+    };
     g.vars = vars;
     expect(vars.get("MENU")).toBe(0); // as left by the map scene
     g.resetMenuVar();
     expect(vars.get("MENU")).toBe(1);
     // the same state read through the key conditions: F1 and F4 are accepted only with MENU != 0
-    const base = { bulletMenuOpen: false, facesShown: false, barFlag: false, noticeShown: false, macroActive: false, topBarOpen: false, cursorEnabled: true, topBarFolded: true, optionsRequest: false, coatRequest: false } as never;
-    const ctx = (menuVar: boolean) => ({ ...(base as object), menuVar, cursorMode: 0, mapAvailable: false, backspace: undefined }) as never;
+    const base = {
+      bulletMenuOpen: false,
+      facesShown: false,
+      barFlag: false,
+      noticeShown: false,
+      macroActive: false,
+      topBarOpen: false,
+      cursorEnabled: true,
+      topBarFolded: true,
+      optionsRequest: false,
+      coatRequest: false,
+    } as never;
+    const ctx = (menuVar: boolean) =>
+      ({
+        ...(base as object),
+        menuVar,
+        cursorMode: 0,
+        mapAvailable: false,
+        backspace: undefined,
+      }) as never;
     const press = (k: number) => ({ pressed: new Set([k]), down: new Set([k]), lastChar: 0 });
     expect(keyActions(press(DIK.F1), ctx(vars.get("MENU") !== 0)).map((a) => a.kind)).toEqual(["coat"]);
     expect(keyActions(press(DIK.F4), ctx(vars.get("MENU") !== 0)).map((a) => a.kind)).toEqual(["options"]);

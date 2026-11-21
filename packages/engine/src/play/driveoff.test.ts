@@ -37,24 +37,50 @@ AnimaDelay FLX0 3
 
 function setup() {
   const calls: string[] = [];
-  const anim = { active: true, index: 0, delay: 0, stop() { this.active = false; } };
+  const anim = {
+    active: true,
+    index: 0,
+    delay: 0,
+    stop() {
+      this.active = false;
+    },
+  };
   // any scene call not listed is a recorded no-op that reports success
   const scene = new Proxy(
     {
       objectAnim: (n: string) => (n === "FLX0" ? anim : null),
-      startObjectAnim(n: string, a: unknown) { calls.push(`anima ${n} ${JSON.stringify(a)}`); return true; },
-      clearAnimBuffer(n: string) { calls.push(`clear ${n}`); return true; },
-      setObjectPosition(n: string, x: number, y: number) { calls.push(`pos ${n} ${x},${y}`); },
-      setObjectVisible(n: string, v: boolean) { calls.push(`vis ${n} ${v}`); },
-      setAnimShadow(a: string, p: number | null, sh: number | null, clear: boolean) { calls.push(`animshadow ${a} ${p} ${sh} ${clear}`); return true; },
+      startObjectAnim(n: string, a: unknown) {
+        calls.push(`anima ${n} ${JSON.stringify(a)}`);
+        return true;
+      },
+      clearAnimBuffer(n: string) {
+        calls.push(`clear ${n}`);
+        return true;
+      },
+      setObjectPosition(n: string, x: number, y: number) {
+        calls.push(`pos ${n} ${x},${y}`);
+      },
+      setObjectVisible(n: string, v: boolean) {
+        calls.push(`vis ${n} ${v}`);
+      },
+      setAnimShadow(a: string, p: number | null, sh: number | null, clear: boolean) {
+        calls.push(`animshadow ${a} ${p} ${sh} ${clear}`);
+        return true;
+      },
       scene: { areas: [] },
       persons: { find: () => -1, get: () => undefined, persons: [] },
     } as Record<string | symbol, unknown>,
-    { get: (t, k) => (k in t ? t[k] : (...a: unknown[]) => (calls.push(`${String(k)} ${a.join(",")}`), true)) },
+    {
+      get: (t, k) => (k in t ? t[k] : (...a: unknown[]) => (calls.push(`${String(k)} ${a.join(",")}`), true)),
+    },
   );
   const ref: { it?: Interpreter } = {};
   const out = { goto: [] as string[], fade: 0, last: [] as number[] };
-  const vars = new Map([["LAST", 8], ["LOC3", 0], ["CLEARMB1", 0]]);
+  const vars = new Map([
+    ["LAST", 8],
+    ["LOC3", 0],
+    ["CLEARMB1", 0],
+  ]);
   const env: HostEnv = {
     scene: scene as unknown as ScenePlayer,
     areas: new AreaState(),
@@ -79,7 +105,12 @@ describe("SC006 drive-off macro (stand-ins)", () => {
     s.it.start("POKAZANIE-AUTOJAC.PBM");
     for (let i = 0; i < 30; i++) s.step();
     const order = s.calls.filter((c) => /^(clear|pos FLX0|animshadow|startFlxAnim)/.test(c));
-    expect(order.map((c) => c.split(" ").slice(0, 2).join(" "))).toEqual(["clear FLX0", "pos FLX0", "animshadow FLX0", "startFlxAnim FLX0,5,3,1"]); // mode 5, delay 3, record 1
+    expect(order.map((c) => c.split(" ").slice(0, 2).join(" "))).toEqual([
+      "clear FLX0",
+      "pos FLX0",
+      "animshadow FLX0",
+      "startFlxAnim FLX0,5,3,1",
+    ]); // mode 5, delay 3, record 1
     expect(s.calls.find((c) => c.startsWith("animshadow"))).toBe("animshadow FLX0 null 1 true");
     expect(s.out.goto).toEqual([]); // the animation still runs: the macro waits
     // the frame the script waits for: the registered macros start (HIDEJACK hides Jack and the car)

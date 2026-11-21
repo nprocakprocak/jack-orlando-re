@@ -61,7 +61,13 @@ export function sceneZones(areas: readonly Area[], objectNames: readonly string[
     const m = macroName(POINTER_VERB, name);
     return port.exists(m) ? m : null;
   };
-  const zones: Zone[] = areas.map((a, i) => ({ kind: "area", name: a.name, macro: macro(a.name), bounds: triangleBounds(a.triangles), area: i }));
+  const zones: Zone[] = areas.map((a, i) => ({
+    kind: "area",
+    name: a.name,
+    macro: macro(a.name),
+    bounds: triangleBounds(a.triangles),
+    area: i,
+  }));
   for (const name of new Set(objectNames)) {
     const m = macro(name);
     if (m) zones.push({ kind: "sprite", name, macro: m, bounds: null });
@@ -82,8 +88,13 @@ export interface ZoneHit {
  * The areas are all enabled (SC000D never disables one) - `st` lets a caller say otherwise.
  */
 export function zoneAt(
-  zones: readonly Zone[], areas: readonly Area[], program: Program, x: number, y: number,
-  sprites: (x: number, y: number) => readonly SpriteCandidate[], st = new AreaState(),
+  zones: readonly Zone[],
+  areas: readonly Area[],
+  program: Program,
+  x: number,
+  y: number,
+  sprites: (x: number, y: number) => readonly SpriteCandidate[],
+  st = new AreaState(),
 ): ZoneHit {
   const port = programPort(program);
   const a = areaUnder(areas, st, { x, y }, 0);
@@ -106,9 +117,13 @@ export const SILENT = 1000;
 
 /** The click result sampled every `step` pixels (cell (cx, cy) = point (cx*step, cy*step)). */
 export function hitGrid(
-  width: number, height: number, step: number, at: (x: number, y: number) => ZoneHit,
+  width: number,
+  height: number,
+  step: number,
+  at: (x: number, y: number) => ZoneHit,
 ): { cols: number; rows: number; cells: Int16Array } {
-  const cols = Math.ceil(width / step), rows = Math.ceil(height / step);
+  const cols = Math.ceil(width / step),
+    rows = Math.ceil(height / step);
   const cells = new Int16Array(cols * rows);
   for (let cy = 0; cy < rows; cy++) {
     for (let cx = 0; cx < cols; cx++) {
@@ -152,7 +167,12 @@ export interface ClickRun {
  * one command per tick and the scene changes after that tick (PlayGame `pendingScene`), so the first GOTOSCENE is the
  * target (SC000D still puts `DeactiveSelf` after `GotoScene SC032`, before its `GotoScene SC032B`).
  */
-export function runClick(program: Program, macro: string, vars: ReadonlyMap<string, number>, maxTicks = 5000): ClickRun {
+export function runClick(
+  program: Program,
+  macro: string,
+  vars: ReadonlyMap<string, number>,
+  maxTicks = 5000,
+): ClickRun {
   let scene: string | null = null;
   const host = {
     command(cmd: Command) {
@@ -181,7 +201,11 @@ export interface Destinations {
 }
 
 /** The targets of a click macro over every combination of the values its conditions test. */
-export function destinations(program: Program, macro: string, base: ReadonlyMap<string, number> = new Map()): Destinations {
+export function destinations(
+  program: Program,
+  macro: string,
+  base: ReadonlyMap<string, number> = new Map(),
+): Destinations {
   const values = conditionValues(program, macro);
   const names = [...values.keys()];
   const combos: Record<string, number>[] = [{}];
@@ -190,9 +214,14 @@ export function destinations(program: Program, macro: string, base: ReadonlyMap<
     for (const c of combos) for (const v of values.get(n)!) next.push({ ...c, [n]: v });
     combos.splice(0, combos.length, ...next);
   }
-  const target = (c: Record<string, number>) => runClick(program, macro, new Map([...base, ...Object.entries(c)])).scene;
+  const target = (c: Record<string, number>) =>
+    runClick(program, macro, new Map([...base, ...Object.entries(c)])).scene;
   const results = combos.map((c) => ({ c, scene: target(c) }));
-  const key = (c: Record<string, number>, skip: string) => names.filter((n) => n !== skip).map((n) => c[n]).join(",");
+  const key = (c: Record<string, number>, skip: string) =>
+    names
+      .filter((n) => n !== skip)
+      .map((n) => c[n])
+      .join(",");
   const deciding = names.filter((n) => {
     const seen = new Map<string, string | null>();
     for (const r of results) {
@@ -234,7 +263,10 @@ export function describeDestinations(d: Destinations): string {
 // --- the page's state and table ----------------------------------------------------------------
 
 /** The switches of the page: every variable a zone macro tests, with the values worth trying (deciding ones first). */
-export function stateControls(program: Program, zones: readonly Zone[]): { name: string; values: number[]; deciding: boolean }[] {
+export function stateControls(
+  program: Program,
+  zones: readonly Zone[],
+): { name: string; values: number[]; deciding: boolean }[] {
   const values = new Map<string, Set<number>>();
   const deciding = new Set<string>();
   for (const z of zones) {
@@ -247,7 +279,11 @@ export function stateControls(program: Program, zones: readonly Zone[]): { name:
     for (const n of destinations(program, z.macro).deciding) deciding.add(n);
   }
   return [...values]
-    .map(([name, s]) => ({ name, values: [...s].sort((a, b) => a - b), deciding: deciding.has(name) }))
+    .map(([name, s]) => ({
+      name,
+      values: [...s].sort((a, b) => a - b),
+      deciding: deciding.has(name),
+    }))
     .sort((a, b) => Number(b.deciding) - Number(a.deciding) || a.name.localeCompare(b.name));
 }
 
@@ -264,10 +300,25 @@ export interface ZoneRow {
 export function zoneRows(program: Program, zones: readonly Zone[], vars: ReadonlyMap<string, number>): ZoneRow[] {
   return zones.map((z) => {
     const kind = z.kind === "area" ? "strefa .ACE" : "sprite";
-    if (!z.macro) return { name: z.name, kind, macro: "— brak —", now: "nic (klik idzie dalej, do sprite'ów)", rule: "nigdzie" };
+    if (!z.macro)
+      return {
+        name: z.name,
+        kind,
+        macro: "— brak —",
+        now: "nic (klik idzie dalej, do sprite'ów)",
+        rule: "nigdzie",
+      };
     const r = runClick(program, z.macro, vars);
-    const sets = Object.entries(r.changed).filter(([k]) => vars.has(k)).map(([k, v]) => `${k} → ${v}`);
+    const sets = Object.entries(r.changed)
+      .filter(([k]) => vars.has(k))
+      .map(([k, v]) => `${k} → ${v}`);
     const now = (r.scene ?? "zostaje na mapie") + (sets.length ? ` (${sets.join(", ")})` : "");
-    return { name: z.name, kind, macro: z.macro, now, rule: describeDestinations(destinations(program, z.macro)) };
+    return {
+      name: z.name,
+      kind,
+      macro: z.macro,
+      now,
+      rule: describeDestinations(destinations(program, z.macro)),
+    };
   });
 }

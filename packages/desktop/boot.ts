@@ -27,7 +27,13 @@ async function start(): Promise<void> {
   if (!described.ok) throw new Error("No source");
   const source = (await described.json()) as Source;
   if (source.type === "directory") {
-    mountPlayer({ canvas, files: httpGameFiles("/game/"), onStatus: setStatus, fit: "contain", onQuit: quitApp });
+    mountPlayer({
+      canvas,
+      files: httpGameFiles("/game/"),
+      onStatus: setStatus,
+      fit: "contain",
+      onQuit: quitApp,
+    });
     return;
   }
   if (source.type === "zip") {

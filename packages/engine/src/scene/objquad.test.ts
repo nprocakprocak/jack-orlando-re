@@ -5,7 +5,13 @@ import { Renderer, createSurface } from "../render";
 import type { WalkObject } from "../walk/objects";
 import { moveObjectQuad } from "./objquad";
 
-const obj = (x: number, y: number, quad: number[]): WalkObject => ({ x, y, quad, center: [0, 0], valid: true });
+const obj = (x: number, y: number, quad: number[]): WalkObject => ({
+  x,
+  y,
+  quad,
+  center: [0, 0],
+  valid: true,
+});
 
 describe("object quad follows SETPOSITIONE", () => {
   // SAM_INS.PBM (.CCG at 0,500, script puts it at 238,280) and SZYBY.PBM (310,284): the quads of SC005

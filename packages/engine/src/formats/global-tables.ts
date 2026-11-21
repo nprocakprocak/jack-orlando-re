@@ -10,7 +10,6 @@ export const FCM_MAX_EFFECTS = 20;
 /** ICS shadow offset >= 1000: no shadow for this frame. */
 export const NO_SHADOW = 1000;
 
-
 export function int(tok: string | undefined, what: string): number {
   // atoi into an int16; the data only has plain decimal numbers
   if (tok === undefined) throw new GlobalError(`truncated: ${what} missing at end of file`);
@@ -112,12 +111,19 @@ export function parseIcs(plain: Uint8Array, globalFile = false): Ics {
     const isEffect = globalFile ? tok === "EFFECT" : cUpper(tok) === "EFFECT";
     if (isEffect) {
       if (effect) {
-        throw new GlobalError(`[${cur.name}]: two EFFECTs before one frame (the game reads the second as a frame name)`);
+        throw new GlobalError(
+          `[${cur.name}]: two EFFECTs before one frame (the game reads the second as a frame name)`,
+        );
       }
       const sound = s.next();
       if (sound === undefined) throw new GlobalError(`[${cur.name}]: truncated EFFECT`);
       const what = `[${cur.name}] EFFECT`;
-      effect = { sound: frameName(sound), channel: int(s.next(), what), unused: int(s.next(), what), volume: int(s.next(), what) };
+      effect = {
+        sound: frameName(sound),
+        channel: int(s.next(), what),
+        unused: int(s.next(), what),
+        volume: int(s.next(), what),
+      };
       continue;
     }
     if (tok.startsWith("[")) {
@@ -132,7 +138,15 @@ export function parseIcs(plain: Uint8Array, globalFile = false): Ics {
     }
     const file = frameName(tok);
     const v = Array.from({ length: 7 }, (_, i) => int(s.next(), `[${cur.name}] ${file} value ${i + 1}`));
-    cur.frames.push({ file, xRight: v[0], xLeft: v[1], y: v[2], shadow1: [v[3], v[4]], shadow2: [v[5], v[6]], effect });
+    cur.frames.push({
+      file,
+      xRight: v[0],
+      xLeft: v[1],
+      y: v[2],
+      shadow1: [v[3], v[4]],
+      shadow2: [v[5], v[6]],
+      effect,
+    });
     effect = null;
   }
   if (effect) {
@@ -142,7 +156,8 @@ export function parseIcs(plain: Uint8Array, globalFile = false): Ics {
   const ics: Ics = { sections, lostEffects: lost };
   if (globalFile) {
     const biggest = Math.max(...sections.map((x) => x.frames.length));
-    if (biggest > ICS_MAX_FRAMES) throw new GlobalError(`a section has ${biggest} frames, the game allows ${ICS_MAX_FRAMES}`);
+    if (biggest > ICS_MAX_FRAMES)
+      throw new GlobalError(`a section has ${biggest} frames, the game allows ${ICS_MAX_FRAMES}`);
     return ics;
   }
   if (sections.length > ICS_MAX_SECTIONS) {
@@ -198,7 +213,13 @@ export function parseFcm(plain: Uint8Array): FcmFilm[] {
   if (tok === undefined) throw new GlobalError("empty file");
   if (!tok.startsWith("[")) throw new GlobalError(`file does not start with a section: '${tok}'`);
   while (tok !== undefined) {
-    const film: FcmFilm = { name: sectionName(tok), frameMs: 0, positioned: false, frames: [], effects: [] };
+    const film: FcmFilm = {
+      name: sectionName(tok),
+      frameMs: 0,
+      positioned: false,
+      frames: [],
+      effects: [],
+    };
     films.push(film);
     const n = int(s.next(), `[${film.name}] frame time`);
     film.frameMs = Math.abs(n);

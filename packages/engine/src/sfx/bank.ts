@@ -57,10 +57,7 @@ export class SceneSounds {
  * bytes of a `.PSD` of the scene archive, or undefined; a missing file leaves a silent entry
  * (the exe would play whatever was left in its buffer).
  */
-export function loadSceneSounds(
-  ssd: Uint8Array,
-  readPsd: (file: string) => Uint8Array | undefined,
-): SceneSounds {
+export function loadSceneSounds(ssd: Uint8Array, readPsd: (file: string) => Uint8Array | undefined): SceneSounds {
   const bank = new SceneSounds();
   for (const entry of parseSsd(decrypt(ssd))) {
     const data = readPsd(psdName(entry));

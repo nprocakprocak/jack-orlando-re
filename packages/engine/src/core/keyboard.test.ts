@@ -1,13 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  CODE_TO_DIK,
-  DIK,
-  DIK_ANY_ALT,
-  DIK_ANY_CTRL,
-  DIK_ANY_SHIFT,
-  Keyboard,
-  keyChar,
-} from "./keyboard";
+import { CODE_TO_DIK, DIK, DIK_ANY_ALT, DIK_ANY_CTRL, DIK_ANY_SHIFT, Keyboard, keyChar } from "./keyboard";
 
 const down = (dik: number, char = 0) => ({ dik, down: true, char });
 const up = (dik: number) => ({ dik, down: false, char: 0 });

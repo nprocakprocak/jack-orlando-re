@@ -18,7 +18,10 @@ export interface HitRect {
 export function cursorHitRect(mouseX: number, mouseY: number, w: number, h: number, prev: HitRect | null): HitRect {
   const x = mouseX - (w >> 1);
   const y = mouseY - (h >> 1);
-  let x0 = x, y0 = y, x1 = x + w, y1 = y + h;
+  let x0 = x,
+    y0 = y,
+    x1 = x + w,
+    y1 = y + h;
   if (prev && prev.w > 0 && prev.h > 0 && Math.abs(x - prev.x) <= prev.w && Math.abs(y - prev.y) <= prev.h) {
     x0 = Math.min(x0, prev.x);
     y0 = Math.min(y0, prev.y);

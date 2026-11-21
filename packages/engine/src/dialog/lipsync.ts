@@ -23,7 +23,11 @@ export const PACE_ANSWER = Math.fround(0.013);
  */
 export function lipWithoutVoice(text: string, t: DialogTables): Lip {
   const n = encodeMazovia(text).length;
-  return { frames: Array.from({ length: n }, (_, i) => t.mouthCycle[i % t.mouthCycle.length]), steps: n, seconds: Math.fround(n / 10) };
+  return {
+    frames: Array.from({ length: n }, (_, i) => t.mouthCycle[i % t.mouthCycle.length]),
+    steps: n,
+    seconds: Math.fround(n / 10),
+  };
 }
 
 /**
@@ -42,4 +46,5 @@ export function lipWithVoice(text: string, voiceSeconds: number, t: DialogTables
 }
 
 /** = seconds / (steps * pace), single precision like the game's floats. */
-export const stepInterval = (lip: Lip, pace: number) => Math.fround(lip.seconds / Math.fround(Math.fround(lip.steps) * pace));
+export const stepInterval = (lip: Lip, pace: number) =>
+  Math.fround(lip.seconds / Math.fround(Math.fround(lip.steps) * pace));

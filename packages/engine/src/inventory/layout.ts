@@ -27,10 +27,22 @@ export const OPT = { x: 99, y: 0x42, x0: 100, x1: 0xfa, y0: 0x43, y1: 0x89 };
 
 /** Hidden Ctrl points, [civilian, uniform]. Index = point number - 1. */
 export const CTRL_POINTS: readonly (readonly [readonly [number, number], readonly [number, number]])[] = [
-  [[417, 197], [405, 211]],
-  [[417, 248], [407, 299]],
-  [[416, 312], [411, 393]],
-  [[417, 365], [319, 200]],
+  [
+    [417, 197],
+    [405, 211],
+  ],
+  [
+    [417, 248],
+    [407, 299],
+  ],
+  [
+    [416, 312],
+    [411, 393],
+  ],
+  [
+    [417, 365],
+    [319, 200],
+  ],
 ];
 /** Game_Run: `x - 4 < mouse < x + 4` (strict), i.e. up to 3 px away on each axis. */
 export const CTRL_RADIUS = 3;

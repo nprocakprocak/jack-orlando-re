@@ -50,7 +50,12 @@ describe("pbm on synthetic data", () => {
     expect(isPlaceholder(one, "PUSTY.PBM")).toBe(true);
     expect(isPlaceholder(one, "Action/SC076.phk:pusty.pbm")).toBe(true);
     expect(verifyPbm(one, "PUSTY.PBM")).toEqual([]);
-    expect(decodePbm(one, "PUSTY.PBM")).toEqual({ width: 0, height: 0, kind: "pal8rle", pixels: new Uint16Array(0) });
+    expect(decodePbm(one, "PUSTY.PBM")).toEqual({
+      width: 0,
+      height: 0,
+      kind: "pal8rle",
+      pixels: new Uint16Array(0),
+    });
     expect(verifyPbm(one, "OTHER.PBM")).toEqual(["too short"]);
     expect(verifyPbm(new Uint8Array([0x90]), "PUSTY.PBM")).toEqual(["too short"]);
     expect(() => decodePbm(one)).toThrow(/too short/);

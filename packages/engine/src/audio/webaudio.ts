@@ -57,9 +57,9 @@ export class WebAudioBackend implements AudioBackend {
   /** the music's own bus: streams -> musicBus -> StereoOptions -> master (the effects go straight to master) */
   private readonly musicBus: GainNode;
   /**
- * "Pseudo surround" / "Swap stereo channels" (Snd_CopyStereo): only the music, the one stream the
- * mixer plays (`startStream`); the effects are mono and the exe does not touch them. `update(surround, reverse)`.
- */
+   * "Pseudo surround" / "Swap stereo channels" (Snd_CopyStereo): only the music, the one stream the
+   * mixer plays (`startStream`); the effects are mono and the exe does not touch them. `update(surround, reverse)`.
+   */
   readonly stereoFx: StereoOptions;
   private paused = false;
 
@@ -72,17 +72,17 @@ export class WebAudioBackend implements AudioBackend {
   }
 
   /**
- * The master node every voice ends in (setMasterGain, setSuspended): a film's sound sink
- * (video/audio.ts `WebAudioMovieSink(ctx, backend.output)`) joins it to follow the master volume and the pause.
- */
+   * The master node every voice ends in (setMasterGain, setSuspended): a film's sound sink
+   * (video/audio.ts `WebAudioMovieSink(ctx, backend.output)`) joins it to follow the master volume and the pause.
+   */
   get output(): AudioNode {
     return this.master;
   }
 
   /**
- * Browsers keep a new AudioContext suspended until a user gesture. Call from a click/key
- * handler, or use unlockOnGesture(). Resolves when the context is running.
- */
+   * Browsers keep a new AudioContext suspended until a user gesture. Call from a click/key
+   * handler, or use unlockOnGesture(). Resolves when the context is running.
+   */
   unlock(): Promise<void> {
     // a paused game (setSuspended(true)) stays silent: the gesture is remembered by the browser and
     // setSuspended(false) resumes the context later
@@ -94,9 +94,12 @@ export class WebAudioBackend implements AudioBackend {
   unlockOnGesture(target: EventTarget = window): void {
     const events = ["pointerdown", "keydown", "touchend"];
     const handler = () => {
-      void this.unlock().then(() => {
-        if (this.ctx.state === "running") events.forEach((e) => target.removeEventListener(e, handler));
-      }, () => {});
+      void this.unlock().then(
+        () => {
+          if (this.ctx.state === "running") events.forEach((e) => target.removeEventListener(e, handler));
+        },
+        () => {},
+      );
     };
     events.forEach((e) => target.addEventListener(e, handler));
   }
@@ -197,10 +200,10 @@ export class WebAudioBackend implements AudioBackend {
   }
 
   /**
- * Sound_SetPaused / the pause: AudioContext.suspend() stops every voice, the streams and a film's sound
- * (its sink ends in `output`) at the same sample, and currentTime with them; resume() continues from there.
- * The streams' pump keeps polling but has nothing to do while currentTime stands.
- */
+   * Sound_SetPaused / the pause: AudioContext.suspend() stops every voice, the streams and a film's sound
+   * (its sink ends in `output`) at the same sample, and currentTime with them; resume() continues from there.
+   * The streams' pump keeps polling but has nothing to do while currentTime stands.
+   */
   setSuspended(suspended: boolean): void {
     this.paused = suspended;
     const p = suspended ? this.ctx.suspend() : this.ctx.resume();

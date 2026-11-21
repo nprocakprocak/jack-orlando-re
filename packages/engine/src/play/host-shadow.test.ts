@@ -7,11 +7,19 @@ describe("SceneHost: shadow commands", () => {
     const s = setup("[A] SetShadow JACK 0 SetShadow BOB 5 MinShadow BOB 0 20 MaxShadow JACK 1 4 MinShadow JACK 0 10");
     s.it.start("A");
     for (let i = 0; i < 5; i++) step(s);
-    expect(s.scene.calls).toEqual(["shadow null 0", "shadow 0 5", "fadeout 0 20 0", "fadein null 4 1", "fadeout null 10 0"]);
+    expect(s.scene.calls).toEqual([
+      "shadow null 0",
+      "shadow 0 5",
+      "fadeout 0 20 0",
+      "fadein null 4 1",
+      "fadeout null 10 0",
+    ]);
   });
 
   it("SHIFTSHADOWP sets the person's offset; SETSPECSHADOW, SHOWSHADOW, SHADOWSTATUS and HIDESHADOW reach the scene", () => {
-    const s = setup("[A] ShiftShadowP SHIFTY 40 6 SetSpecShadow BOB OBJ ShowShadow BOB 540 357 1.0 ShadowStatus BOB 1 HideShadow BOB ShadowStatus BOB 0");
+    const s = setup(
+      "[A] ShiftShadowP SHIFTY 40 6 SetSpecShadow BOB OBJ ShowShadow BOB 540 357 1.0 ShadowStatus BOB 1 HideShadow BOB ShadowStatus BOB 0",
+    );
     s.it.start("A");
     for (let i = 0; i < 6; i++) step(s);
     expect([s.scene.shifty.shadowDx, s.scene.shifty.shadowDy]).toEqual([40, 6]);
@@ -19,11 +27,14 @@ describe("SceneHost: shadow commands", () => {
   });
 
   it("an unknown person or object is skipped and logged", () => {
-    const s = setup("[A] SetShadow NOBODY 1 SetSpecShadow BOB NOPE ShowShadow NOBODY 1 2 1.0 HideShadow NOBODY ShiftShadowP NOBODY 1 2");
+    const s = setup(
+      "[A] SetShadow NOBODY 1 SetSpecShadow BOB NOPE ShowShadow NOBODY 1 2 1.0 HideShadow NOBODY ShiftShadowP NOBODY 1 2",
+    );
     s.it.start("A");
     for (let i = 0; i < 5; i++) step(s);
     expect(s.scene.calls).toEqual(["spec 0 NOPE"]);
-    for (const w of ["SETSHADOW", "SETSPECSHADOW", "SHOWSHADOW", "HIDESHADOW", "SHIFTSHADOWP"]) expect(s.host.skipped.get(w)).toBe(1);
+    for (const w of ["SETSHADOW", "SETSPECSHADOW", "SHOWSHADOW", "HIDESHADOW", "SHIFTSHADOWP"])
+      expect(s.host.skipped.get(w)).toBe(1);
   });
 });
 
@@ -52,11 +63,17 @@ describe("SceneHost: shadows of objects", () => {
   });
 
   it("ANIMASHADOW starts (Jack = null, the clear flag n), stops with NULL, and reads SHADn from the name", () => {
-    const s = setup("[A] AnimaShadow ANI JACK SHAD1 0 AnimaShadow ANI JACK SHAD0 1 AnimaShadow ANI JACK NULL 0 AnimaShadow NOPE JACK SHAD0 0 AnimaShadow ANI BOB SHAD2 1");
+    const s = setup(
+      "[A] AnimaShadow ANI JACK SHAD1 0 AnimaShadow ANI JACK SHAD0 1 AnimaShadow ANI JACK NULL 0 AnimaShadow NOPE JACK SHAD0 0 AnimaShadow ANI BOB SHAD2 1",
+    );
     s.it.start("A");
     for (let i = 0; i < 6; i++) step(s);
     expect(s.scene.calls).toEqual([
-      "animshadow ANI null 1 false", "animshadow ANI null 0 true", "animshadow ANI null null false", "animshadow NOPE null 0 false", "animshadow ANI 0 2 true",
+      "animshadow ANI null 1 false",
+      "animshadow ANI null 0 true",
+      "animshadow ANI null null false",
+      "animshadow NOPE null 0 false",
+      "animshadow ANI 0 2 true",
     ]);
     expect(s.host.skipped.get("ANIMASHADOW")).toBe(1);
   });

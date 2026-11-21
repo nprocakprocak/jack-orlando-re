@@ -108,9 +108,19 @@ export class StartScreen {
     const s = this.state;
     const yesNo = (v: boolean) => (v ? texts.yes : texts.no);
     return [
-      { key: "inventory", label: st.inventory, value: s.modes.inventory === "coat" ? st.coat : st.bar, pending: this.pending.inventory },
+      {
+        key: "inventory",
+        label: st.inventory,
+        value: s.modes.inventory === "coat" ? st.coat : st.bar,
+        pending: this.pending.inventory,
+      },
       { key: "easy", label: st.easy, value: yesNo(s.modes.easy), pending: this.pending.easy },
-      { key: "saves", label: st.saves, value: s.modes.saves === "files" ? st.saveFiles : st.saveSlots, pending: this.pending.saves },
+      {
+        key: "saves",
+        label: st.saves,
+        value: s.modes.saves === "files" ? st.saveFiles : st.saveSlots,
+        pending: this.pending.saves,
+      },
       { key: "pauseOnBlur", label: st.pauseOnBlur, value: yesNo(s.pauseOnBlur), pending: null },
     ];
   }
@@ -137,7 +147,8 @@ export class StartScreen {
       w.addLabel(r.label, false, LABEL_X, y + 6, COLOR_BLUE, COLOR_WHITE);
       w.addButton(r.key, r.value, VALUE_X, y, VALUE_W, VALUE_H);
     });
-    if (this.rows().some((r) => r.pending)) w.addLabel(this.st.pendingNote, true, 0, START_Y + START_H + 18, COLOR_BLUE, COLOR_WHITE, false);
+    if (this.rows().some((r) => r.pending))
+      w.addLabel(this.st.pendingNote, true, 0, START_Y + START_H + 18, COLOR_BLUE, COLOR_WHITE, false);
     this.window = w;
   }
 
@@ -188,7 +199,15 @@ export class StartScreen {
     this.window.draw(screen);
     const w = this.window;
     this.rows().forEach((r, i) => {
-      if (r.pending) darkenRect(screen, w.x + LABEL_X - 4, w.y + ROW_Y0 + i * ROW_DY - 2, WINDOW_W - 2 * (LABEL_X - 4), VALUE_H + 4, PENDING_DARKEN);
+      if (r.pending)
+        darkenRect(
+          screen,
+          w.x + LABEL_X - 4,
+          w.y + ROW_Y0 + i * ROW_DY - 2,
+          WINDOW_W - 2 * (LABEL_X - 4),
+          VALUE_H + 4,
+          PENDING_DARKEN,
+        );
     });
   }
 

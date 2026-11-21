@@ -38,8 +38,16 @@ function buildPak(files: FakeFile[], opts: { magic?: string; reserved?: number; 
 
 describe("pak on synthetic data", () => {
   it("parses a well-formed archive", () => {
-    const pak = new Pak(buildPak([{ name: "A.BM", data: [1, 2, 3] }, { name: "B.SND", data: [9] }]));
-    expect(pak.entries.map((e) => [e.name, e.size])).toEqual([["A.BM", 3], ["B.SND", 1]]);
+    const pak = new Pak(
+      buildPak([
+        { name: "A.BM", data: [1, 2, 3] },
+        { name: "B.SND", data: [9] },
+      ]),
+    );
+    expect(pak.entries.map((e) => [e.name, e.size])).toEqual([
+      ["A.BM", 3],
+      ["B.SND", 1],
+    ]);
     expect([...pak.read("b.snd")]).toEqual([9]);
     expect(pak.verify()).toEqual([]);
   });
@@ -51,7 +59,12 @@ describe("pak on synthetic data", () => {
   });
 
   it("returns the first of repeated names", () => {
-    const pak = new Pak(buildPak([{ name: "F.PBM", data: [1] }, { name: "F.PBM", data: [2] }]));
+    const pak = new Pak(
+      buildPak([
+        { name: "F.PBM", data: [1] },
+        { name: "F.PBM", data: [2] },
+      ]),
+    );
     expect([...pak.read("F.PBM")]).toEqual([1]);
   });
 

@@ -38,7 +38,12 @@ export function followScroll(scrollX: number, jackX: number, width: number): num
  * outside the margins; `current` is the direction in force.
  */
 export function walkScrollDirection(
-  current: number, jackX: number, goalX: number, scrollX: number, marginL: number, marginR: number,
+  current: number,
+  jackX: number,
+  goalX: number,
+  scrollX: number,
+  marginL: number,
+  marginR: number,
 ): number {
   const left = marginL + scrollX;
   const right = SCREEN_W - marginR + scrollX;

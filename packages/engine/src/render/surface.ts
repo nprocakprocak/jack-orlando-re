@@ -39,23 +39,42 @@ export function stepValue(step: Step): number {
  * outside either surface are skipped instead of read/written past the row.
  */
 export function blitCopy(
-  src: Surface16, sx: number, sy: number, w: number, h: number,
-  dst: Surface16, dx: number, dy: number,
+  src: Surface16,
+  sx: number,
+  sy: number,
+  w: number,
+  h: number,
+  dst: Surface16,
+  dx: number,
+  dy: number,
 ): void {
   blit16(src, sx, sy, w, h, dst, dx, dy, false);
 }
 
 /** Copy that skips color 0 (between buffers, to the screen). */
 export function blitKeyed(
-  src: Surface16, sx: number, sy: number, w: number, h: number,
-  dst: Surface16, dx: number, dy: number,
+  src: Surface16,
+  sx: number,
+  sy: number,
+  w: number,
+  h: number,
+  dst: Surface16,
+  dx: number,
+  dy: number,
 ): void {
   blit16(src, sx, sy, w, h, dst, dx, dy, true);
 }
 
 function blit16(
-  src: Surface16, sx: number, sy: number, w: number, h: number,
-  dst: Surface16, dx: number, dy: number, keyed: boolean,
+  src: Surface16,
+  sx: number,
+  sy: number,
+  w: number,
+  h: number,
+  dst: Surface16,
+  dx: number,
+  dy: number,
+  keyed: boolean,
 ): void {
   if (w <= 0 || h <= 0) return;
   sx = Math.max(sx, 0);
@@ -89,8 +108,15 @@ function blit16(
  * equivalent: the original looks the color up per pixel and skips the value 0.
  */
 export function blitScaled(
-  img: Surface16, step: Step, sx: number, sy: number, w: number, h: number,
-  dst: Surface16, dx: number, dy: number,
+  img: Surface16,
+  step: Step,
+  sx: number,
+  sy: number,
+  w: number,
+  h: number,
+  dst: Surface16,
+  dx: number,
+  dy: number,
 ): void {
   if (w <= 0 || h <= 0) return;
   dx = Math.max(dx, 0);
@@ -187,7 +213,11 @@ export function softenEdges(sprite: Surface16, dst: Surface16, dx: number, dy: n
 
 /** RGBA bytes of a w*h window of `src` at (sx, sy), opaque; outside the surface is black. */
 export function windowToRgba(
-  src: Surface16, sx: number, sy: number, w: number, h: number,
+  src: Surface16,
+  sx: number,
+  sy: number,
+  w: number,
+  h: number,
   out: Uint8ClampedArray = new Uint8ClampedArray(w * h * 4),
 ): Uint8ClampedArray {
   const ss = strideOf(src);

@@ -32,15 +32,29 @@ describe("GameFlow: start", () => {
   });
 
   it("?logos=0: straight to the menu; with ?intro=1 straight to the intro", () => {
-    expect(run(new GameFlow(), { type: "begin", logos: false, intro: false })).toEqual([{ type: "openMenu", previous: "black" }]);
+    expect(run(new GameFlow(), { type: "begin", logos: false, intro: false })).toEqual([
+      { type: "openMenu", previous: "black" },
+    ]);
     const f = new GameFlow();
-    expect(run(f, { type: "begin", logos: false, intro: true })).toEqual([{ type: "markIntroShown" }, { type: "playIntro", from: "start" }]);
+    expect(run(f, { type: "begin", logos: false, intro: true })).toEqual([
+      { type: "markIntroShown" },
+      { type: "playIntro", from: "start" },
+    ]);
     expect(run(f, { type: "introEnded" })).toEqual([{ type: "wipe" }]);
   });
 
   it("ignores events out of order", () => {
     const f = new GameFlow();
-    expect(run(f, { type: "logosDone" }, { type: "introEnded" }, { type: "wipeDone" }, { type: "menuReady" }, { type: "gameExit" })).toEqual([]);
+    expect(
+      run(
+        f,
+        { type: "logosDone" },
+        { type: "introEnded" },
+        { type: "wipeDone" },
+        { type: "menuReady" },
+        { type: "gameExit" },
+      ),
+    ).toEqual([]);
     expect(f.stage).toBe("start");
     run(f, { type: "begin", logos: false, intro: false });
     expect(run(f, { type: "begin", logos: true, intro: true })).toEqual([]);
@@ -83,7 +97,10 @@ describe("GameFlow: menu", () => {
 
   it("New game: Loading, INTRO.AVX, then the game prepared meanwhile", () => {
     const f = inMenu();
-    expect(run(f, { type: "menuResult", result: "newGame" })).toEqual([{ type: "prepareIntro" }, { type: "prepareGame" }]);
+    expect(run(f, { type: "menuResult", result: "newGame" })).toEqual([
+      { type: "prepareIntro" },
+      { type: "prepareGame" },
+    ]);
     expect(f.stage).toBe("loading");
     expect(run(f, { type: "introReady", ok: true })).toEqual([]);
     expect(run(f, { type: "menuReady" })).toEqual([{ type: "playIntro", from: "newGame" }]);
@@ -139,7 +156,13 @@ describe("GameFlow: menu", () => {
 
   it("New game: a failed game reopens the menu (after the movie)", () => {
     const f = inMenu();
-    run(f, { type: "menuResult", result: "newGame" }, { type: "gameReady", ok: false }, { type: "introReady", ok: true }, { type: "menuReady" });
+    run(
+      f,
+      { type: "menuResult", result: "newGame" },
+      { type: "gameReady", ok: false },
+      { type: "introReady", ok: true },
+      { type: "menuReady" },
+    );
     expect(f.stage).toBe("intro");
     expect(run(f, { type: "introEnded" })).toEqual([{ type: "wipe" }]);
     expect(run(f, { type: "wipeDone" })).toEqual([{ type: "openMenu", previous: "lastFrame" }]);
@@ -185,7 +208,15 @@ describe("GameFlow: menu", () => {
 describe("GameFlow: game and stop", () => {
   it("the game ends in the menu, which can start the next game", () => {
     const f = inMenu();
-    run(f, { type: "menuResult", result: "newGame" }, { type: "gameReady", ok: true }, { type: "introReady", ok: true }, { type: "menuReady" }, { type: "introEnded" }, { type: "wipeDone" });
+    run(
+      f,
+      { type: "menuResult", result: "newGame" },
+      { type: "gameReady", ok: true },
+      { type: "introReady", ok: true },
+      { type: "menuReady" },
+      { type: "introEnded" },
+      { type: "wipeDone" },
+    );
     expect(f.stage).toBe("game");
     expect(run(f, { type: "gameExit" })).toEqual([{ type: "openMenu", previous: "lastFrame" }]);
     expect(types(run(f, { type: "menuResult", result: "newGame" }))).toEqual(["prepareIntro", "prepareGame"]);
@@ -197,8 +228,16 @@ describe("GameFlow: game and stop", () => {
     for (const events of [
       [],
       [{ type: "begin", logos: true, intro: true }],
-      [{ type: "begin", logos: false, intro: false }, { type: "menuResult", result: "intro" }],
-      [{ type: "begin", logos: false, intro: false }, { type: "menuResult", result: "newGame" }, { type: "introReady", ok: true }, { type: "menuReady" }],
+      [
+        { type: "begin", logos: false, intro: false },
+        { type: "menuResult", result: "intro" },
+      ],
+      [
+        { type: "begin", logos: false, intro: false },
+        { type: "menuResult", result: "newGame" },
+        { type: "introReady", ok: true },
+        { type: "menuReady" },
+      ],
       [{ type: "direct" }],
     ] as FlowEvent[][]) {
       const f = new GameFlow();

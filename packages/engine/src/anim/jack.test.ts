@@ -44,7 +44,16 @@ describe("Jack frame names and hot spots", () => {
 
 describe("Jack_DrawShadow placement", () => {
   const base: ShadowRequest = {
-    index: 0, dir: 0, facing: 1, x: 300, y: 400, walkFrame: null, directional: true, twoShadows: false, scale: 1, shadowScale: 1,
+    index: 0,
+    dir: 0,
+    facing: 1,
+    x: 300,
+    y: 400,
+    walkFrame: null,
+    directional: true,
+    twoShadows: false,
+    scale: 1,
+    shadowScale: 1,
   };
 
   it("fadeBase: scale · shadowScale without the 0.7 of the lone round shadow and without the cap", () => {
@@ -113,9 +122,17 @@ describe("footsteps, idle animations, light", () => {
   });
 
   it("chooses the idle insertion by direction", () => {
-    expect(idleChoice(0, -1, false, 1, 1)).toEqual({ section: "KLFR", facing: 1, scaleMul: f32(0.97) });
+    expect(idleChoice(0, -1, false, 1, 1)).toEqual({
+      section: "KLFR",
+      facing: 1,
+      scaleMul: f32(0.97),
+    });
     expect(idleChoice(0, -1, false, 2, 0)?.section).toBe("KLFR");
-    expect(idleChoice(0, -1, false, 2, 1)).toEqual({ section: "KOLT", facing: 1, scaleMul: f32(0.985) });
+    expect(idleChoice(0, -1, false, 2, 1)).toEqual({
+      section: "KOLT",
+      facing: 1,
+      scaleMul: f32(0.985),
+    });
     expect(idleChoice(1, -1, false, 0, 0)).toEqual({ section: "KLPRO", facing: -1, scaleMul: 1 });
     expect(idleChoice(2, -1, false, 0, 0)?.facing).toBe(1);
     expect(idleChoice(3, 1, false, 3, 0)?.section).toBe("34PKL");
@@ -131,7 +148,18 @@ describe("footsteps, idle animations, light", () => {
     expect(jackBrightness(300, 400, [], 1, 0.6)).toBe(f32(0.6));
     // dx 0, dy (400 - 350) * 3 = 150, range 300: 0.5 + base
     expect(jackBrightness(300, 400, [[300, 350]], 1, 0.6)).toBe(f32(1.1));
-    expect(jackBrightness(300, 400, [[0, 0], [300, 350]], 0.5, 0.25)).toBe(f32(0.25)); // range 150, not below
+    expect(
+      jackBrightness(
+        300,
+        400,
+        [
+          [0, 0],
+          [300, 350],
+        ],
+        0.5,
+        0.25,
+      ),
+    ).toBe(f32(0.25)); // range 150, not below
     expect(scaleColor(0, 0.5)).toBe(0);
     expect(scaleColor(0xffff, 0.5)).toBe((15 << 11) | (31 << 5) | 15);
     expect(scaleColor(0x0821, 0.1)).toBe(0x0821); // channels never drop to 0
@@ -146,7 +174,18 @@ describe("footsteps, idle animations, light", () => {
 });
 
 describe("fade of Jack's round shadow over insertion frames (SC032A JZABITY2, SC007 OSCIANE_ZAMACH)", () => {
-  const req: ShadowRequest = { index: 0, dir: 0, facing: 1, x: 300, y: 400, walkFrame: null, directional: true, twoShadows: false, scale: 1, shadowScale: 1 };
+  const req: ShadowRequest = {
+    index: 0,
+    dir: 0,
+    facing: 1,
+    x: 300,
+    y: 400,
+    walkFrame: null,
+    directional: true,
+    twoShadows: false,
+    scale: 1,
+    shadowScale: 1,
+  };
   const frameShadow = () => jackShadow({ ...req, directional: false, scale: 0.53, x: 84, y: 415, walkFrame: null });
   it("MINSHADOW 5 draws four shrinking frames with levels 4,3,1,0, then the shadow is off for good", () => {
     const st = new PersonShadow(1);
@@ -156,7 +195,15 @@ describe("fade of Jack's round shadow over insertion frames (SC032A JZABITY2, SC
     for (let i = 0; i < 6; i++) {
       if (!st.enabled && !st.fadingIn) break; // drawJackShadow: nothing is drawn (and nothing re-enabled) afterwards
       const s = frameShadow();
-      const d = st.draw(true, { x: s.x + 55 * s.scale, y: s.y + 14 * s.scale, personScale: s.fadeBase ?? s.scale, lightScale: 1, levelScale: 1, maskWidth: 110, maskHeight: 28 });
+      const d = st.draw(true, {
+        x: s.x + 55 * s.scale,
+        y: s.y + 14 * s.scale,
+        personScale: s.fadeBase ?? s.scale,
+        lightScale: 1,
+        levelScale: 1,
+        maskWidth: 110,
+        maskHeight: 28,
+      });
       sizes.push(d!.width);
       levels.push(d!.level);
     }

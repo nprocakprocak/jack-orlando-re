@@ -24,7 +24,7 @@ const REVERSE = new Map<string, number>(MAZOVIA.map((c, i) => [c, i] as [string,
  * `é` (byte 0x82) has no glyph in the Resource.pak fonts, so it is drawn as `e`.
  */
 export function encodeMazovia(text: string): Uint8Array {
-  return Uint8Array.from(text, (c) => (c === "é" ? 0x65 : REVERSE.get(c) ?? 0x3f));
+  return Uint8Array.from(text, (c) => (c === "é" ? 0x65 : (REVERSE.get(c) ?? 0x3f)));
 }
 
 /**
@@ -88,7 +88,11 @@ function layout(measure: Measure, text: string, boxW: number, x0: number, y: num
     y,
     width: boxW,
     height: lines.length * LINE_HEIGHT,
-    lines: lines.map((t, i) => ({ text: t, x: x0 + Math.trunc((boxW - measure(t)) / 2), y: y + i * LINE_PITCH })),
+    lines: lines.map((t, i) => ({
+      text: t,
+      x: x0 + Math.trunc((boxW - measure(t)) / 2),
+      y: y + i * LINE_PITCH,
+    })),
     outline: c.outline,
     fill: c.fill,
   };
@@ -134,7 +138,12 @@ export function placeCaption(i: CaptionInput, x: number, y: number): Caption {
  * `y` is clamped, then the box is drawn at `y - lines*24` anyway (so a clamped caption lands
  * above the screen) - see.
  */
-export function placePersonCaption(i: Omit<CaptionInput, "leftColor" | "rightColor">, x: number, y: number, c: CaptionColors): Caption {
+export function placePersonCaption(
+  i: Omit<CaptionInput, "leftColor" | "rightColor">,
+  x: number,
+  y: number,
+  c: CaptionColors,
+): Caption {
   const { x: cx } = clampX(x, i.width, i.scrollX);
   const n = wrapCaption(i.measure, i.text, i.width).length;
   let ty = y;

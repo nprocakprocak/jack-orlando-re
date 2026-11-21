@@ -3,10 +3,28 @@
 import type { Font } from "../formats/fnt";
 import { NoticeStrip, NOTICE_Y_COAT, ANIM_ROLLUP } from "../keys/notice";
 import type { Surface16 } from "../render/surface";
-import { blitCopy, blitKeyed, createSurface, strideOf } from "../render/surface";
+import { blitCopy, blitKeyed, createSurface } from "../render/surface";
+import { clippedKeyed, clippedShadow } from "./screen-blit";
+export { shadowPixel } from "./screen-blit";
 import {
-  CELL_CX, CELL_CY, CELL_H, CLOSE_X, COLS, CELL_W, DOWN_ARROW, GRID_X0, GRID_X1, GRID_Y0, GRID_Y1, MAX_SCROLL_ROW, OPT, REGION_B_ROW,
-  ROWS, SHADOW_DX, SHADOW_DY, UP_ARROW, cellAt, ctrlPointAt, inBox, slotOfCell,
+  CELL_CX,
+  CELL_CY,
+  CELL_H,
+  CLOSE_X,
+  COLS,
+  CELL_W,
+  DOWN_ARROW,
+  MAX_SCROLL_ROW,
+  OPT,
+  REGION_B_ROW,
+  ROWS,
+  SHADOW_DX,
+  SHADOW_DY,
+  UP_ARROW,
+  cellAt,
+  ctrlPointAt,
+  inBox,
+  slotOfCell,
 } from "./layout";
 import type { Inventory, Item } from "./model";
 
@@ -47,7 +65,16 @@ export interface CoatHost {
   onExit(exit: CoatExit): void;
 }
 
-export const DIK_COAT = { ESC: 0x01, F1: 0x3b, HOME: 0xc7, UP: 0xc8, PGUP: 0xc9, END: 0xcf, DOWN: 0xd0, PGDN: 0xd1 } as const;
+export const DIK_COAT = {
+  ESC: 0x01,
+  F1: 0x3b,
+  HOME: 0xc7,
+  UP: 0xc8,
+  PGUP: 0xc9,
+  END: 0xcf,
+  DOWN: 0xd0,
+  PGDN: 0xd1,
+} as const;
 export const SCROLL_FRAMES = 8;
 /** Pixel offset of the scroll animation per frame (`t = 0, 7, 49`), the last frame lands on a full row. */
 export const SCROLL_OFFSETS = [0, 7, 14, 21, 28, 35, 42, 49];
@@ -105,7 +132,11 @@ export class CoatScreen {
     this.bg = createSurface(640, 480);
     const im = this.images;
     blitCopy(im.background, 0, 0, 640, 480, this.bg, 0, 0);
-    for (const [img, x, y] of [[im.up, UP_ARROW.x, UP_ARROW.y], [im.down, DOWN_ARROW.x, DOWN_ARROW.y], [im.opt, OPT.x, OPT.y]] as const) {
+    for (const [img, x, y] of [
+      [im.up, UP_ARROW.x, UP_ARROW.y],
+      [im.down, DOWN_ARROW.x, DOWN_ARROW.y],
+      [im.opt, OPT.x, OPT.y],
+    ] as const) {
       blitCopy(img, 0, 0, img.width, img.height, this.bg, x, y);
     }
     this.cursorMode = this.inv.held ? 5 : 4;
@@ -161,9 +192,9 @@ export class CoatScreen {
   }
 
   /**
- * Game_Run: with Ctrl down and the left button held (a level, not an edge, every frame, before everything else) a hidden point
- * ends the coat. True when one was hit.
- */
+   * Game_Run: with Ctrl down and the left button held (a level, not an edge, every frame, before everything else) a hidden point
+   * ends the coat. True when one was hit.
+   */
   ctrlHeld(x: number, y: number): boolean {
     if (!this.isOpen) return false;
     const p = ctrlPointAt(x, y, this.uniform);
@@ -188,10 +219,10 @@ export class CoatScreen {
   }
 
   /**
- * [deviation]: one notch of the mouse wheel = one click of the arrow (same animation, bounds, no pressed sprite).
- * Down = down arrow. Ignored in region B and while a scroll animation runs (no queue). Returns true when the coat
- * takes the wheel (the page then calls preventDefault) — also for a notch that is ignored, so the page does not scroll.
- */
+   * [deviation]: one notch of the mouse wheel = one click of the arrow (same animation, bounds, no pressed sprite).
+   * Down = down arrow. Ignored in region B and while a scroll animation runs (no queue). Returns true when the coat
+   * takes the wheel (the page then calls preventDefault) — also for a notch that is ignored, so the page does not scroll.
+   */
   wheel(dir: 1 | -1): boolean {
     if (!this.isOpen || !this.scrollable) return false;
     this.step(dir);
@@ -244,13 +275,13 @@ export class CoatScreen {
     if (!inv.held) {
       if (item && inv.pull(slot)) {
         this.cursorMode = 5;
-          }
+      }
       return;
     }
     if (!item) {
       if (inv.placeAt(slot)) {
         this.cursorMode = 4;
-          }
+      }
       return;
     }
     const name = `${inv.held.name}-${item.name}`;
@@ -273,7 +304,7 @@ export class CoatScreen {
       if (this.anim.frame >= SCROLL_FRAMES) {
         this.inv.scrollRow += this.anim.dir;
         this.anim = null;
-          }
+      }
       changed = true;
     }
     this.updateHover();
@@ -293,7 +324,8 @@ export class CoatScreen {
       if (this.notice.shown && this.notice.anim !== ANIM_ROLLUP) this.notice.anim = ANIM_ROLLUP;
       return;
     }
-    if (slot !== this.hoverSlot && this.notice.shown && this.notice.anim !== ANIM_ROLLUP) this.notice.anim = ANIM_ROLLUP;
+    if (slot !== this.hoverSlot && this.notice.shown && this.notice.anim !== ANIM_ROLLUP)
+      this.notice.anim = ANIM_ROLLUP;
     this.hoverSlot = slot;
     if (!this.notice.shown && this.notice.state === 0) {
       const file = this.inv.slots[slot]!.name;
@@ -328,53 +360,13 @@ export class CoatScreen {
         this.drawItem(dst, item, CELL_CX + col * CELL_W, CELL_CY + row * CELL_H - shift);
       }
     }
-    if (this.pressed === "up") blitKeyed(im.upPressed, 0, 0, im.upPressed.width, im.upPressed.height, dst, UP_ARROW.x, UP_ARROW.y);
-    if (this.pressed === "down") blitKeyed(im.downPressed, 0, 0, im.downPressed.width, im.downPressed.height, dst, DOWN_ARROW.x, DOWN_ARROW.y);
-    if (this.pressed === "opt") blitKeyed(im.optPressed, 0, 0, im.optPressed.width, im.optPressed.height, dst, OPT.x, OPT.y);
+    if (this.pressed === "up")
+      blitKeyed(im.upPressed, 0, 0, im.upPressed.width, im.upPressed.height, dst, UP_ARROW.x, UP_ARROW.y);
+    if (this.pressed === "down")
+      blitKeyed(im.downPressed, 0, 0, im.downPressed.width, im.downPressed.height, dst, DOWN_ARROW.x, DOWN_ARROW.y);
+    if (this.pressed === "opt")
+      blitKeyed(im.optPressed, 0, 0, im.optPressed.width, im.optPressed.height, dst, OPT.x, OPT.y);
     const pic = this.notice.picture(dst, 0);
     if (pic) blitCopy(pic, 0, 0, pic.width, pic.height, dst, this.notice.x(0), this.notice.y);
-  }
-}
-
-/** Keyed copy clipped to the grid rectangle (the item sprites' clip rectangle (0x56,0xae,0xe6,0x1b2)). */
-function clippedKeyed(dst: Surface16, src: Surface16, x: number, y: number): void {
-  const ss = strideOf(src);
-  const ds = strideOf(dst);
-  for (let sy = 0; sy < src.height; sy++) {
-    const py = y + sy;
-    if (py < GRID_Y0 || py >= GRID_Y1) continue;
-    for (let sx = 0; sx < src.width; sx++) {
-      const px = x + sx;
-      if (px < GRID_X0 || px >= GRID_X1) continue;
-      const v = src.pixels[sy * ss + sx];
-      if (v) dst.pixels[py * ds + px] = v;
-    }
-  }
-}
-
-/**
- * The shadow pixel of `Item_BuildShadowImage`: `(background, 0, 0.5f)` (per channel
- * `ftol((a * (2 - t) + b * t) / 2)`, here a = background, b = 0, t = 0.5, so a channel keeps 3/4 of its value, not half —
- * the pale, see-through shadows of the original, user's screenshot).
- */
-export function shadowPixel(p: number): number {
-  const ch = (a: number) => Math.trunc((a * 1.5) / 2);
-  return ((ch((p >> 11) & 0x1f) << 11) | (ch((p >> 5) & 0x3f) << 5) | ch(p & 0x1f)) & 0xffff;
-}
-
-/** Shadow: where the item is opaque, the background at that place at half brightness (clipped like the item). */
-function clippedShadow(dst: Surface16, bg: Surface16, src: Surface16, x: number, y: number): void {
-  const ss = strideOf(src);
-  const ds = strideOf(dst);
-  for (let sy = 0; sy < src.height; sy++) {
-    const py = y + sy;
-    if (py < GRID_Y0 || py >= GRID_Y1 || py < 0 || py >= bg.height) continue;
-    for (let sx = 0; sx < src.width; sx++) {
-      const px = x + sx;
-      if (px < GRID_X0 || px >= GRID_X1 || px < 0 || px >= bg.width) continue;
-      if (!src.pixels[sy * ss + sx]) continue;
-      const shade = shadowPixel(bg.pixels[py * strideOf(bg) + px]);
-      if (shade) dst.pixels[py * ds + px] = shade; // colour 0 is the key of the shadow sprite: transparent, no fallback colour
-    }
   }
 }

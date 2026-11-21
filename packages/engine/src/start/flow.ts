@@ -30,9 +30,9 @@ export type IntroFrom = "start" | "menu" | "newGame";
 
 export type FlowEvent =
   /**
- * "Start a new game" on the start screen; `logos`: the studio logos first (every run unless ?logos=0);
- * `intro`: INTRO.AVX before the menu (first run, g_cfgPlayIntro)
- */
+   * "Start a new game" on the start screen; `logos`: the studio logos first (every run unless ?logos=0);
+   * `intro`: INTRO.AVX before the menu (first run, g_cfgPlayIntro)
+   */
   | { type: "begin"; logos: boolean; intro: boolean }
   /** the page was opened with ?scene= / ?start=1: the game runs at once */
   | { type: "direct" }

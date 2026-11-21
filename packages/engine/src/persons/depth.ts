@@ -8,8 +8,7 @@ import type { WalkObject } from "../walk/objects";
 
 /** Another sprite as seen by the person's order check. */
 export type DepthOther<T> =
-  | { id: T; kind: "jack" | "person"; y: number }
-  | { id: T; kind: "object"; object: WalkObject };
+  { id: T; kind: "jack" | "person"; y: number } | { id: T; kind: "object"; object: WalkObject };
 
 /** Compares float y of the feet: smaller y = further away = behind. */
 export function behindByY(selfY: number, otherY: number): DepthRelation {
@@ -50,7 +49,13 @@ export function personObjectDepthInsertion(o: WalkObject, y: number): { behind: 
  * moves to the other sprite's slot when it is on the wrong side (Sprite_MoveBack/MoveFront repeated
  * by the distance, so the other sprite shifts by one). Sprites that are not in the list are ignored.
  */
-export function arrangePerson<T>(list: readonly T[], self: T, x: number, y: number, others: readonly DepthOther<T>[]): T[] {
+export function arrangePerson<T>(
+  list: readonly T[],
+  self: T,
+  x: number,
+  y: number,
+  others: readonly DepthOther<T>[],
+): T[] {
   const out = [...list];
   for (const o of others) {
     const rel = o.kind === "object" ? personObjectDepth(o.object, x, y) : behindByY(y, o.y);

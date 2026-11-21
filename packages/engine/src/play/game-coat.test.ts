@@ -6,7 +6,12 @@ import { PlayGame } from "./game";
 describe("play: the options button of the item bar keeps the pointer (without the game files)", () => {
   function barGame(menuOpensOnClose: boolean) {
     const state = { barOpen: true };
-    const cursor = { mode: 1, inWindow: false, setTargets: () => undefined, animate: () => undefined };
+    const cursor = {
+      mode: 1,
+      inWindow: false,
+      setTargets: () => undefined,
+      animate: () => undefined,
+    };
     const menu = { isOpen: false };
     const bar = {
       get isOpen() {
@@ -72,7 +77,7 @@ describe("play: the options button of the item bar keeps the pointer (without th
 
 describe("play: the mouse wheel scrolls the coat and the item bar (deviation, synthetic)", () => {
   function wheelGame(over: { coat?: object | null; bar?: object | null }) {
-    const g = Object.create(PlayGame.prototype) as any;
+    const g = Object.create(PlayGame.prototype) as PlayGame;
     Object.assign(g, { wheelSum: new WheelAccumulator(), coat: null, bar: null, ...over });
     return g as PlayGame;
   }

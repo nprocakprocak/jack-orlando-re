@@ -33,10 +33,10 @@ export interface FrameInfo {
   /** Real time (ms) passed to step(). */
   nowMs: number;
   /**
- * Game time (ms) since the previous frame: the real time the loop consumed, without the time spent
- * inactive (pause) and without what maxStepMs dropped. Feed real-time consumers (films, fades,
- * music fades) with this instead of performance.now() differences, so a pause does not make them catch up.
- */
+   * Game time (ms) since the previous frame: the real time the loop consumed, without the time spent
+   * inactive (pause) and without what maxStepMs dropped. Feed real-time consumers (films, fades,
+   * music fades) with this instead of performance.now() differences, so a pause does not make them catch up.
+   */
   elapsedMs: number;
   /** Total game time (ms) consumed so far (sum of elapsedMs). */
   gameMs: number;
@@ -49,9 +49,9 @@ export interface GameHooks {
   /** One iteration of the game frame loop: per-frame logic, input handling. */
   frame?(info: FrameInfo): void;
   /**
- * Draw and present. `alpha` (0 <= alpha < 1) is the progress towards the next logic tick
- * for optional interpolation; the original does not interpolate.
- */
+   * Draw and present. `alpha` (0 <= alpha < 1) is the progress towards the next logic tick
+   * for optional interpolation; the original does not interpolate.
+   */
   render?(alpha: number, info: FrameInfo): void;
   /** Focus lost (false) / regained (true), e.g. to pause sound (Sound_SetPaused). */
   activeChanged?(active: boolean): void;
@@ -59,10 +59,10 @@ export interface GameHooks {
 
 export interface LoopOptions {
   /**
- * Upper bound of real time consumed by one step(); the rest is dropped. Protects against
- * a burst of catch-up ticks after the tab was throttled without a visibility event.
- * Not in the original (its mm-timer does not queue missed ticks). Default 100 ms.
- */
+   * Upper bound of real time consumed by one step(); the rest is dropped. Protects against
+   * a burst of catch-up ticks after the tab was throttled without a visibility event.
+   * Not in the original (its mm-timer does not queue missed ticks). Default 100 ms.
+   */
   maxStepMs?: number;
   /** g_frameMinMs; default FRAME_MIN_MS (5). */
   frameMinMs?: number;
@@ -99,7 +99,10 @@ export class EngineLoop {
   private pollTicks = 0;
   private frameGameMs = 0;
 
-  constructor(readonly hooks: GameHooks = {}, opts: LoopOptions = {}) {
+  constructor(
+    readonly hooks: GameHooks = {},
+    opts: LoopOptions = {},
+  ) {
     this.maxStepMs = opts.maxStepMs ?? 100;
     this.frameMinMs = opts.frameMinMs ?? FRAME_MIN_MS;
     this.timer = new GameTimer(opts.doubleEvery11th ?? true);
@@ -124,9 +127,9 @@ export class EngineLoop {
   }
 
   /**
- * Advances the engine to real time `nowMs` (e.g. the requestAnimationFrame timestamp).
- * Returns true when a frame was run.
- */
+   * Advances the engine to real time `nowMs` (e.g. the requestAnimationFrame timestamp).
+   * Returns true when a frame was run.
+   */
   step(nowMs: number): boolean {
     const prev = this.lastNow;
     this.lastNow = nowMs;
@@ -173,11 +176,7 @@ export class EngineLoop {
 
   private runFrameIfDue(nowMs: number): boolean {
     const minTicks = Math.floor(this.frameMinMs / TICK_MS);
-    if (
-      this.frameStartTick !== null &&
-      minTicks !== 0 &&
-      this.clock.ticks - this.frameStartTick <= minTicks
-    ) {
+    if (this.frameStartTick !== null && minTicks !== 0 && this.clock.ticks - this.frameStartTick <= minTicks) {
       this.stats.skippedFrames++;
       return false;
     }

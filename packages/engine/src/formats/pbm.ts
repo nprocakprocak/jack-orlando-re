@@ -73,7 +73,10 @@ export function tailPixels(data: Uint8Array, pos: number): number | null {
 
 /** name may be a bare file name or a path/label ending in it. */
 export function isPlaceholder(data: Uint8Array, name = ""): boolean {
-  const base = name.split(/[\\/:]/).pop()!.toUpperCase();
+  const base = name
+    .split(/[\\/:]/)
+    .pop()!
+    .toUpperCase();
   return base === PLACEHOLDER_NAME && data.length === 1 && data[0] === PLACEHOLDER_BYTE;
 }
 

@@ -3,8 +3,23 @@ import type { Font, Glyph } from "../formats/fnt";
 import { createSurface, type Surface16 } from "../render/surface";
 import { ANIM_ROLLUP } from "../keys/notice";
 import {
-  CELL_CX, CELL_CY, CELL_H, CELL_W, DIK_COAT, Inventory, InventoryError, CoatScreen, SLOT_COUNT, cellAt, ctrlPointAt,
-  encodeText, itemNameLookup, slotOfCell, type CoatAssets, type CoatExit, type CoatHost,
+  CELL_CX,
+  CELL_CY,
+  CELL_H,
+  CELL_W,
+  DIK_COAT,
+  Inventory,
+  InventoryError,
+  CoatScreen,
+  SLOT_COUNT,
+  cellAt,
+  ctrlPointAt,
+  encodeText,
+  itemNameLookup,
+  slotOfCell,
+  type CoatAssets,
+  type CoatExit,
+  type CoatHost,
 } from "./index";
 import { shadowPixel } from "./screen";
 
@@ -13,14 +28,28 @@ const img = (w = 8, h = 8, v = 0x1234): Surface16 => {
   s.pixels.fill(v);
   return s;
 };
-const glyph = (code: number): Glyph => ({ code, offset: 0, width: 3, height: 5, pixels: new Uint8Array(15).fill(2) });
+const glyph = (code: number): Glyph => ({
+  code,
+  offset: 0,
+  width: 3,
+  height: 5,
+  pixels: new Uint8Array(15).fill(2),
+});
 const font: Font = { glyphs: Array.from({ length: 256 }, (_, i) => glyph(i)), dataEnd: 0 };
 const bg = (v: number): Surface16 => {
   const s = createSurface(640, 480);
   s.pixels.fill(v);
   return s;
 };
-const images = (v: number) => ({ background: bg(v), up: img(40, 40, 0x1111), down: img(40, 40, 0x2222), opt: img(152, 72, 0x3333), upPressed: img(40, 40, 0x7fff), downPressed: img(40, 40, 0x7fff), optPressed: img(152, 72, 0x7fff) });
+const images = (v: number) => ({
+  background: bg(v),
+  up: img(40, 40, 0x1111),
+  down: img(40, 40, 0x2222),
+  opt: img(152, 72, 0x3333),
+  upPressed: img(40, 40, 0x7fff),
+  downPressed: img(40, 40, 0x7fff),
+  optPressed: img(152, 72, 0x7fff),
+});
 const assets: CoatAssets = { civilian: images(0x0841), uniform: images(0x1082), font };
 
 function make(macros: string[] = []) {
@@ -116,7 +145,10 @@ describe("Inventory model", () => {
     inv.scrollRow = 9;
     inv.take("H.BM", img());
     const snap = inv.snapshot();
-    expect(snap.map((s) => [s.slot, s.name])).toEqual([[0, "A.BM"], [66, "B.BM"]]);
+    expect(snap.map((s) => [s.slot, s.name])).toEqual([
+      [0, "A.BM"],
+      [66, "B.BM"],
+    ]);
     const other = new Inventory();
     other.add("Z.BM", img());
     other.scrollRow = 5;

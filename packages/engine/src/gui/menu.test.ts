@@ -10,8 +10,12 @@ function setup() {
   const saved: GameConfig[] = [];
   const config = defaultConfig();
   const menu = new GuiMenu({
-    assets: fakeAssets(), texts: TEXTS_PL, config, scene: flat(640, 480, 0xffff),
-    onAction: (a) => actions.push(a), persist: (c) => saved.push({ ...c }),
+    assets: fakeAssets(),
+    texts: TEXTS_PL,
+    config,
+    scene: flat(640, 480, 0xffff),
+    onAction: (a) => actions.push(a),
+    persist: (c) => saved.push({ ...c }),
   });
   const click = (x: number, y: number) => {
     menu.pointerDown(x, y);
@@ -22,7 +26,16 @@ function setup() {
 
 // main menu window: (100, 50), 440 x 380, buttons x = 34
 const mainBtn = (y: number): [number, number] => [100 + 34 + 20, 50 + y + 10];
-const MAIN = { Resume: 325, NewGame: 55, Load: 92, Save: 129, GameCtrl: 166, AudioCtrl: 203, About: 240, Quit: 277 };
+const MAIN = {
+  Resume: 325,
+  NewGame: 55,
+  Load: 92,
+  Save: 129,
+  GameCtrl: 166,
+  AudioCtrl: 203,
+  About: 240,
+  Quit: 277,
+};
 
 describe("main menu", () => {
   it("opens at (100, 50) with the 8 buttons in the original order", () => {
@@ -42,12 +55,25 @@ describe("main menu", () => {
       menu.open();
       click(...mainBtn(y));
       const expected: Record<string, MenuAction | null> = {
-        Resume: { type: "resume" }, NewGame: { type: "newGame" }, Load: { type: "load" }, Save: { type: "save" },
-        GameCtrl: null, AudioCtrl: null, About: null, Quit: null,
+        Resume: { type: "resume" },
+        NewGame: { type: "newGame" },
+        Load: { type: "load" },
+        Save: { type: "save" },
+        GameCtrl: null,
+        AudioCtrl: null,
+        About: null,
+        Quit: null,
       };
       expect(actions[0] ?? null).toEqual(expected[name]);
       const screens: Record<string, MenuScreen | null> = {
-        Resume: null, NewGame: null, Load: "main", Save: "main", GameCtrl: "gameOptions", AudioCtrl: "audioOptions", About: "about", Quit: "quit",
+        Resume: null,
+        NewGame: null,
+        Load: "main",
+        Save: "main",
+        GameCtrl: "gameOptions",
+        AudioCtrl: "audioOptions",
+        About: "about",
+        Quit: "quit",
       };
       expect(menu.screen).toBe(screens[name]);
     });
@@ -168,7 +194,7 @@ describe("Opcje audio", () => {
     menu.pointerDown(x, y);
     menu.pointerMove(x + 17, y);
     menu.pointerUp(x + 17, y);
-    expect(config.sfxVol).toBe(Math.trunc((((Math.trunc((32 * 170) / 64)) + 17) / 170) * 64));
+    expect(config.sfxVol).toBe(Math.trunc(((Math.trunc((32 * 170) / 64) + 17) / 170) * 64));
     expect(actions.some((a) => a.type === "preview" && a.channel === "sfx")).toBe(true);
     expect(actions.every((a) => a.type !== "preview" || a.channel === "sfx")).toBe(true);
   });
@@ -301,7 +327,10 @@ describe("quit confirmation", () => {
   });
 
   it("clicking the right button ('Nie') after F10 resumes; the left one quits", () => {
-    for (const [side, expected] of [["left", "quit"], ["right", "resume"]] as const) {
+    for (const [side, expected] of [
+      ["left", "quit"],
+      ["right", "resume"],
+    ] as const) {
       const { menu, actions, click } = setup();
       menu.open("quit");
       // block font: text width 6/char: " Tak " = 30 -> bw 50; W = max(36*6+40, 140) = 256 -> x = 192; H = 108 -> y = 186

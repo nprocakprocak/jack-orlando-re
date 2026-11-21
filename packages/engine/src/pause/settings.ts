@@ -38,7 +38,7 @@ export function readPauseOnBlur(search: string | URLSearchParams = "", storage?:
   const params = typeof search === "string" ? new URLSearchParams(search) : search;
   const fromUrl = parsePauseParam(params.get(PAUSE_PARAM));
   if (fromUrl !== null) return fromUrl;
-  let stored: string | null = null;
+  let stored: string | null;
   try {
     stored = storage?.getItem(PAUSE_ON_BLUR_KEY) ?? null;
   } catch {

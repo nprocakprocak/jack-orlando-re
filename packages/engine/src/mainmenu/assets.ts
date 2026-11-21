@@ -9,7 +9,12 @@ const numbered = (prefix: string, n: number) => Array.from({ length: n }, (_, i)
 
 /** Everything Menu_OpenPak loads, in its order (the logos and COPYR.BM of MENU.PAK are not loaded here). */
 export const MENU_PAK_FILES = [
-  "JACK2.BM", "_SAMOCH1.BM", "D1.FLX", ...numbered("WSK", 9), ...numbered("CD", 40), "LADEN.BM",
+  "JACK2.BM",
+  "_SAMOCH1.BM",
+  "D1.FLX",
+  ...numbered("WSK", 9),
+  ...numbered("CD", 40),
+  "LADEN.BM",
 ] as const;
 
 /** Pictures from `menu.PAK`, read by the names in `MENU_PAK_FILES`. The label font is `JACK.FNT` in Resource.pak. */

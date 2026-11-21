@@ -71,15 +71,18 @@ export class PlayAudio {
   /** channels that carry speech (g_sndChannelTalk): only they are stopped when a line ends */
   readonly talkChannels = new Set<number>();
   /**
- * "Pseudo surround" / "Swap stereo channels" of the music (Snd_CopyStereo). The page hangs its
- * `StereoOptions` here; the menu's changes reach it through `applySetting`. Null = the music is left as it is.
- */
+   * "Pseudo surround" / "Swap stereo channels" of the music (Snd_CopyStereo). The page hangs its
+   * `StereoOptions` here; the menu's changes reach it through `applySetting`. Null = the music is left as it is.
+   */
   stereoFx: StereoFx | null = null;
   private musicMuted = false;
   /** option SurroundOnOff (g_config +0x14); the other options live in `config` */
   surround = true;
   /** the samples of the volume sliders: SFX.S16 and TALK.S16 of RESOURCE.PAK (Game_Main) */
-  private readonly previews: { sfx?: ReturnType<typeof prepareSound>; talk?: ReturnType<typeof prepareSound> } = {};
+  private readonly previews: {
+    sfx?: ReturnType<typeof prepareSound>;
+    talk?: ReturnType<typeof prepareSound>;
+  } = {};
   /** levels of the effect channels while they are paused (Snd_TogglePauseFx, channels 1..4) */
   private pausedFx: Map<number, number> | null = null;
 
@@ -103,9 +106,9 @@ export class PlayAudio {
   }
 
   /**
- * Takes the options of the game (the menu's `GameConfig`) into the sound: start of a game and every change of an option.
- * The music level is set without the stop/restart rule of the audio window (that one belongs to a change, `applySetting`).
- */
+   * Takes the options of the game (the menu's `GameConfig`) into the sound: start of a game and every change of an option.
+   * The music level is set without the stop/restart rule of the audio window (that one belongs to a change, `applySetting`).
+   */
   applyConfig(c: Readonly<GameConfig>): void {
     this.config.dialogText = c.showText !== 0;
     this.config.musicVolume = c.musicVol;
@@ -121,10 +124,10 @@ export class PlayAudio {
   }
 
   /**
- * One option changed in the "Opcje audio" window (Menu_AudioOptions): `MusicVol` stops the
- * music below 5 and restarts it above 5 (`setMusicVolume`), `RevStereoOnOff` / `SurroundOnOff` reach the stereo graph.
- * `c` already holds the new value.
- */
+   * One option changed in the "Opcje audio" window (Menu_AudioOptions): `MusicVol` stops the
+   * music below 5 and restarts it above 5 (`setMusicVolume`), `RevStereoOnOff` / `SurroundOnOff` reach the stereo graph.
+   * `c` already holds the new value.
+   */
   applySetting(key: keyof GameConfig, c: Readonly<GameConfig>): void {
     this.applyConfig(c);
     if (key !== "musicVol" || !this.enabled) return;
@@ -153,10 +156,10 @@ export class PlayAudio {
   }
 
   /**
- * Dragging a volume slider (`Gui_RunWindow`): `MusicVol` sets the music channel (that is
- * `applySetting`); `SFXVol` / `TalkVol` play their sample on the channels 1 and 2 when both are idle, otherwise only the
- * volume of the two channels follows. Volume `value` is in game units (level = 2 * value).
- */
+   * Dragging a volume slider (`Gui_RunWindow`): `MusicVol` sets the music channel (that is
+   * `applySetting`); `SFXVol` / `TalkVol` play their sample on the channels 1 and 2 when both are idle, otherwise only the
+   * volume of the two channels follows. Volume `value` is in game units (level = 2 * value).
+   */
   preview(channel: "music" | "sfx" | "talk", value: number): void {
     if (channel === "music" || !this.enabled) return;
     const sample = this.previews[channel];
@@ -172,10 +175,10 @@ export class PlayAudio {
   }
 
   /**
- * Snd_TogglePauseFx / Snd_TogglePauseFx2 around a modal window: the effect channels 1..4 stop
- * sounding. **Deviation:** the original pauses the DirectSound buffers; the backend has no per-voice pause, so the channels
- * are muted and their sounds run on silently (a long effect may be over when the game goes on).
- */
+   * Snd_TogglePauseFx / Snd_TogglePauseFx2 around a modal window: the effect channels 1..4 stop
+   * sounding. **Deviation:** the original pauses the DirectSound buffers; the backend has no per-voice pause, so the channels
+   * are muted and their sounds run on silently (a long effect may be over when the game goes on).
+   */
   pauseEffects(paused: boolean): void {
     if (!this.enabled) return;
     if (paused && !this.pausedFx) {
@@ -210,15 +213,18 @@ export class PlayAudio {
   // --- speech -----------------------------------------------------------------------------------
 
   /**
- * Sound_PickTalkChannel: of the two channels of the requested side (1/3 left, else 2/4 right) the first one
- * that is idle and not reserved; none free = the request itself. The right branch tests the reservation of the
- * *left* list entries (1, 3) - kept.
- */
+   * Sound_PickTalkChannel: of the two channels of the requested side (1/3 left, else 2/4 right) the first one
+   * that is idle and not reserved; none free = the request itself. The right branch tests the reservation of the
+   * *left* list entries (1, 3) - kept.
+   */
   pickTalkChannel(channel: number): number {
     const left = channel === 1 || channel === 3;
     const order = left ? [1, 3] : [2, 4];
     for (let i = 0; i < 2; i++) {
-      if (!this.mixer.isPlaying(swapChannel(order[i], this.config.revStereo)) && !this.sfx.isReserved(left ? order[i] : [1, 3][i])) {
+      if (
+        !this.mixer.isPlaying(swapChannel(order[i], this.config.revStereo)) &&
+        !this.sfx.isReserved(left ? order[i] : [1, 3][i])
+      ) {
         return order[i];
       }
     }
@@ -226,10 +232,10 @@ export class PlayAudio {
   }
 
   /**
- * Sound_PlayTalk (volume 0x40 of the call, scaled by TalkVol / 64): plays `<file>` (.S22) from the scene
- * archive on a free channel of the requested side and returns its length in seconds; null = no sound (no device,
- * or the scene has no such file), the line then runs on its text.
- */
+   * Sound_PlayTalk (volume 0x40 of the call, scaled by TalkVol / 64): plays `<file>` (.S22) from the scene
+   * archive on a free channel of the requested side and returns its length in seconds; null = no sound (no device,
+   * or the scene has no such file), the line then runs on its text.
+   */
   playVoice(channel: number, file: string): number | null {
     if (!this.enabled) return null;
     let archive = this.sceneArchive;
@@ -249,7 +255,9 @@ export class PlayAudio {
     this.sfx.setTalkChannel(ch, true);
     this.talkChannels.add(ch);
     const volume = Math.trunc((0x40 * this.config.talkVolume) / 64);
-    this.mixer.play(swapChannel(ch, this.config.revStereo), prepared, { volume: gameVolumeToLevel(volume) });
+    this.mixer.play(swapChannel(ch, this.config.revStereo), prepared, {
+      volume: gameVolumeToLevel(volume),
+    });
     return soundDuration(prepared);
   }
 
@@ -266,10 +274,10 @@ export class PlayAudio {
   // --- music ------------------------------------------------------------------------------------
 
   /**
- * Music_DuckDown (Caption_ShowSpeaker, a line in a face window) / Music_DuckUp (end of a line),
- * only with MusDownOnOff. The target is computed by code the decompiler lost (`__ftol()` without argument):
- * **hypothesis** - half of the music volume down, the full volume up.
- */
+   * Music_DuckDown (Caption_ShowSpeaker, a line in a face window) / Music_DuckUp (end of a line),
+   * only with MusDownOnOff. The target is computed by code the decompiler lost (`__ftol()` without argument):
+   * **hypothesis** - half of the music volume down, the full volume up.
+   */
   duckMusic(down: boolean): void {
     if (!this.enabled || !this.config.musicDown) return;
     const full = this.music.musicVolume * this.music.scale;

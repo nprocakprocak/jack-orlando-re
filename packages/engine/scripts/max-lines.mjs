@@ -61,7 +61,10 @@ function collectFiles() {
   /** @type {{ path: string, lines: number }[]} */
   const files = [];
   walk(packageRoot, files);
-  return files.map((file) => ({ path: normalize(relative(packageRoot, file.path)), lines: file.lines }));
+  return files.map((file) => ({
+    path: normalize(relative(packageRoot, file.path)),
+    lines: file.lines,
+  }));
 }
 
 /** @returns {string[]} */

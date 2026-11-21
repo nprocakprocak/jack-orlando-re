@@ -40,7 +40,13 @@ export function parseFnt(data: Uint8Array): Font {
       throw new FntError(`glyph ${code} data ${offset}+${width}x${height} out of range`);
     }
     dataEnd = Math.max(dataEnd, offset + width * height);
-    glyphs.push({ code, offset, width, height, pixels: data.slice(offset, offset + width * height) });
+    glyphs.push({
+      code,
+      offset,
+      width,
+      height,
+      pixels: data.slice(offset, offset + width * height),
+    });
   }
   return { glyphs, dataEnd };
 }
@@ -77,7 +83,7 @@ export function layoutText(font: Font, text: Uint8Array): { glyphs: PlacedGlyph[
   let spacing = DEFAULT_SPACING;
   let x = 0;
   const glyphs: PlacedGlyph[] = [];
-  for (let i = 0; i < text.length && text[i] !== 0; ) {
+  for (let i = 0; i < text.length && text[i] !== 0;) {
     const c = text[i];
     if (c === ESCAPE) {
       if (i + 1 >= text.length || text[i + 1] === 0) break;

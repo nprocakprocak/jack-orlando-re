@@ -56,7 +56,14 @@ export async function openMovie(files: GameFiles, film: string, s: MovieSettings
       cykl: [decodeBm(await f("CYKL1.BM")), decodeBm(await f("CYKL2.BM")), decodeBm(await f("CYKL3.BM"))],
     };
   }
-  return new MoviePlayer(avx, { mode, outro, subtitles, dialogTextOn: s.dialogText, sound: s.sound, level: s.level });
+  return new MoviePlayer(avx, {
+    mode,
+    outro,
+    subtitles,
+    dialogTextOn: s.dialogText,
+    sound: s.sound,
+    level: s.level,
+  });
 }
 
 // --- RUNFILMP (Script_ExecStep case 0x22 -> Film_Play, global = 0): a `.FCM` film in a window of the scene ---
@@ -159,10 +166,10 @@ export class FilmRun {
   }
 
   /**
- * `(colour, ring, picture)`: the palette entry of every ring pixel gives a level (its blue part, 0..31); the
- * scene pixel moves `level / 32` of the way to `colour` (`RING_COLOUR`), through the tables at / /
- * A level of 0 leaves the pixel alone.
- */
+   * `(colour, ring, picture)`: the palette entry of every ring pixel gives a level (its blue part, 0..31); the
+   * scene pixel moves `level / 32` of the way to `colour` (`RING_COLOUR`), through the tables at / /
+   * A level of 0 leaves the pixel alone.
+   */
   private drawRing(ring: Image16): void {
     const n = Math.min(ring.pixels.length, this.base.length);
     for (let i = 0; i < n; i++) {
@@ -198,7 +205,8 @@ export class FilmRun {
     const frame = this.frameAt(ms);
     const effects = this.src.film.effects;
     for (let i = this.lastFrame + 1; i <= frame; i++) {
-      while (this.nextEffect < effects.length && effects[this.nextEffect].frame === i) out.push(effects[this.nextEffect++]);
+      while (this.nextEffect < effects.length && effects[this.nextEffect].frame === i)
+        out.push(effects[this.nextEffect++]);
     }
     this.lastFrame = Math.max(this.lastFrame, frame);
     return out;
@@ -231,8 +239,15 @@ export class FilmRun {
     }
     const pixels = this.base.slice();
     const m = this.margin;
-    for (let r = 0; r < h; r++) for (let c = 0; c < w; c++) if (buf[r * w + c]) pixels[(r + m) * this.baseWidth + c + m] = buf[r * w + c];
-    return { x: this.place.x - m, y: this.place.y - m, width: this.baseWidth, height: h + 2 * m, pixels };
+    for (let r = 0; r < h; r++)
+      for (let c = 0; c < w; c++) if (buf[r * w + c]) pixels[(r + m) * this.baseWidth + c + m] = buf[r * w + c];
+    return {
+      x: this.place.x - m,
+      y: this.place.y - m,
+      width: this.baseWidth,
+      height: h + 2 * m,
+      pixels,
+    };
   }
 
   /** The memsets of Film_Play: row i and the mirrored row from the bottom lose `mask[i]` pixels at both ends. */
@@ -253,7 +268,8 @@ export class FilmRun {
 
 function mirror(img: Image16): Image16 {
   const pixels = new Uint16Array(img.pixels.length);
-  for (let y = 0; y < img.height; y++) for (let x = 0; x < img.width; x++) pixels[y * img.width + x] = img.pixels[y * img.width + img.width - 1 - x];
+  for (let y = 0; y < img.height; y++)
+    for (let x = 0; x < img.width; x++) pixels[y * img.width + x] = img.pixels[y * img.width + img.width - 1 - x];
   return { ...img, pixels };
 }
 
@@ -267,9 +283,15 @@ export const RING_COLOUR = mixColour(0xffff, 0, 1.5);
 /** The pixel `level`/32 of the way to black. */
 function darken(p: number, level: number): number {
   const k = 32 - level;
-  return (((((p >> 11) & 0x1f) * k) >> 5) << 11) | (((((p >> 5) & 0x3f) * k) >> 5) << 5) | ((((p & 0x1f) * k) >> 5) & 0x1f);
+  return (
+    (((((p >> 11) & 0x1f) * k) >> 5) << 11) | (((((p >> 5) & 0x3f) * k) >> 5) << 5) | ((((p & 0x1f) * k) >> 5) & 0x1f)
+  );
 }
 
 function lighten(p: number): number {
-  return (Math.min(31, ((p >> 11) & 0x1f) + 6) << 11) | (Math.min(63, ((p >> 5) & 0x3f) + 12) << 5) | Math.min(31, (p & 0x1f) + 6);
+  return (
+    (Math.min(31, ((p >> 11) & 0x1f) + 6) << 11) |
+    (Math.min(63, ((p >> 5) & 0x3f) + 12) << 5) |
+    Math.min(31, (p & 0x1f) + 6)
+  );
 }

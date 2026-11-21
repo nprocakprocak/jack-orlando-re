@@ -102,7 +102,9 @@ describe("object commands on a fake player", () => {
       renderer: r,
       objectByName: new Map([["OBJ", o]]),
       backdrop: img(64, 64, 0x8410, "rgb565"),
-      world: { objects: [{ x: 10, y: 10, quad: [0, 0, 1, 0, 1, 1, 0, 1], center: [0, 0], valid: true }] },
+      world: {
+        objects: [{ x: 10, y: 10, quad: [0, 0, 1, 0, 1, 1, 0, 1], center: [0, 0], valid: true }],
+      },
       persons: { persons },
       jackShadowScale: 1,
       image: (_s: string, f: string) => pics[f],
@@ -114,9 +116,11 @@ describe("object commands on a fake player", () => {
     self.refreshBackground = () => ScenePlayer.prototype.refreshBackground.call(self);
     self.composeRegion = (...a: unknown[]) =>
       (ScenePlayer.prototype as unknown as { composeRegion(...x: unknown[]): unknown }).composeRegion.apply(self, a);
-    self.drawObject = (oo: unknown) => (ScenePlayer.prototype as unknown as { drawObject(o: unknown): void }).drawObject.call(self, oo);
+    self.drawObject = (oo: unknown) =>
+      (ScenePlayer.prototype as unknown as { drawObject(o: unknown): void }).drawObject.call(self, oo);
     const p = self as unknown as ScenePlayer;
-    const call = (m: keyof ScenePlayer, ...a: unknown[]) => (ScenePlayer.prototype[m] as (...x: unknown[]) => unknown).apply(p, a);
+    const call = (m: keyof ScenePlayer, ...a: unknown[]) =>
+      (ScenePlayer.prototype[m] as (...x: unknown[]) => unknown).apply(p, a);
     return { r, o, self, persons, call };
   };
 

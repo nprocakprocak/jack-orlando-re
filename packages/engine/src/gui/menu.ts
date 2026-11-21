@@ -55,7 +55,11 @@ export const OPTION_FIELDS: Readonly<Record<string, keyof GameConfig>> = {
   MusDownOnOff: "musicDown",
 };
 
-const PREVIEW: Readonly<Record<string, "music" | "sfx" | "talk">> = { MusicVol: "music", SFXVol: "sfx", TalkVol: "talk" };
+const PREVIEW: Readonly<Record<string, "music" | "sfx" | "talk">> = {
+  MusicVol: "music",
+  SFXVol: "sfx",
+  TalkVol: "talk",
+};
 
 /**
  * Music level change from the audio window: below 5 the music stops and counts as muted,
@@ -85,8 +89,14 @@ export function buildMainMenu({ assets, texts, scene }: Ctx): GuiWindow {
   title(w, texts.title, 14);
   const x = centerOffset(440, 370) - 1;
   const items: [string, string, number][] = [
-    ["Resume", texts.resume, 325], ["NewGame", texts.newGame, 55], ["Load", texts.load, 92], ["Save", texts.save, 129],
-    ["GameCtrl", texts.gameCtrl, 166], ["AudioCtrl", texts.audioCtrl, 203], ["About", texts.about, 240], ["Quit", texts.quit, 277],
+    ["Resume", texts.resume, 325],
+    ["NewGame", texts.newGame, 55],
+    ["Load", texts.load, 92],
+    ["Save", texts.save, 129],
+    ["GameCtrl", texts.gameCtrl, 166],
+    ["AudioCtrl", texts.audioCtrl, 203],
+    ["About", texts.about, 240],
+    ["Quit", texts.quit, 277],
   ];
   for (const [name, text, y] of items) w.addButton(name, text, x, y, 370, 33);
   return w;
@@ -208,10 +218,19 @@ export class GuiMenu {
   }
 
   private push(screen: MenuScreen): void {
-    const build = { main: buildMainMenu, gameOptions: buildGameOptions, audioOptions: buildAudioOptions, about: buildAbout, quit: buildConfirm }[screen];
+    const build = {
+      main: buildMainMenu,
+      gameOptions: buildGameOptions,
+      audioOptions: buildAudioOptions,
+      about: buildAbout,
+      quit: buildConfirm,
+    }[screen];
     this.stack.push({ screen, win: build(this.o) });
     if (screen === "about") {
-      this.scroller = new CreditsScroller(this.o.assets.credits, { big: this.o.assets.fontBig, small: this.o.assets.fontSmall });
+      this.scroller = new CreditsScroller(this.o.assets.credits, {
+        big: this.o.assets.fontBig,
+        small: this.o.assets.fontSmall,
+      });
       this.scroller.running = true;
       this.tickCarry = 0;
     }
@@ -279,7 +298,8 @@ export class GuiMenu {
           this.optionsEvent(entry, e);
           break;
         case "about":
-          if (e.kind === "escape") this.finish({ type: "resume" }); // Esc leaves the whole menu
+          if (e.kind === "escape")
+            this.finish({ type: "resume" }); // Esc leaves the whole menu
           else if (e.kind === "press") this.pop();
           break;
         case "quit":
@@ -293,14 +313,22 @@ export class GuiMenu {
     if (e.kind === "escape") return this.finish({ type: "resume" });
     if (e.kind !== "press") return;
     switch (e.name) {
-      case "Resume": return this.finish({ type: "resume" });
-      case "NewGame": return this.finish({ type: "newGame" });
-      case "Load": return this.o.onAction({ type: "load" });
-      case "Save": return this.o.onAction({ type: "save" });
-      case "GameCtrl": return this.push("gameOptions");
-      case "AudioCtrl": return this.push("audioOptions");
-      case "About": return this.push("about");
-      case "Quit": return this.push("quit");
+      case "Resume":
+        return this.finish({ type: "resume" });
+      case "NewGame":
+        return this.finish({ type: "newGame" });
+      case "Load":
+        return this.o.onAction({ type: "load" });
+      case "Save":
+        return this.o.onAction({ type: "save" });
+      case "GameCtrl":
+        return this.push("gameOptions");
+      case "AudioCtrl":
+        return this.push("audioOptions");
+      case "About":
+        return this.push("about");
+      case "Quit":
+        return this.push("quit");
     }
   }
 

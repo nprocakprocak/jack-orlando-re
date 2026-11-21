@@ -6,7 +6,14 @@ import { createSurface } from "../render/surface";
 import { LOGO_TICKS, TICK_MS, TOTAL_MS } from "./logos";
 import { LaunchSequence, WAIT_BACKGROUND, WAIT_MIN_MS, buildWaitScreen, waitBoxGeometry } from "./wait-box";
 import {
-  WIPE_CHUNK, WIPE_PIXELS, WIPE_SLEEP_MS, WIPE_TOTAL_MS, StripeWipe, pixelsAt, wipeOrder, wipePixel,
+  WIPE_CHUNK,
+  WIPE_PIXELS,
+  WIPE_SLEEP_MS,
+  WIPE_TOTAL_MS,
+  StripeWipe,
+  pixelsAt,
+  wipeOrder,
+  wipePixel,
 } from "./wipe";
 
 const white = () => {
@@ -79,7 +86,10 @@ describe("wait box geometry", () => {
     const screen = buildWaitScreen(fakeAssets(), text);
     expect(screen.pixels[0]).toBe(0);
     const g = waitBoxGeometry(textWidth(fakeAssets().fontBig, encodeMazovia(text)));
-    let minX = 640, minY = 480, maxX = 0, maxY = 0;
+    let minX = 640,
+      minY = 480,
+      maxX = 0,
+      maxY = 0;
     for (let y = 0; y < 480; y++) {
       for (let x = 0; x < 640; x++) {
         if (!screen.pixels[y * 640 + x]) continue;

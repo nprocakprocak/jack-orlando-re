@@ -37,7 +37,13 @@ export function isInertMacro(name: string, get: (variable: string) => number | u
  * (the area `DOL #1`, x 322-365, is enabled by `95KTZW_I.BM-GZYMS.PBM` with `SETAREA DOL 1 1`; `[PRE]` disables it) the macro sees MOUSEX = 320,
  * i.e. the ladder branch. With the rope nothing changes. Only the value read by this macro is changed; the scripts and the area outlines are not.
  */
-export const ROPE_DESCENT_FIX = { scene: "SC087", macro: "POKAZANIE-DOL", area: "DOL", ropeDup: 1, branchX: 320 } as const;
+export const ROPE_DESCENT_FIX = {
+  scene: "SC087",
+  macro: "POKAZANIE-DOL",
+  area: "DOL",
+  ropeDup: 1,
+  branchX: 320,
+} as const;
 
 /**
  * The MOUSEX the started macro must see. `ropeAreaEnabled` = the state of `DOL` dup 1 (`AreaState.enabled`). Other macros/scenes: `mouseX` unchanged.

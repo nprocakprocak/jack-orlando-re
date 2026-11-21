@@ -8,7 +8,7 @@ alwaysApply: false
 
 `PlayGame` and `ScenePlayer` are bags of fields. A field stays `this.field`. Grouping fields into subobjects rewrites every read.
 
-A method the host or a test calls stays on the prototype as one line. It calls the function in the neighboring file with `this` cast to the state type (`GameState`). The file that holds the body imports the class only as `import type`.
+A method the host or a test calls stays on the prototype as one call. It calls the function in the neighboring file with `this` cast to the state type (`GameState`). The file that holds the body imports the class only as `import type`.
 
 A method nothing outside the class calls is a plain function in that file. It leaves the prototype.
 

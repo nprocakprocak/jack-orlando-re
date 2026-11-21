@@ -65,5 +65,15 @@ export function findInsertion(table: InsertionTable, name: string, facing: 1 | -
 /** Ins_StartGlobal: one section of GLOBAL.ICS (read on demand by Ics_LoadSection). */
 export function globalInsertion(globalIcs: Ics, name: string, facing: 1 | -1, scaleMul = 1): InsertionStart | null {
   const s = globalIcs.sections.find((x) => x.name === name.toUpperCase());
-  return s ? { frames: s.frames, start: 0, count: s.frames.length, facing, global: true, scaleMul, name: s.name } : null;
+  return s
+    ? {
+        frames: s.frames,
+        start: 0,
+        count: s.frames.length,
+        facing,
+        global: true,
+        scaleMul,
+        name: s.name,
+      }
+    : null;
 }

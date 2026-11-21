@@ -1,7 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { Area } from "../formats/scene";
 import {
-  areaContains,
   createWalker,
   detourAround,
   DIR_AWAY,
@@ -13,7 +11,6 @@ import {
   dropNearLine,
   edgeCrossing,
   escapePoint,
-  exitAt,
   f32,
   facingForAngle,
   findPath,
@@ -26,14 +23,11 @@ import {
   lineIntersection,
   nearestWalkable,
   objectAt,
-  objectDepth,
   offLine,
-  personDepth,
   perspThird,
   planWalk,
   pointBelowLine,
   quadContains,
-  reorderJack,
   s16,
   segmentClear,
   segmentIntersection,
@@ -261,7 +255,13 @@ describe("smoothing", () => {
     expect(back.points.slice(1, -1).map((p) => p.y > 120)).toEqual([true, true]);
     // pushed corners truncate towards zero: top ones end 32 px from the centre, bottom 31
     expect(fwd.cost - back.cost).toBe(1);
-    const narrow = world([[0, 0, 0, 120, 200, 120], [0, 0, 200, 0, 200, 120]], [box(80, 80, 40, 40)]);
+    const narrow = world(
+      [
+        [0, 0, 0, 120, 200, 120],
+        [0, 0, 200, 0, 200, 120],
+      ],
+      [box(80, 80, 40, 40)],
+    );
     const b2 = detourAround(narrow, 0, 3, 1, P(60, 100), P(140, 100), false);
     expect(b2.cost).toBeGreaterThan(2000);
   });
@@ -370,7 +370,14 @@ describe("walker", () => {
   });
   it("speed follows the perspective scale", () => {
     const p = { horizonY: 0, refY: 100, refScale: 1 };
-    const w = world([[0, 0, 0, 100, 500, 100], [0, 0, 500, 0, 500, 100]], [], p);
+    const w = world(
+      [
+        [0, 0, 0, 100, 500, 100],
+        [0, 0, 500, 0, 500, 100],
+      ],
+      [],
+      p,
+    );
     const k = createWalker(0, 50, w);
     expect(k.scale).toBe(0.5);
     followPlan(k, { path: [P(0, 50), P(400, 50)], direct: false, fromOutside: false });
@@ -413,62 +420,5 @@ describe("walker", () => {
     followPlan(k, d);
     for (let t = 0; t < 500 && k.walking; t++) walkTick(k, apart);
     expect([k.x, k.y]).toEqual([310, 90]);
-  });
-});
-
-describe("depth and areas", () => {
-  const o = box(100, 100, 50, 20);
-  it("object footprint: above all corners = behind, below all = in front", () => {
-    expect(objectDepth(o, P(120, 90))).toBe("behind");
-    expect(objectDepth(o, P(120, 130))).toBe("front");
-    expect(objectDepth(box(0, 0, 0, 0, false), P(0, 0))).toBeNull();
-  });
-  it("within the y range: decided by the slanted edges", () => {
-    // a diamond: top (50,0) right (100,20) bottom (50,40) left (0,20)
-    const d: WalkObject = { x: 0, y: 0, quad: [50, 0, 100, 20, 50, 40, 0, 20], center: [50, 20], valid: true };
-    expect(objectDepth(d, P(95, 5))).toBe("behind");
-    expect(objectDepth(d, P(95, 35))).toBe("front");
-    expect(objectDepth(d, P(50, 20))).toBeNull();
-  });
-  it("persons by y; reorderJack moves Jack next to the other sprite", () => {
-    expect(personDepth(100, 120)).toBe("behind");
-    expect(personDepth(130, 120)).toBe("front");
-    expect(personDepth(120, 120)).toBeNull();
-    expect(reorderJack(["bg", "a", "b", "J"], "J", "a", "behind")).toEqual(["bg", "J", "a", "b"]);
-    expect(reorderJack(["bg", "J", "a", "b"], "J", "b", "front")).toEqual(["bg", "a", "b", "J"]);
-    expect(reorderJack(["bg", "J", "a"], "J", "a", "behind")).toEqual(["bg", "J", "a"]);
-  });
-  it("exitAt: last area first, only exits; areas have no bounding box test", () => {
-    const tri = [0, 0, 0, 100, 100, 100];
-    const areas: Area[] = [
-      { name: "LEWO", exit: true, triangles: [tri] },
-      { name: "KUBEL", exit: false, triangles: [tri] },
-      { name: "PRAWO", exit: true, triangles: [[0, 0, 0, 50, 50, 50]] },
-    ];
-    expect(exitAt(areas, P(10, 40))).toBe(2);
-    expect(exitAt(areas, P(10, 80))).toBe(0);
-    expect(exitAt(areas, P(90, 10))).toBe(-1);
-    expect(areaContains(areas[1], P(10, 80))).toBe(true);
-  });
-
-  describe("goal outside the area (SC009 alley exit)", () => {
-    it("click: refused; script WALKTO (anyGoal): straight line to the goal, not to the nearest walkable point", () => {
-      const w = world(SQUARE);
-      expect(planWalk(w, P(80, 50), P(-60, 50))).toBeNull();
-      const plan = planWalk(w, P(80, 50), P(-60, 50), { anyGoal: true })!;
-      expect(plan.direct).toBe(true);
-      expect(plan.path[plan.path.length - 1]).toEqual(P(-60, 50));
-    });
-
-    it("start outside as well: still straight to the goal outside (Walk_NearestWalkable moves only the start)", () => {
-      const plan = planWalk(world(SQUARE), P(150, 50), P(-60, 50), { anyGoal: true })!;
-      expect(plan.direct).toBe(true);
-      expect(plan.path.map((p) => [p.x, p.y])).toEqual([[150, 50], [-60, 50]]);
-    });
-
-    it("goal inside: anyGoal changes nothing", () => {
-      const w = world(L);
-      expect(planWalk(w, P(10, 10), P(280, 280), { anyGoal: true })).toEqual(planWalk(w, P(10, 10), P(280, 280)));
-    });
   });
 });

@@ -1,6 +1,14 @@
 // Fields the scene player's methods read. The class keeps them private; a wrapper casts this.
 
-import type { FrameSprite, InsertionTable, JackAnimator, JackPose, JackUpdate, ObjectAnimation, SoundEvent } from "../anim";
+import type {
+  FrameSprite,
+  InsertionTable,
+  JackAnimator,
+  JackPose,
+  JackUpdate,
+  ObjectAnimation,
+  SoundEvent,
+} from "../anim";
 import type { Image16 } from "../formats/bm";
 import type { HotSpot, Ics } from "../formats/global";
 import type { Pak } from "../formats/pak";
@@ -34,15 +42,15 @@ export interface SceneOptions {
   /** start the .ACI animations of the objects (the demo does what the preview does) */
   animateObjects?: boolean;
   /**
- * The scene is driven by its scripts: the camera moves as Game_Run does (walk margins,
- * scroll commands) instead of following Jack, objects are controlled by commands, scenes
- * without a walk area are allowed and Jack starts where the scripts put him.
- */
+   * The scene is driven by its scripts: the camera moves as Game_Run does (walk margins,
+   * scroll commands) instead of following Jack, objects are controlled by commands, scenes
+   * without a walk area are allowed and Jack starts where the scripts put him.
+   */
   scripted?: boolean;
   /**
- * The colour tables that darken the background under a shadow (the same tables as the dialog window).
- * Without them (the M1 demo, tests that do not pass tables) an approximation with the same shape is used.
- */
+   * The colour tables that darken the background under a shadow (the same tables as the dialog window).
+   * Without them (the M1 demo, tests that do not pass tables) an approximation with the same shape is used.
+   */
   shadowTables?: ShadowTables;
   /** g_shadowsOn: shadows are drawn at all (default true) */
   shadows?: boolean;
@@ -74,10 +82,10 @@ export type SceneEvent =
   | { kind: "personInsertionReleased"; person: number }
   | { kind: "animEnded"; anim: string; reason: "end" | "stop" }
   /**
- * An object animation is due and shows `image` of REC sequence `rec` (Game_Run: the REC
- * position in modes 3/4, the image index in modes 1/2, the FLX frame counter in modes 5/6): ANIMAEFFECT sounds
- * and ACTIVEMACROANIMA macros fire on it.
- */
+   * An object animation is due and shows `image` of REC sequence `rec` (Game_Run: the REC
+   * position in modes 3/4, the image index in modes 1/2, the FLX frame counter in modes 5/6): ANIMAEFFECT sounds
+   * and ACTIVEMACROANIMA macros fire on it.
+   */
   | { kind: "animFrame"; anim: string; image: number; rec: number; flx: boolean };
 
 export interface ObjectSprite {
@@ -163,7 +171,16 @@ export interface ScenePlayerState {
   backdropOwned: boolean;
   shadowOne: string | null;
   readonly extraShadowId: number;
-  readonly animShadows: Map<string, { jack: boolean; person: number; points: readonly (readonly number[])[]; step: number; clear: boolean }>;
+  readonly animShadows: Map<
+    string,
+    {
+      jack: boolean;
+      person: number;
+      points: readonly (readonly number[])[];
+      step: number;
+      clear: boolean;
+    }
+  >;
   readonly roundMask: Image16;
   personShadowIds: number[];
   personMasks: (Image16 | null)[];

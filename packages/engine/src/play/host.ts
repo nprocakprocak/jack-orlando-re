@@ -72,9 +72,9 @@ export class AutoIncClock {
   }
 
   /**
- * Game_Run, l. 382: a scene of chapter 3 starts the OCHR clock (an OCHR missing from the table -> index 0, the
- * search's start value). Called before [PRE], so a PRE with its own AUTOINCRANGE wins.
- */
+   * Game_Run, l. 382: a scene of chapter 3 starts the OCHR clock (an OCHR missing from the table -> index 0, the
+   * search's start value). Called before [PRE], so a PRE with its own AUTOINCRANGE wins.
+   */
   sceneStart(chapter: number, vars: ClockVars): void {
     if (chapter !== 3) return;
     const i = varIndex(vars, CHAPTER3_CLOCK.name);
@@ -117,36 +117,52 @@ export class SceneHost implements ScriptHost {
   /** SAVEABLE n (1 at the scene start): the save menu is not there yet, the flag is kept for it */
   saveable = true;
   /**
- * SETPOSSCROLL L|R x y (NO_SCROLL_POINT = unset at the scene start, Game_Run): the
- * points Jack walks to when the cursor is at the left / right screen edge.
- */
+   * SETPOSSCROLL L|R x y (NO_SCROLL_POINT = unset at the scene start, Game_Run): the
+   * points Jack walks to when the cursor is at the left / right screen edge.
+   */
   /** the view scrolled in the last tick (set by the game after the scene tick; Game_Tick14ms). */
   viewScrolling = false;
-  readonly scrollPoints: { L: { x: number; y: number }; R: { x: number; y: number } } = { L: { x: NO_SCROLL_POINT, y: NO_SCROLL_POINT }, R: { x: NO_SCROLL_POINT, y: NO_SCROLL_POINT } };
+  readonly scrollPoints: { L: { x: number; y: number }; R: { x: number; y: number } } = {
+    L: { x: NO_SCROLL_POINT, y: NO_SCROLL_POINT },
+    R: { x: NO_SCROLL_POINT, y: NO_SCROLL_POINT },
+  };
   /** POINTROTATE n (kept in too): 1 = Jack walks to a point without the turning animation */
   pointRotate = 0;
   /**
- * ACTIVEMACROANIMA macro anim rec image (case 0x72, up to 300 images per animation): the macro
- * started when the .FLX animation shows `image` in record `rec` (Game_Run, FLX branch, not played).
- */
+   * ACTIVEMACROANIMA macro anim rec image (case 0x72, up to 300 images per animation): the macro
+   * started when the .FLX animation shows `image` in record `rec` (Game_Run, FLX branch, not played).
+   */
   readonly animaMacros: { macro: string; anim: string; rec: number; image: number }[] = [];
   /** the macro waiting for the line being spoken (a TALK with `-`) */
   private talkWaiter: number | null = null;
   /** SETPOSXY x y: the point `TALK POS` puts its caption at */
   posXY = { x: 0, y: 0 };
   /**
- * Who is told when an operation ends: the macro that started it last (the game keeps one
- * macro slot per actor, walks / insertions: a second start overwrites it).
- */
+   * Who is told when an operation ends: the macro that started it last (the game keeps one
+   * macro slot per actor, walks / insertions: a second start overwrites it).
+   */
   private readonly slots = new Map<string, number>();
   /** the state of Jack's gestures ; a host lives for one scene, the game resets it at the scene start */
   readonly gestures = new Gestures();
   private timers: { ticks: number; macro: number }[] = [];
   private rng = 12345;
   private readonly dialogsAsked = new Map<number, number>();
-  constructor(private readonly env: HostEnv, private readonly talkTicks = talkBody.TALK_TICKS) {
+  constructor(
+    private readonly env: HostEnv,
+    private readonly talkTicks = talkBody.TALK_TICKS,
+  ) {
     // The group files read these. A reference keeps the private names in use.
-    void [this.talkTicks, this.dialogsAsked, this.setJackVars, this.wait, this.waitAlways, this.fallbackTalk, this.speaker, this.noteSkipped, this.gesture];
+    void [
+      this.talkTicks,
+      this.dialogsAsked,
+      this.setJackVars,
+      this.wait,
+      this.waitAlways,
+      this.fallbackTalk,
+      this.speaker,
+      this.noteSkipped,
+      this.gesture,
+    ];
   }
 
   // --- ScriptHost -------------------------------------------------------------------------------
@@ -175,10 +191,10 @@ export class SceneHost implements ScriptHost {
   }
 
   /**
- * `g_restoreJackPose` (a loaded save with pose byte 1; cleared by a scene change): Script_ExecStep skips the commands
- * that place or move Jack when the macro is `INIT` (`bVar9 = strcmp(name, "INIT") != 0`; cases 1, 2, 6, 7, 0x14, 0x15, 0x16, 0x49,
- * 0x76). Jack stays where the save put him; `PRE` and other macros run in full.
- */
+   * `g_restoreJackPose` (a loaded save with pose byte 1; cleared by a scene change): Script_ExecStep skips the commands
+   * that place or move Jack when the macro is `INIT` (`bVar9 = strcmp(name, "INIT") != 0`; cases 1, 2, 6, 7, 0x14, 0x15, 0x16, 0x49,
+   * 0x76). Jack stays where the save put him; `PRE` and other macros run in full.
+   */
   restoringPose = false;
 
   command(cmd: Command, ctx: CommandContext): CommandResult {
@@ -191,12 +207,17 @@ export class SceneHost implements ScriptHost {
   // --- completion (called by the game with the events of ScenePlayer.tick) -----------------------
 
   /**
- * An object animation shows `image` of record `rec` (event `animFrame`, Game_Run): the ANIMAEFFECT
- * sound of the image plays and the macro registered by ACTIVEMACROANIMA starts.
- */
+   * An object animation shows `image` of record `rec` (event `animFrame`, Game_Run): the ANIMAEFFECT
+   * sound of the image plays and the macro registered by ACTIVEMACROANIMA starts.
+   */
   animFrame(anim: string, image: number, rec: number): void {
     const sfx = this.env.audio?.sfx;
-    if (sfx) sfx.animFrameShown(this.env.scene.scene.objectAnims.findIndex((a) => a.name === anim), image, rec);
+    if (sfx)
+      sfx.animFrameShown(
+        this.env.scene.scene.objectAnims.findIndex((a) => a.name === anim),
+        image,
+        rec,
+      );
     for (const m of this.animaMacros) {
       if (m.anim === anim && m.image === image && m.rec === rec) this.interpreter.start(m.macro);
     }
@@ -205,14 +226,18 @@ export class SceneHost implements ScriptHost {
   /** Jack as the gestures see him: `g_jackDir`, `g_jackFacing`, `g_jackUniform`. */
   private jackInfo(): JackInfo {
     const sc = this.env.scene;
-    return { dir: sc.walker.dir as JackInfo["dir"], facing: sc.walker.mirror as JackInfo["facing"], uniform: sc.turning.uniform };
+    return {
+      dir: sc.walker.dir as JackInfo["dir"],
+      facing: sc.walker.mirror as JackInfo["facing"],
+      uniform: sc.turning.uniform,
+    };
   }
 
   /**
- * Jack's insertion ended (event `jackInsertionEnded`). A GLOBAL.ICS one (a gesture, a guard, an idle animation: Game_Run,
- * `g_jackInsFromScene == 0`) goes to the gesture state machine and no macro counter is touched; a scene
- * insertion releases the macro of the last RUNINSERTION JACK.
- */
+   * Jack's insertion ended (event `jackInsertionEnded`). A GLOBAL.ICS one (a gesture, a guard, an idle animation: Game_Run,
+   * `g_jackInsFromScene == 0`) goes to the gesture state machine and no macro counter is touched; a scene
+   * insertion releases the macro of the last RUNINSERTION JACK.
+   */
   jackInsertionEnded(global: boolean): void {
     if (!global) {
       this.finish("jack:ins");
@@ -234,10 +259,10 @@ export class SceneHost implements ScriptHost {
   }
 
   /**
- * INITFIRST's early release: the actor's insertion stopped after its first frame. The macro
- * stored for that actor (Jack: the last RUNINSERTION JACK, a person: the INITFIRST) becomes runnable again (`= 1`)
- * with its counter untouched, and the slot stays (a later end event still finds it).
- */
+   * INITFIRST's early release: the actor's insertion stopped after its first frame. The macro
+   * stored for that actor (Jack: the last RUNINSERTION JACK, a person: the INITFIRST) becomes runnable again (`= 1`)
+   * with its counter untouched, and the slot stays (a later end event still finds it).
+   */
   release(key: string): void {
     const macro = this.slots.get(key);
     if (macro === undefined) return;
@@ -258,12 +283,24 @@ export class SceneHost implements ScriptHost {
     this.slots.clear();
     this.timers = [];
   }
-  private setJackVars(ctx: CommandContext): void { personBody.setJackVars.call(this as unknown as HostState, ctx); }
-  private wait(key: string, ctx: CommandContext): "async" { return personBody.wait.call(this as unknown as HostState, key, ctx); }
-  private waitAlways(key: string, ctx: CommandContext): "async" { return personBody.waitAlways.call(this as unknown as HostState, key, ctx); }
-  private fallbackTalk(cmd: Command, ctx: CommandContext): CommandResult { return talkBody.fallbackTalk.call(this as unknown as HostState, cmd, ctx); }
-  private speaker(cmd: Command): Speaker | null { return talkBody.speaker.call(this as unknown as HostState, cmd); }
-  private noteSkipped(cmd: Command): void { talkBody.noteSkipped.call(this as unknown as HostState, cmd); }
+  private setJackVars(ctx: CommandContext): void {
+    personBody.setJackVars.call(this as unknown as HostState, ctx);
+  }
+  private wait(key: string, ctx: CommandContext): "async" {
+    return personBody.wait.call(this as unknown as HostState, key, ctx);
+  }
+  private waitAlways(key: string, ctx: CommandContext): "async" {
+    return personBody.waitAlways.call(this as unknown as HostState, key, ctx);
+  }
+  private fallbackTalk(cmd: Command, ctx: CommandContext): CommandResult {
+    return talkBody.fallbackTalk.call(this as unknown as HostState, cmd, ctx);
+  }
+  private speaker(cmd: Command): Speaker | null {
+    return talkBody.speaker.call(this as unknown as HostState, cmd);
+  }
+  private noteSkipped(cmd: Command): void {
+    talkBody.noteSkipped.call(this as unknown as HostState, cmd);
+  }
 
   // -- gestures of Jack: a global insertion, the macro waits for its end (state)
   private gesture(cmd: Command, ctx: CommandContext): CommandResult {

@@ -3,10 +3,32 @@ import { ANIM_ROLLUP, NoticeStrip } from "../keys/notice";
 import { blitCopy, createSurface, strideOf, type Surface16 } from "../render/surface";
 import type { Inventory, Item } from "./model";
 import {
-  BAR_CLOSE_Y, BAR_HIDDEN_Y, BAR_OPEN_Y, BAR_SHOWN_Y, BAR_SLIDE,
-  BELKA_W, DROP_BOX, END_VISIBLE, ITEM_CX, ITEM_CY, LEFT_BOX, NOTICE_Y_BAR, OPTIONS_BOX, RIGHT_BOX,
-  SLOT_W, STRIP_BOX, STRIP_DY, STRIP_H, STRIP_W, STRIP_X, inside,
-  type BarInput, type BarOverlay, type BarState, type TopBarHost, type TopBarImages,
+  BAR_CLOSE_Y,
+  BAR_HIDDEN_Y,
+  BAR_OPEN_Y,
+  BAR_SHOWN_Y,
+  BAR_SLIDE,
+  BELKA_W,
+  DROP_BOX,
+  END_VISIBLE,
+  ITEM_CX,
+  ITEM_CY,
+  LEFT_BOX,
+  NOTICE_Y_BAR,
+  OPTIONS_BOX,
+  RIGHT_BOX,
+  SLOT_W,
+  STRIP_BOX,
+  STRIP_DY,
+  STRIP_H,
+  STRIP_W,
+  STRIP_X,
+  inside,
+  type BarInput,
+  type BarOverlay,
+  type BarState,
+  type TopBarHost,
+  type TopBarImages,
 } from "./topbar";
 
 const UNKNOWN_NAME = Uint8Array.from("???", (c) => c.charCodeAt(0));
@@ -27,7 +49,10 @@ const PRESSED_ALIGN = { dx: -1, dy: 3 };
  * **[engine, user request 2026-11-10: "the text is pressed in"; +1 px tuned by the user by hand]**.
  */
 const PRESS = { dx: 1, dy: 1 };
-const at = (x: number, y: number) => ({ x: x + PRESSED_ALIGN.dx + PRESS.dx, y: y + PRESSED_ALIGN.dy + PRESS.dy });
+const at = (x: number, y: number) => ({
+  x: x + PRESSED_ALIGN.dx + PRESS.dx,
+  y: y + PRESSED_ALIGN.dy + PRESS.dy,
+});
 const OPTIONS_LIT = at(0xc, 0x13);
 const LEFT_PRESSED = at(0x96, 10);
 const RIGHT_PRESSED = at(0x251, 10);
@@ -87,9 +112,9 @@ export class TopBar {
   }
 
   /**
- * One frame. `free` = the game may let the bar open (scene playing, no script holds the player, no dialog, no menu).
- * Closed: opens on the top edge; open: drives the strip, the notice and the clicks.
- */
+   * One frame. `free` = the game may let the bar open (scene playing, no script holds the player, no dialog, no menu).
+   * Closed: opens on the top edge; open: drives the strip, the notice and the clicks.
+   */
   frame(input: BarInput, free: boolean): void {
     this.mouseX = input.x;
     this.mouseY = input.y;
@@ -201,10 +226,10 @@ export class TopBar {
   }
 
   /**
- * [deviation]: one notch of the mouse wheel = one click of an arrow at speed 4 (scrolls on to the slot boundary).
- * Down = the right arrow (towards the later slots). Only with the bar fully open; ignored while it scrolls and at the
- * ends. Returns true when the bar takes the wheel (the page then calls preventDefault).
- */
+   * [deviation]: one notch of the mouse wheel = one click of an arrow at speed 4 (scrolls on to the slot boundary).
+   * Down = the right arrow (towards the later slots). Only with the bar fully open; ignored while it scrolls and at the
+   * ends. Returns true when the bar takes the wheel (the page then calls preventDefault).
+   */
   wheel(dir: 1 | -1): boolean {
     if (this.state !== "open") return false;
     if (this.scrollDir !== 0) return true;
@@ -293,7 +318,7 @@ export class TopBar {
     const out = createSurface(STRIP_W, STRIP_H);
     const belka = this.images.strip;
     // BELKA is 18 slots wide; the strip is shifted by `offset`, the picture repeats
-    for (let dx = 0; dx < STRIP_W; ) {
+    for (let dx = 0; dx < STRIP_W;) {
       const src = (((dx - this.offset) % BELKA_W) + BELKA_W) % BELKA_W;
       const w = Math.min(STRIP_W - dx, belka.width - src);
       blitCopy(belka, src, 0, w, Math.min(belka.height, STRIP_H), out, dx, 0);
@@ -327,11 +352,11 @@ export class TopBar {
   }
 
   /**
- * `RAMKA.BM` at `(mouseX − 0x18, mouseY − 0x14)` (Game_Run, l. 779–788): drawn only while an item is in hand and
- * `g_cursorIdle == 0` (the item cursor is over something it can be used on — a sprite pixel or an area with the
- * `<item>-<name>` macro), the bar, the answer menu, a caption and the bullet menu are all closed. `active` = the caller's
- * verdict on all of those except the item; elsewhere the frame is parked off screen (`(0, 500)`).
- */
+   * `RAMKA.BM` at `(mouseX − 0x18, mouseY − 0x14)` (Game_Run, l. 779–788): drawn only while an item is in hand and
+   * `g_cursorIdle == 0` (the item cursor is over something it can be used on — a sprite pixel or an area with the
+   * `<item>-<name>` macro), the bar, the answer menu, a caption and the bullet menu are all closed. `active` = the caller's
+   * verdict on all of those except the item; elsewhere the frame is parked off screen (`(0, 500)`).
+   */
   frameOverlay(x: number, y: number, active = true): BarOverlay | null {
     if (!this.inv.held || !active) return null;
     return { x: x - 0x18, y: y - 0x14, image: this.images.frame };

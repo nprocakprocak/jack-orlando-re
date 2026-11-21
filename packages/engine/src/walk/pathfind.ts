@@ -11,11 +11,11 @@ export const CANDIDATE_SLOTS = 8;
 
 export interface SearchOptions {
   /**
- * The original keeps searching for a shorter path only until 100 ticks of Game_Tick14ms
- * (1.4 s) after Walk_FindPath started, and only once a path was found. This port counts
- * Walk_SearchRec calls instead: after the first path is found, the search stops entering
- * new nodes once `budget` calls were made. Infinity (default) = exhaustive search.
- */
+   * The original keeps searching for a shorter path only until 100 ticks of Game_Tick14ms
+   * (1.4 s) after Walk_FindPath started, and only once a path was found. This port counts
+   * Walk_SearchRec calls instead: after the first path is found, the search stops entering
+   * new nodes once `budget` calls were made. Infinity (default) = exhaustive search.
+   */
   budget?: number;
 }
 
@@ -53,7 +53,10 @@ export function spreadCandidates(cands: Point[], from: Point): Point[] {
   }
   const kept: Point[] = [];
   for (const c of cands) {
-    const q = { x: Math.trunc((sx + c.x * 20) / (n + 20)), y: Math.trunc((sy + c.y * 20) / (n + 20)) };
+    const q = {
+      x: Math.trunc((sx + c.x * 20) / (n + 20)),
+      y: Math.trunc((sy + c.y * 20) / (n + 20)),
+    };
     if (kept.every((k) => dist(q, k) > 2)) kept.push(q);
   }
   for (let k = 0; k < kept.length - 1; k++) {
@@ -190,6 +193,12 @@ export function findPath(
   }
   return {
     path: s.path,
-    stats: { calls: s.calls, found: s.found, maxCandidates: s.maxCandidates, reversed, length: s.best },
+    stats: {
+      calls: s.calls,
+      found: s.found,
+      maxCandidates: s.maxCandidates,
+      reversed,
+      length: s.best,
+    },
   };
 }

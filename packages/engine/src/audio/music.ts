@@ -145,9 +145,9 @@ function step(ch: ImaState, code: number): number {
 
 export interface MusicOptions {
   /**
- * Music enabled ("a sound device exists"); with it false every command only
- * remembers the track name, like Script_ExecStep case 0x3e with `g_config == 0`.
- */
+   * Music enabled ("a sound device exists"); with it false every command only
+   * remembers the track name, like Script_ExecStep case 0x3e with `g_config == 0`.
+   */
   enabled?: boolean;
   /** `MusicVol` option in game units ; the channel level is `volume * 2` */
   musicVolume?: number;
@@ -206,12 +206,12 @@ export class MusicPlayer {
   }
 
   /**
- * Music_Start: the stream starts silent (`Snd_SetVolume(5, 0)`), but the volume variable is set to
- * `ftol(MusicVol *)` - the full target (bytes `66 a1 62 a9 9f 00 ... db 45 bc d8 0d d0 5d 8f 00 e8 66 a3 f4 8b 7a 00`;
- * the decompiler lost the `__ftol` argument;). So the fade-in of Game_Tick14ms finishes on its first tick
- * (`target <= volume + step`) and sets the full level: there is no audible fade-in, whatever `fadeInStep` (the step only
- * matters later, for the ducking). `fadeInStep` 0 is the same.
- */
+   * Music_Start: the stream starts silent (`Snd_SetVolume(5, 0)`), but the volume variable is set to
+   * `ftol(MusicVol *)` - the full target (bytes `66 a1 62 a9 9f 00 ... db 45 bc d8 0d d0 5d 8f 00 e8 66 a3 f4 8b 7a 00`;
+   * the decompiler lost the `__ftol` argument;). So the fade-in of Game_Tick14ms finishes on its first tick
+   * (`target <= volume + step`) and sets the full level: there is no audible fade-in, whatever `fadeInStep` (the step only
+   * matters later, for the ducking). `fadeInStep` 0 is the same.
+   */
   play(name: string, bytes: Uint8Array, fadeInStep = 0): void {
     this.trackName = name;
     const stream = new PmsStream(bytes);
@@ -232,12 +232,12 @@ export class MusicPlayer {
   private savedTrack: string | null = null;
 
   /**
- * `Save_LoadState`, music part: a saved track name different from the current one stops the
- * music (`Music_Stop`); the same one plays on. The original starts the track later, in `Scene_SetNumberAndMapFlag`
- * (`Music_Start(name, fade-in 1)`), when the scene of the save is loaded - `startSaved`. The current name is switched here at
- * once (`Music_Start` copies it first), so a second load before the track started compares with the track about to play, not
- * with the stale old name (the old code left the name and a repeated load of that track stayed silent). Music off: nothing.
- */
+   * `Save_LoadState`, music part: a saved track name different from the current one stops the
+   * music (`Music_Stop`); the same one plays on. The original starts the track later, in `Scene_SetNumberAndMapFlag`
+   * (`Music_Start(name, fade-in 1)`), when the scene of the save is loaded - `startSaved`. The current name is switched here at
+   * once (`Music_Start` copies it first), so a second load before the track started compares with the track about to play, not
+   * with the stale old name (the old code left the name and a repeated load of that track stayed silent). Music off: nothing.
+   */
   loadSaved(name: string): void {
     if (!this.enabled || name === this.trackName) return;
     this.stop();
@@ -251,9 +251,9 @@ export class MusicPlayer {
   }
 
   /**
- * `Scene_SetNumberAndMapFlag`, `g_gameLoaded` branch: starts the track of the save with fade-in step 1. `bytes` is the
- * file (undefined = missing: nothing plays, the name stays). The scene's MUSIC commands run after this and compare with the name.
- */
+   * `Scene_SetNumberAndMapFlag`, `g_gameLoaded` branch: starts the track of the save with fade-in step 1. `bytes` is the
+   * file (undefined = missing: nothing plays, the name stays). The scene's MUSIC commands run after this and compare with the name.
+   */
   startSaved(bytes: Uint8Array | undefined): void {
     const name = this.savedTrack;
     this.savedTrack = null;
@@ -262,11 +262,11 @@ export class MusicPlayer {
   }
 
   /**
- * Script command 0x3e (Script_ExecStep case 0x3e): switch to track `name`.
- * Returns "retry" while the old track fades out (the script re-runs the command: the exe
- * decrements the script counter), "done" otherwise. The same name is a no-op and a track
- * change does nothing at all without music (`enabled`), except remembering the name.
- */
+   * Script command 0x3e (Script_ExecStep case 0x3e): switch to track `name`.
+   * Returns "retry" while the old track fades out (the script re-runs the command: the exe
+   * decrements the script counter), "done" otherwise. The same name is a no-op and a track
+   * change does nothing at all without music (`enabled`), except remembering the name.
+   */
   command(name: string, fadeOutStep: number, fadeInStep: number, bytes: () => Uint8Array): "done" | "retry" {
     if (!this.enabled) {
       this.trackName = name;
@@ -285,10 +285,10 @@ export class MusicPlayer {
   }
 
   /**
- * / (dialogue ducking, only with the option MusDownOnOff): fade the
- * volume down or back up to `target` by `step` per tick. The exe computes the target with
- * floating point code the decompiler lost, so the host passes it.
- */
+   * / (dialogue ducking, only with the option MusDownOnOff): fade the
+   * volume down or back up to `target` by `step` per tick. The exe computes the target with
+   * floating point code the decompiler lost, so the host passes it.
+   */
   duck(direction: "down" | "up", step: number, target: number): void {
     this.duckMode = direction;
     this.fadeStep = step;
@@ -296,9 +296,9 @@ export class MusicPlayer {
   }
 
   /**
- * Option "MusicVol" changed: below 5 the music stops and is remembered as
- * muted; above 5 again it restarts the current track (TR02-22.PMS for the placeholder name).
- */
+   * Option "MusicVol" changed: below 5 the music stops and is remembered as
+   * muted; above 5 again it restarts the current track (TR02-22.PMS for the placeholder name).
+   */
   setMusicVolume(value: number): void {
     this.musicVolume = value;
     this.volume = value;

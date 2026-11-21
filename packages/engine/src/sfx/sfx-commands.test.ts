@@ -6,7 +6,18 @@ import { setup } from "./testing";
 
 const refs = (...r: Ref[]): Ref[] => r;
 function cmd(code: number, o: Partial<Command> = {}): Command {
-  return { code, word: "", line: 1, n1: "", n2: "", a: [0, 0, 0, 0, 0, 0, 0], f: null, c: null, refs: [], ...o };
+  return {
+    code,
+    word: "",
+    line: 1,
+    n1: "",
+    n2: "",
+    a: [0, 0, 0, 0, 0, 0, 0],
+    f: null,
+    c: null,
+    refs: [],
+    ...o,
+  };
 }
 const env = (a: number[], over: Partial<SfxEnv> = {}): SfxEnv => ({
   person: (n) => ({ POL: 3 })[n as "POL"] ?? -1,
@@ -20,7 +31,11 @@ describe("script commands", () => {
 
   it("EFFECT", () => {
     const { sfx, mixer } = setup();
-    const c = cmd(SFX_COMMANDS.EFFECT, { n1: "B.SND", a: [4, 1, 20, 20, 0, 0, 0], refs: sound("B.SND") });
+    const c = cmd(SFX_COMMANDS.EFFECT, {
+      n1: "B.SND",
+      a: [4, 1, 20, 20, 0, 0, 0],
+      refs: sound("B.SND"),
+    });
     expect(sfx.command(c, env([4, 1, 20]))).toBe("done");
     expect(mixer.isPlaying(2)).toBe(true);
     expect(mixer.level(2)).toBe(40);
@@ -59,14 +74,26 @@ describe("script commands", () => {
 
   it("WALKEFFECT of a person and of Jack", () => {
     const { sfx } = setup();
-    const person = cmd(SFX_COMMANDS.WALKEFFECT, { n1: "POL", a: [4, 2, 64, 3, 0, 40, 0], refs: [[4, "sound", "A.SND"]] });
+    const person = cmd(SFX_COMMANDS.WALKEFFECT, {
+      n1: "POL",
+      a: [4, 2, 64, 3, 0, 40, 0],
+      refs: [[4, "sound", "A.SND"]],
+    });
     sfx.command(person, env([4, 2, 64, 3, 0, 40]));
     expect(sfx.walkEffectOf(3, 4)).toEqual({ sound: 0, volume: 40 });
-    const off = cmd(SFX_COMMANDS.WALKEFFECT, { n1: "POL", a: [4, 2, 0, 3, 0, 0, 0], refs: [[4, "sound", "A.SND"]] });
+    const off = cmd(SFX_COMMANDS.WALKEFFECT, {
+      n1: "POL",
+      a: [4, 2, 0, 3, 0, 0, 0],
+      refs: [[4, "sound", "A.SND"]],
+    });
     sfx.command(off, env([4, 2, 0, 3, 0, 0]));
     expect(sfx.walkEffectOf(3, 4).sound).toBe(-1);
     const jack = (slot: number, n: string) =>
-      cmd(SFX_COMMANDS.WALKEFFECT, { n1: "JACK", a: [slot, 0, 0, JACK, 0, 0, 0], refs: [[4, "sound", n]] });
+      cmd(SFX_COMMANDS.WALKEFFECT, {
+        n1: "JACK",
+        a: [slot, 0, 0, JACK, 0, 0, 0],
+        refs: [[4, "sound", n]],
+      });
     sfx.command(jack(0, "B.SND"), env([0]));
     sfx.command(jack(1, "A.SND"), env([1]));
     expect([sfx.step1, sfx.step2]).toEqual([1, 0]);

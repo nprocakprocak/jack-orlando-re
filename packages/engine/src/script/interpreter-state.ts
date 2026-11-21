@@ -6,8 +6,8 @@ export type CommandResult =
   /** finished now */
   | "done"
   /** started something that ends later (walk, animation, insertion, talk); the host calls
- * `complete(macro)` at its end. With the flag "-" the macro waits for it (count
- * + = 0 in the game); with "+" it goes on. */
+   * `complete(macro)` at its end. With the flag "-" the macro waits for it (count
+   * + = 0 in the game); with "+" it goes on. */
   | "async"
   /** the macro waits until `complete(macro)` whatever the flag (DIALOG) */
   | "block"
@@ -41,7 +41,7 @@ export interface ScriptHost {
   /** rand() of the C library, 0..0x7fff (RANDOM, TALKRANDOM). */
   random?(): number;
   /** A macro ran past its last command. The game calls Jack_Stand when the last command
- * was a WALKTO of JACK (prologue). */
+   * was a WALKTO of JACK (prologue). */
   macroEnded?(name: string, last: Command | null): void;
   log?(entry: LogEntry): void;
 }

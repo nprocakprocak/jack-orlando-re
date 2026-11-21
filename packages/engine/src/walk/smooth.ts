@@ -124,7 +124,11 @@ export function findExit(world: WalkWorld, path: Point[], i: number, obj: number
       const s = perspThird(world.perspective, c.y);
       const fx = f32(DETOUR_PUSH - (dx > 0 ? 100 : 0));
       const my = f32(Math.imul(DETOUR_PUSH - (dy > 0 ? 100 : 0), iabs(ftol(slope))));
-      return { seg: j, edge: k, point: { x: s16(ftol(f32(c.x) + s * fx)), y: s16(ftol(f32(c.y) + s * my)) } };
+      return {
+        seg: j,
+        edge: k,
+        point: { x: s16(ftol(f32(c.x) + s * fx)), y: s16(ftol(f32(c.y) + s * my)) },
+      };
     }
   }
   return null;

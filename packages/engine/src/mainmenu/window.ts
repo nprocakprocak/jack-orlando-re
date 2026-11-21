@@ -5,7 +5,14 @@ import { textWidth } from "../formats/fnt";
 import { blend565 } from "../render/rgb565";
 import { darkenRect } from "../gui/darken";
 import {
-  centerOffset, COLOR_BLUE, COLOR_OUTLINE_BLACK, COLOR_WHITE, COLOR_YELLOW, drawButtonFrame, drawText, drawWindowFrame,
+  centerOffset,
+  COLOR_BLUE,
+  COLOR_OUTLINE_BLACK,
+  COLOR_WHITE,
+  COLOR_YELLOW,
+  drawButtonFrame,
+  drawText,
+  drawWindowFrame,
 } from "../gui/draw";
 import type { Surface16 } from "../render/surface";
 import { blitCopy, createSurface, strideOf } from "../render/surface";
@@ -68,7 +75,11 @@ export class MenuWindow {
   private readonly raised: Surface16[];
   private readonly sunken: Surface16[];
 
-  constructor(readonly font: Font, background: Surface16, texts: MainMenuTexts) {
+  constructor(
+    readonly font: Font,
+    background: Surface16,
+    texts: MainMenuTexts,
+  ) {
     const w = WINDOW_W;
     const h = WINDOW_H;
     this.scene = createSurface(w, h);

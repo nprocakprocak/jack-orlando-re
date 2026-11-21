@@ -49,9 +49,14 @@ export class MovieBuffer extends FrameBuffer {
   override applyDelta(src: Uint8Array, base = 0): number {
     const stopped = super.applyDelta(src, base);
     // the same walk as FrameBuffer.applyDelta, which has already validated it
-    walkDelta(src, base, () => {}, (pos, n) => {
-      this.runs.push(pos, n);
-    });
+    walkDelta(
+      src,
+      base,
+      () => {},
+      (pos, n) => {
+        this.runs.push(pos, n);
+      },
+    );
     return stopped;
   }
 }

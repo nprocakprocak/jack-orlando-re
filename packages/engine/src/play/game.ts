@@ -17,7 +17,8 @@ import * as inventoryBody from "./game-inventory";
 import * as viewBody from "./game-view";
 import * as dialogBody from "./game-dialog";
 import { allCursorFiles, lensMaskFiles, Cursor, CursorEnable } from "../cursor";
-import { DialogController, DIALOG_TABLES, ReleaseGate, type Side } from "../dialog";
+import type { DialogController } from "../dialog";
+import { DIALOG_TABLES, ReleaseGate, type Side } from "../dialog";
 import { decodeBm, type Image16 } from "../formats/bm";
 import { JACK_REFUSALS } from "./refusals";
 import { parseFnt, type Font } from "../formats/fnt";
@@ -28,21 +29,27 @@ import { PlayAudio } from "./audio";
 import { BUNDLED_REMAP } from "./facewin";
 import type { Overlay } from "./overlay";
 import { AreaState, type HitRect, type ClickOutcome } from "../areas";
-import { type Surface16, SceneTransition } from "../render";
+import type { SceneTransition } from "../render";
+import { type Surface16 } from "../render";
 import { createSurface } from "../render/surface";
 import { GuiMenu, loadMenuAssets, TEXTS_PL, type MenuAssets } from "../gui";
-import { BulletMenu, highlightImageName, ICONS, bulletImageName, VerbMenu } from "../bulletmenu";
+import type { VerbMenu } from "../bulletmenu";
+import { BulletMenu, highlightImageName, ICONS, bulletImageName } from "../bulletmenu";
 import { CoatScreen, Inventory, loadCoatAssets } from "../inventory";
 import { WheelAccumulator } from "../inventory/wheel";
 import { TopBar, loadTopBarAssets } from "../inventory/topbar";
 import { MiniMapScreen } from "../minimap";
 import { defaultConfig, type GameConfig } from "../settings/config";
 import { NoticeStrip } from "../keys/notice";
-import { SlotWindow, type JackPose as SavedPose, type LoadedState } from "../save";
-import { ScenePlayer, type SceneEvent } from "../scene";
-import { Interpreter, parseVariables, Variables } from "../script";
+import type { SlotWindow } from "../save";
+import { type JackPose as SavedPose, type LoadedState } from "../save";
+import type { ScenePlayer } from "../scene";
+import { type SceneEvent } from "../scene";
+import type { Interpreter } from "../script";
+import { parseVariables, Variables } from "../script";
 import type { EdgeState } from "./edgescroll";
-import { AutoIncClock, SceneHost } from "./host";
+import type { SceneHost } from "./host";
+import { AutoIncClock } from "./host";
 import type { GameFiles, LogLine, Phase, PlayInput, PlayOptions, PlayView } from "./types";
 import type { GameState, DialogAssets, RunningFilm, RunningMovie, JackRefusal } from "./game-state";
 
@@ -68,6 +75,8 @@ function bulletImageNames(): string[] {
   return [...names];
 }
 
+// Prototype wrappers stay one call. Prettier would split them past the 400-line ceiling.
+// prettier-ignore
 export class PlayGame {
   readonly vars: Variables;
   readonly cursor: Cursor;

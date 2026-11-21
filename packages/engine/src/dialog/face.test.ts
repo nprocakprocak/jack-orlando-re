@@ -19,8 +19,23 @@ const IMAGES: Record<string, Surface16> = {
   E0: img(2, 1, (x) => 300 + x),
   E1: img(2, 1, (x) => (x === 0 ? 0 : 311)),
 };
-const face: Face = { name: "T", face: "F", eyesPos: [10, 20], eyes: ["E0", "E1", "E0"], mouthPos: [5, 6], mouth: ["M0", "M1", "M0", "M0", "M0"] };
-const view = (o: Partial<FaceView>): FaceView => ({ slot: 2, face, source: "scene", mirrored: false, mouth: null, eyes: [], ...o });
+const face: Face = {
+  name: "T",
+  face: "F",
+  eyesPos: [10, 20],
+  eyes: ["E0", "E1", "E0"],
+  mouthPos: [5, 6],
+  mouth: ["M0", "M1", "M0", "M0", "M0"],
+};
+const view = (o: Partial<FaceView>): FaceView => ({
+  slot: 2,
+  face,
+  source: "scene",
+  mirrored: false,
+  mouth: null,
+  eyes: [],
+  ...o,
+});
 const compose = (v: FaceView) => composeFace(v, (n) => IMAGES[n]);
 
 describe("composeFace (synthetic)", () => {
@@ -78,6 +93,8 @@ describe("composeFace (synthetic)", () => {
     const s = composeFace({ ...view({ mouth: 0 }), face: wide }, (n) => IMAGES[n]);
     expect([at(s, 0, 2), at(s, 1, 2)]).toEqual([200, 201]);
     const edge: Face = { ...face, mouthPos: [0x81, 0] }; // drawn at 0x83: one column fits
-    expect(composeFace({ ...view({ mouth: 0 }), face: edge }, (n) => IMAGES[n]).pixels[2 * FACE_WINDOW + 0x83]).toBe(200);
+    expect(composeFace({ ...view({ mouth: 0 }), face: edge }, (n) => IMAGES[n]).pixels[2 * FACE_WINDOW + 0x83]).toBe(
+      200,
+    );
   });
 });

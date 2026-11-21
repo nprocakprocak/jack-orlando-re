@@ -54,7 +54,8 @@ export function loadLogos(menuPak: Uint8Array): Uint16Array[] {
   const pak = new Pak(menuPak);
   return LOGO_FILES.map((name) => {
     const img = decodeBm(pak.read(name));
-    if (img.width !== LOGO_W || img.height !== LOGO_H) throw new Error(`${name}: ${img.width}x${img.height}, expected 640x480`);
+    if (img.width !== LOGO_W || img.height !== LOGO_H)
+      throw new Error(`${name}: ${img.width}x${img.height}, expected 640x480`);
     return img.pixels;
   });
 }

@@ -38,7 +38,10 @@ export class CreditsScroller {
   /** the credits loop has started (the first RunWindow only shows the window) */
   running = false;
 
-  constructor(private readonly lines: readonly CreditLine[], private readonly fonts: { big: Font; small: Font }) {
+  constructor(
+    private readonly lines: readonly CreditLine[],
+    private readonly fonts: { big: Font; small: Font },
+  ) {
     let y = 0;
     for (let i = 0; i < INITIAL_LINES; i++) {
       const h = this.drawLine(y);
@@ -64,7 +67,15 @@ export class CreditsScroller {
     if (!big && line.style === "!") this.pause = PAUSE_TICKS;
     const font = big ? this.fonts.big : this.fonts.small;
     const text = encodeMazovia(line.text);
-    drawText(this.buf, font, text, centerOffset(CREDITS_W, textWidth(font, text)), y, COLOR_OUTLINE_BLACK, line.style === "1" ? COLOR_YELLOW : COLOR_WHITE);
+    drawText(
+      this.buf,
+      font,
+      text,
+      centerOffset(CREDITS_W, textWidth(font, text)),
+      y,
+      COLOR_OUTLINE_BLACK,
+      line.style === "1" ? COLOR_YELLOW : COLOR_WHITE,
+    );
     return CREDIT_ROW_HEIGHT[line.kind];
   }
 

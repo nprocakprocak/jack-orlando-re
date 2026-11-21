@@ -4,7 +4,15 @@ import { TurnPlayer, turnSequence, type TurnStep, type TurnTick } from "../anim/
 import type { Facing as Mirror } from "../anim/jack";
 import { f32, jackScale, type Point } from "./geometry";
 import type { WalkWorld } from "./smooth";
-import { followPlanTail, startSegment, walkStep, type Facing, type StepEvent, type WalkPlan, type Walker } from "./walker";
+import {
+  followPlanTail,
+  startSegment,
+  walkStep,
+  type Facing,
+  type StepEvent,
+  type WalkPlan,
+  type Walker,
+} from "./walker";
 
 /** A walker with the turn state of the original. */
 export interface TurningJack {
@@ -14,10 +22,10 @@ export interface TurningJack {
   /** set by every walk segment, cleared by Jack_Stand / / LOOKTO / ROTATETO */
   moving: boolean;
   /**
- * on-the-spot frames even while walking. Set by POINTROTATE, and — saving the old value
- * in pointRotateSaved — by every click/walk whose path has more than 2 points (Jack_WalkTo,
- * Game_Run click); restored on arrival (Game_Run step code, last point) and by Script_InterruptOutMacros.
- */
+   * on-the-spot frames even while walking. Set by POINTROTATE, and — saving the old value
+   * in pointRotateSaved — by every click/walk whose path has more than 2 points (Jack_WalkTo,
+   * Game_Run click); restored on arrival (Game_Run step code, last point) and by Script_InterruptOutMacros.
+   */
   pointRotate: boolean;
   /** POINTROTATE value to restore */
   pointRotateSaved: boolean;
@@ -29,7 +37,15 @@ export interface TurningJack {
 
 export function turningJack(walker: Walker, opts: { uniform?: boolean; pointRotate?: boolean } = {}): TurningJack {
   const pr = opts.pointRotate ?? false;
-  return { walker, turn: null, moving: false, pointRotate: pr, pointRotateSaved: pr, uniform: opts.uniform ?? false, walkFrame: null };
+  return {
+    walker,
+    turn: null,
+    moving: false,
+    pointRotate: pr,
+    pointRotateSaved: pr,
+    uniform: opts.uniform ?? false,
+    walkFrame: null,
+  };
 }
 
 /** POINTROTATE n (Script_ExecStep, opcode 0x6d): sets and. */
@@ -160,7 +176,13 @@ function tickTurn(tj: TurningJack, world: WalkWorld, out: TurningTick, ticksPerF
 }
 
 /** The walk branch of one tick, after the timer was decremented. Writes `out`. */
-function tickWalk(tj: TurningJack, world: WalkWorld, out: TurningTick, ticksPerStep: number, standOnArrival: boolean): void {
+function tickWalk(
+  tj: TurningJack,
+  world: WalkWorld,
+  out: TurningTick,
+  ticksPerStep: number,
+  standOnArrival: boolean,
+): void {
   const w = tj.walker;
   while (w.walking && w.timer <= 0) {
     w.timer = ticksPerStep;
@@ -193,7 +215,13 @@ function tickWalk(tj: TurningJack, world: WalkWorld, out: TurningTick, ticksPerS
  * blocks both — the caller does not call this then. `standOnArrival`: Game_Run calls Jack_Stand on
  * arrival unless a macro holds the player, which clears.
  */
-export function turningTick(tj: TurningJack, world: WalkWorld, ticksPerStep: number, ticksPerFrame: number, standOnArrival = true): TurningTick {
+export function turningTick(
+  tj: TurningJack,
+  world: WalkWorld,
+  ticksPerStep: number,
+  ticksPerFrame: number,
+  standOnArrival = true,
+): TurningTick {
   const w = tj.walker;
   const out: TurningTick = { walk: [], turn: null, turnStarted: false };
   w.timer--;

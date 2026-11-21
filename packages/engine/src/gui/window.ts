@@ -7,7 +7,14 @@ import type { Surface16 } from "../render/surface";
 import { blitCopy, blitKeyed, createSurface } from "../render/surface";
 import { encodeMazovia } from "../dialog/caption";
 import {
-  centerOffset, COLOR_BLUE, COLOR_WHITE, copyRect, drawButtonFrame, drawText, drawTextShadowed, drawWindowFrame,
+  centerOffset,
+  COLOR_BLUE,
+  COLOR_WHITE,
+  copyRect,
+  drawButtonFrame,
+  drawText,
+  drawTextShadowed,
+  drawWindowFrame,
 } from "./draw";
 
 export { SCREEN_HEIGHT as SCREEN_H, SCREEN_WIDTH as SCREEN_W };
@@ -73,11 +80,11 @@ export const HAND_TIP = { dx: -9, dy: -12 } as const;
 
 export class GuiWindow {
   /**
- * shift from the mouse the window is told about to the point it tests. The original tests the raw mouse
- * (g_mouseX in Gui_RunWindow and Gui_ButtonUnderMouse), i.e. the centre of the hand image, so a control
- * reacted while the tip was 9 px left of and 12 px above it. The user took that for a bug: a host that draws
- * the hand cursor sets HAND_TIP here so that a control reacts exactly under the tip; the start screen (system cursor) and the tests keep 0.
- */
+   * shift from the mouse the window is told about to the point it tests. The original tests the raw mouse
+   * (g_mouseX in Gui_RunWindow and Gui_ButtonUnderMouse), i.e. the centre of the hand image, so a control
+   * reacted while the tip was 9 px left of and 12 px above it. The user took that for a bug: a host that draws
+   * the hand cursor sets HAND_TIP here so that a control reacts exactly under the tip; the start screen (system cursor) and the tests keep 0.
+   */
   static tipShift: { readonly dx: number; readonly dy: number } = { dx: 0, dy: 0 };
   readonly x: number;
   readonly y: number;
@@ -94,10 +101,18 @@ export class GuiWindow {
   private drag: { idx: number; grab: number } | null = null;
 
   /**
- * Gui_CreateWindow: odd width -> +1; `center` puts it in the middle of the 640x480 screen.
- * `scene` is the screen view at the time of opening; the window ignores windows opened before it.
- */
-  constructor(private readonly assets: WindowAssets, scene: Surface16, x: number, y: number, w: number, h: number, center: boolean) {
+   * Gui_CreateWindow: odd width -> +1; `center` puts it in the middle of the 640x480 screen.
+   * `scene` is the screen view at the time of opening; the window ignores windows opened before it.
+   */
+  constructor(
+    private readonly assets: WindowAssets,
+    scene: Surface16,
+    x: number,
+    y: number,
+    w: number,
+    h: number,
+    center: boolean,
+  ) {
     if (w % 2) w++;
     if (center) {
       x = centerOffset(SCREEN_WIDTH, w);
@@ -131,15 +146,47 @@ export class GuiWindow {
   }
 
   /** Gui_AddButton. Buttons are numbered from 1 in creation order (Enter presses button 1). */
-  addButton(name: string, label: string, x: number, y: number, w: number, h: number, centered = true, big = true): void {
-    this.controls.push({ type: "button", name, x, y, w, h, big, centered, labels: [encodeMazovia(label)], value: 0, max: 0, thumbX: 0 });
+  addButton(
+    name: string,
+    label: string,
+    x: number,
+    y: number,
+    w: number,
+    h: number,
+    centered = true,
+    big = true,
+  ): void {
+    this.controls.push({
+      type: "button",
+      name,
+      x,
+      y,
+      w,
+      h,
+      big,
+      centered,
+      labels: [encodeMazovia(label)],
+      value: 0,
+      max: 0,
+      thumbX: 0,
+    });
   }
 
   /** Gui_AddToggle: 52 x 28, label "Nie" in state 0 and "Tak" in state 1. */
   addToggle(name: string, x: number, y: number, value: number, labelNo: string, labelYes: string): void {
     this.controls.push({
-      type: "toggle", name, x, y, w: TOGGLE_W, h: TOGGLE_H, big: true, centered: true,
-      labels: [encodeMazovia(labelNo), encodeMazovia(labelYes)], value: value ? 1 : 0, max: 0, thumbX: 0,
+      type: "toggle",
+      name,
+      x,
+      y,
+      w: TOGGLE_W,
+      h: TOGGLE_H,
+      big: true,
+      centered: true,
+      labels: [encodeMazovia(labelNo), encodeMazovia(labelYes)],
+      value: value ? 1 : 0,
+      max: 0,
+      thumbX: 0,
     });
   }
 
@@ -147,7 +194,17 @@ export class GuiWindow {
   addSlider(name: string, x: number, y: number, max: number, value: number): void {
     blitKeyed(this.assets.track, 0, 0, this.assets.track.width, this.assets.track.height, this.base, x, y);
     this.controls.push({
-      type: "slider", name, x, y, w: THUMB_W, h: THUMB_H, big: true, centered: false, labels: [], value, max,
+      type: "slider",
+      name,
+      x,
+      y,
+      w: THUMB_W,
+      h: THUMB_H,
+      big: true,
+      centered: false,
+      labels: [],
+      value,
+      max,
       thumbX: sliderThumbX(x, value, max),
     });
   }
@@ -167,9 +224,9 @@ export class GuiWindow {
   }
 
   /**
- * Control rectangle in window coordinates. The original's slider hit is its thumb sprite, 14 x 29;
- * (deliberate improvement): the whole track `RAMA.BM` (230 wide) and `GRAB_MARGIN_Y` above and below the thumb's band.
- */
+   * Control rectangle in window coordinates. The original's slider hit is its thumb sprite, 14 x 29;
+   * (deliberate improvement): the whole track `RAMA.BM` (230 wide) and `GRAB_MARGIN_Y` above and below the thumb's band.
+   */
   private rectOf(c: Control): { x: number; y: number; w: number; h: number } {
     return c.type === "slider"
       ? { x: c.x, y: c.y + THUMB_DY - GRAB_MARGIN_Y, w: TRACK_W, h: THUMB_H + 2 * GRAB_MARGIN_Y }
@@ -241,10 +298,10 @@ export class GuiWindow {
   }
 
   /**
- * Slider drag. The original (Gui_RunWindow type 2) moves the thumb by the mouse's dx and ends the drag when the mouse
- * leaves a narrow rectangle.: the thumb follows the mouse absolutely (minus the grab point),
- * clamped to the track (value 0..max), and the drag lasts until the button is released, wherever the mouse is.
- */
+   * Slider drag. The original (Gui_RunWindow type 2) moves the thumb by the mouse's dx and ends the drag when the mouse
+   * leaves a narrow rectangle.: the thumb follows the mouse absolutely (minus the grab point),
+   * clamped to the track (value 0..max), and the drag lasts until the button is released, wherever the mouse is.
+   */
   private dragTo(sx: number, release: boolean): GuiEvent[] {
     const d = this.drag!;
     const c = this.controls[d.idx];

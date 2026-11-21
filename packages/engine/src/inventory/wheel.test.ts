@@ -11,11 +11,22 @@ const surf = (w: number, h: number, v = 0x1234): Surface16 => {
   s.pixels.fill(v);
   return s;
 };
-const glyph = (code: number): Glyph => ({ code, offset: 0, width: 3, height: 5, pixels: new Uint8Array(15).fill(2) });
+const glyph = (code: number): Glyph => ({
+  code,
+  offset: 0,
+  width: 3,
+  height: 5,
+  pixels: new Uint8Array(15).fill(2),
+});
 const font: Font = { glyphs: Array.from({ length: 256 }, (_, i) => glyph(i)), dataEnd: 0 };
 const coatImages = () => ({
-  background: surf(640, 480), up: surf(40, 40), down: surf(40, 40), opt: surf(152, 72),
-  upPressed: surf(40, 40), downPressed: surf(40, 40), optPressed: surf(152, 72),
+  background: surf(640, 480),
+  up: surf(40, 40),
+  down: surf(40, 40),
+  opt: surf(152, 72),
+  upPressed: surf(40, 40),
+  downPressed: surf(40, 40),
+  optPressed: surf(152, 72),
 });
 const assets: CoatAssets = { civilian: coatImages(), uniform: coatImages(), font };
 
@@ -111,14 +122,31 @@ describe("CoatScreen.wheel", () => {
 });
 
 const barImages = {
-  options: surf(140, 70), optionsPressed: surf(140, 70), left: surf(37, 50), right: surf(41, 50),
-  strip: surf(792, 48), frame: surf(48, 41),
+  options: surf(140, 70),
+  optionsPressed: surf(140, 70),
+  left: surf(37, 50),
+  right: surf(41, 50),
+  strip: surf(792, 48),
+  frame: surf(48, 41),
 } as unknown as TopBarImages;
-const at = (x: number, y: number): BarInput => ({ x, y, down: false, pressed: false, right: false, rightPressed: false, inWindow: true });
+const at = (x: number, y: number): BarInput => ({
+  x,
+  y,
+  down: false,
+  pressed: false,
+  right: false,
+  rightPressed: false,
+  inWindow: true,
+});
 
 function makeBar() {
   const inv = new Inventory();
-  const host: TopBarHost = { startMacro: () => false, macroActive: () => false, itemName: () => null, requestOptions: () => undefined };
+  const host: TopBarHost = {
+    startMacro: () => false,
+    macroActive: () => false,
+    itemName: () => null,
+    requestOptions: () => undefined,
+  };
   const bar = new TopBar(inv, barImages, font, host);
   return { inv, bar };
 }

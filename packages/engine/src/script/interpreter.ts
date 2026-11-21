@@ -8,12 +8,27 @@
 // — logged and skipped, never blocking the script.
 import { ENDIF, IF_CODES, NAMES, WORDS, type Command, type Program } from "./compiler";
 import {
-  CO10_PERIOD, CO30_PERIOD, CO_RESET, CO_START, Variables,
-  type CommandContext, type CommandResult, type LogEntry, type MacroState, type ScriptHost,
+  CO10_PERIOD,
+  CO30_PERIOD,
+  CO_RESET,
+  CO_START,
+  Variables,
+  type CommandContext,
+  type LogEntry,
+  type MacroState,
+  type ScriptHost,
 } from "./interpreter-state";
 export {
-  CO10_PERIOD, CO30_PERIOD, CO_RESET, CO_START, Variables,
-  type CommandContext, type CommandResult, type LogEntry, type MacroState, type ScriptHost,
+  CO10_PERIOD,
+  CO30_PERIOD,
+  CO_RESET,
+  CO_START,
+  Variables,
+  type CommandContext,
+  type CommandResult,
+  type LogEntry,
+  type MacroState,
+  type ScriptHost,
 } from "./interpreter-state";
 
 const SYNC_STEP_LIMIT = 100000;
@@ -39,15 +54,26 @@ export class Interpreter {
   ) {
     this.vars = variables instanceof Variables ? variables : new Variables(variables);
     this.macros = program.macros.map((m) => ({
-      name: m.name, start: m.start, count: m.count, active: false, pc: m.start, blocked: false,
-      pending: 0, locked: false, wait: -1, unlock: false, out: false, destructor: null, last: null,
+      name: m.name,
+      start: m.start,
+      count: m.count,
+      active: false,
+      pc: m.start,
+      blocked: false,
+      pending: 0,
+      locked: false,
+      wait: -1,
+      unlock: false,
+      out: false,
+      destructor: null,
+      last: null,
     }));
   }
 
   // --- macro control ---------------------------------------------------------------------
 
   /** Script_StartMacro / Script_FindMacro: the first macro of that name that
- * is not BLOCKMACRO-ed starts from its first command (also when it is already running). */
+   * is not BLOCKMACRO-ed starts from its first command (also when it is already running). */
   start(name: string): number {
     const i = this.macros.findIndex((m) => m.name === name && !m.locked);
     if (i < 0) {
@@ -75,7 +101,7 @@ export class Interpreter {
   }
 
   /** The host's async operation started by macro i has ended (count−1, at 0 the
- * macro runs again). */
+   * macro runs again). */
   complete(i: number): void {
     const m = this.macros[i];
     if (!m) return;
@@ -84,13 +110,13 @@ export class Interpreter {
   }
 
   /**
- * Game_Run: [PRE] runs to its end at once, before the first frame. Waits are ignored (only the active
- * flag is checked); a "repeat" there would hang the game (the host must finish such commands itself, e.g. the music fade).
- * The loop is `while (macroActive[g_macroStarted]) Script_ExecStep(g_macroStarted)` (bytes `66 a1 78 f6 88 00 50 e8`:
- * `g_macroStarted` is re-read each pass), and `Script_FindMacro` sets it on every start - so an `ACTIVEMACRO`
- * inside [PRE] hands the loop over to the new macro, which then runs to its end before [PRE]'s own remaining commands
- * (those continue later in the frames, [PRE] stays active). A missing macro sets -1 and ends the loop.
- */
+   * Game_Run: [PRE] runs to its end at once, before the first frame. Waits are ignored (only the active
+   * flag is checked); a "repeat" there would hang the game (the host must finish such commands itself, e.g. the music fade).
+   * The loop is `while (macroActive[g_macroStarted]) Script_ExecStep(g_macroStarted)` (bytes `66 a1 78 f6 88 00 50 e8`:
+   * `g_macroStarted` is re-read each pass), and `Script_FindMacro` sets it on every start - so an `ACTIVEMACRO`
+   * inside [PRE] hands the loop over to the new macro, which then runs to its end before [PRE]'s own remaining commands
+   * (those continue later in the frames, [PRE] stays active). A missing macro sets -1 and ends the loop.
+   */
   runSynchronous(name = "PRE"): void {
     const first = this.start(name);
     if (first < 0) return;
@@ -99,7 +125,11 @@ export class Interpreter {
       for (let n = 0; this.syncCurrent >= 0 && this.macros[this.syncCurrent].active; n++) {
         if (n >= SYNC_STEP_LIMIT) {
           const m = this.macros[this.syncCurrent];
-          this.emit({ kind: "hang", macro: m.name, text: `[${m.name}] does not end (the game hangs here)` });
+          this.emit({
+            kind: "hang",
+            macro: m.name,
+            text: `[${m.name}] does not end (the game hangs here)`,
+          });
           m.active = false;
           break;
         }
@@ -111,8 +141,8 @@ export class Interpreter {
   }
 
   /** Script_InterruptOutMacros, called by the click handlers (Area_ClickMacro): every
- * running OUTMACRO macro other than `except` stops and its destructor starts — the macro
- * named by MACRODESTRUCTOR, else "~NAME". */
+   * running OUTMACRO macro other than `except` stops and its destructor starts — the macro
+   * named by MACRODESTRUCTOR, else "~NAME". */
   interruptOutMacros(except = -1): void {
     this.macros.forEach((m, i) => {
       if (!m.out || !m.active || i === except) return;
@@ -123,7 +153,7 @@ export class Interpreter {
   }
 
   /** True while a running macro has no UNLOCK: Game_Run then sets
- * `g_macroPlayerLocked` and the player's clicks wait. */
+   * `g_macroPlayerLocked` and the player's clicks wait. */
   playerLocked(): boolean {
     return this.macros.some((m) => m.active && !m.unlock);
   }
@@ -134,7 +164,7 @@ export class Interpreter {
   }
 
   /** One frame of Game_Run: timed macros, then one command of every active,
- * not waiting macro in table order. */
+   * not waiting macro in table order. */
   tick(): void {
     if (this.coCounter < 0) {
       this.start("CO60");
@@ -215,7 +245,9 @@ export class Interpreter {
         break;
       case WORDS.IFF: {
         // IFF var op value: op 0 ">", 1 "=", 2 "<"
-        const v = ctx.arg(2), x = cmd.a[0], op = cmd.a[3];
+        const v = ctx.arg(2),
+          x = cmd.a[0],
+          op = cmd.a[3];
         const ok = (op === 0 && v > x) || (op === 1 && v === x) || (op === 2 && v < x);
         if (!ok) this.skipBlock(m, false);
         break;
@@ -244,7 +276,8 @@ export class Interpreter {
         break;
       case WORDS.BLOCKMACRO: // BLOCKMACRO name|ALL
       case WORDS.UNBLOCKMACRO: // UNBLOCKMACRO name|ALL
-        for (const x of this.macros) if (cmd.n1 === "ALL" || x.name === cmd.n1) x.locked = cmd.code === WORDS.BLOCKMACRO;
+        for (const x of this.macros)
+          if (cmd.n1 === "ALL" || x.name === cmd.n1) x.locked = cmd.code === WORDS.BLOCKMACRO;
         break;
       case WORDS.RANDOM: {
         // RANDOM var lo hi
@@ -280,15 +313,20 @@ export class Interpreter {
         m.pc--;
         break;
       case "unhandled":
-        this.emit({ kind: "unhandled", macro: m.name, command: cmd, text: `${NAMES[cmd.code] ?? cmd.word} (line ${cmd.line}) skipped` });
+        this.emit({
+          kind: "unhandled",
+          macro: m.name,
+          command: cmd,
+          text: `${NAMES[cmd.code] ?? cmd.word} (line ${cmd.line}) skipped`,
+        });
         break;
       default:
     }
   }
 
   /** A false condition: skip to the matching ENDIF counting the block openers of IF_CODES.
- * IFANSWER's loop (case 0xd) tests three of them on a stale local, so there only IFANSWER
- * and IF nest (a bug of the game). */
+   * IFANSWER's loop (case 0xd) tests three of them on a stale local, so there only IFANSWER
+   * and IF nest (a bug of the game). */
   private skipBlock(m: MacroState, ifAnswer: boolean): void {
     const cmds = this.program.commands;
     let depth = 1;
@@ -305,7 +343,13 @@ export class Interpreter {
     const ref = cmd.refs.find((r) => r[0] === slot && r[1] === "var");
     if (!ref) return;
     const name = ref[2] as string;
-    if (!this.vars.has(name)) this.emit({ kind: "missing-var", macro: this.currentName(), command: cmd, text: `no variable ${name}` });
+    if (!this.vars.has(name))
+      this.emit({
+        kind: "missing-var",
+        macro: this.currentName(),
+        command: cmd,
+        text: `no variable ${name}`,
+      });
     this.vars.set(name, v);
   }
 
@@ -332,47 +376,4 @@ export class Interpreter {
   }
 }
 
-/** How the game waits on a command (for hosts): "async" — counted operation, the flag "-"
- * waits for its end; "talk" — "-" waits for the end of the line; "block" — always waits;
- * "poll" — the command repeats every tick until its condition holds. */
-export const WAIT_KIND: Readonly<Record<number, "async" | "talk" | "block" | "poll">> = {
-  0x05: "async", // ANIMA (counted for modes 1, 3, 5)
-  0x07: "async", // WALKTO
-  0x08: "async", // RUNINSERTION
-  0x0b: "talk", // TALK
-  0x0c: "block", // DIALOG
-  0x17: "async", // WALKTODIR
-  0x18: "poll", // SHOWFACE
-  0x21: "talk", // TALKRANDOM
-  0x3f: "poll", // MUSIC (while the old track fades)
-  0x49: "poll", // WAITWHILE
-  0x4d: "poll", // WAITWHILEANIMA
-  0x56: "poll", // WAITTOANIMAFRAME
-  0x67: "poll", // WAITWHILEEFFECT
-  0x6f: "poll", // DONOTHING
-  0x74: "poll", // PAUSE
-  0x77: "async", // ROTATETO
-  0x88: "talk", // TALKRANDOMINDEX
-  0x90: "poll", // PICKUP
-  0x92: "poll", // GIVE
-  0x93: "poll", // SHOOTF
-  0x94: "poll", // SLAPF
-};
-
-/** A host that implements nothing: every command is logged as unhandled. */
-export class LoggingHost implements ScriptHost {
-  readonly entries: LogEntry[] = [];
-  command(): CommandResult {
-    return "unhandled";
-  }
-  log(e: LogEntry): void {
-    this.entries.push(e);
-  }
-}
-
-/** Scene name of GOTOSCENE (case 0x14): the extension is cut at the last "." and
- * replaced, so "SC026.CFG" and "SC026" both mean SC026. */
-export function gotoSceneName(arg: string): string {
-  const i = arg.lastIndexOf(".");
-  return (i > 0 ? arg.slice(0, i) : arg).toUpperCase();
-}
+export { LoggingHost, WAIT_KIND, gotoSceneName } from "./interpreter-wait";

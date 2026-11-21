@@ -6,13 +6,21 @@
 // to indices while compiling, the engine resolves them when a command runs.
 
 import { Tokens } from "../formats/global";
-import {
-  FLAG_MAX, MACRO_NAME_MAX, NAME_MAX, V,
-  type Command, type Program,
-} from "./compiler-words";
+import { FLAG_MAX, MACRO_NAME_MAX, NAME_MAX, V, type Command, type Program } from "./compiler-words";
 export {
-  DONOTHING, ENDIF, FLAG_MAX, IF_CODES, JACK, MACRO_NAME_MAX, MAX_COMMANDS, MAX_MACROS,
-  NAME_MAX, NAMES, WORDS, MacroError, stripBrackets,
+  DONOTHING,
+  ENDIF,
+  FLAG_MAX,
+  IF_CODES,
+  JACK,
+  MACRO_NAME_MAX,
+  MAX_COMMANDS,
+  MAX_MACROS,
+  NAME_MAX,
+  NAMES,
+  WORDS,
+  MacroError,
+  stripBrackets,
 } from "./compiler-words";
 export type { Command, Macro, Program, Ref, RefKind } from "./compiler-words";
 export { compileMcc } from "./compiler-emit";
@@ -40,7 +48,11 @@ export function parseVariables(plain: Uint8Array): Map<string, number> {
 }
 
 /** Problems the game would get wrong (same checks as the external checker problems_of). */
-export function problemsOf(program: Program, variables: ReadonlyMap<string, number>, known: ReadonlySet<string> = new Set()): string[] {
+export function problemsOf(
+  program: Program,
+  variables: ReadonlyMap<string, number>,
+  known: ReadonlySet<string> = new Set(),
+): string[] {
   const out: string[] = [];
   for (const m of program.macros) {
     if (m.name.length > MACRO_NAME_MAX) out.push(`[${m.name}]: name longer than ${MACRO_NAME_MAX}`);
@@ -50,7 +62,8 @@ export function problemsOf(program: Program, variables: ReadonlyMap<string, numb
     for (const f of ["n1", "n2"] as const) {
       if (cmd[f].length > NAME_MAX) out.push(`${where}: ${f} "${cmd[f]}" longer than ${NAME_MAX}`);
     }
-    if (cmd.flag !== undefined && cmd.flag.length > FLAG_MAX) out.push(`${where}: flag "${cmd.flag}" overruns the compiler's stack`);
+    if (cmd.flag !== undefined && cmd.flag.length > FLAG_MAX)
+      out.push(`${where}: flag "${cmd.flag}" overruns the compiler's stack`);
     for (const [, kind, name] of cmd.refs) {
       if (kind === V && !variables.has(name as string) && !known.has(name as string)) {
         out.push(`${where}: variable "${name}" not in VARIABLE.ALL`);

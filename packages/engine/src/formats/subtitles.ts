@@ -48,7 +48,12 @@ export function rgb888To565(r: number, g: number, b: number): number {
   return ((r & 0xf8) << 8) | ((g & 0xfc) << 3) | (b >> 3);
 }
 
-function readSubtitleHeader(v: DataView, data: Uint8Array, pos: number, intro: boolean): { sub: Subtitle; w: number; h: number } {
+function readSubtitleHeader(
+  v: DataView,
+  data: Uint8Array,
+  pos: number,
+  intro: boolean,
+): { sub: Subtitle; w: number; h: number } {
   let sub: Subtitle;
   let w: number;
   let h: number;
@@ -88,7 +93,14 @@ function readSubtitleHeader(v: DataView, data: Uint8Array, pos: number, intro: b
   return { sub, w, h };
 }
 
-function readSubtitlePixels(sub: Subtitle, v: DataView, data: Uint8Array, pos: number, n: number, intro: boolean): void {
+function readSubtitlePixels(
+  sub: Subtitle,
+  v: DataView,
+  data: Uint8Array,
+  pos: number,
+  n: number,
+  intro: boolean,
+): void {
   const pixels = new Uint16Array(n);
   if (intro) {
     const lut = new Uint16Array(256);
@@ -127,7 +139,9 @@ export function parseSubtitles(data: Uint8Array, intro: boolean): Subtitle[] {
       throw new SubtitlesError(`record at 0x${at.toString(16)}: ${w}x${h} exceeds the mapped-picture buffer`);
     }
     if (pos + size > data.length) {
-      throw new SubtitlesError(`record at 0x${at.toString(16)}: pixels truncated (${size} bytes needed, ${data.length - pos} left)`);
+      throw new SubtitlesError(
+        `record at 0x${at.toString(16)}: pixels truncated (${size} bytes needed, ${data.length - pos} left)`,
+      );
     }
     readSubtitlePixels(sub, v, data, pos, n, intro);
     pos += size;
@@ -147,9 +161,9 @@ export class SubtitleTrack {
   ) {}
 
   /**
- * Subtitle to draw after video frame `frame` (1-based counter) of `segment`, or null.
- * Past the last record the game reads zero-filled memory, which never matches.
- */
+   * Subtitle to draw after video frame `frame` (1-based counter) of `segment`, or null.
+   * Past the last record the game reads zero-filled memory, which never matches.
+   */
   step(segment: number, frame: number): Subtitle | null {
     const subs = this.subs;
     const matches = (s: Subtitle, f: number) => frame === f && (!this.intro || segment === s.segment);
@@ -187,7 +201,9 @@ export function verifySubtitles(name: string, data: Uint8Array): string[] {
     if (s.width <= 0 || s.height <= 0) problems.push(`${where}: empty picture ${s.width}x${s.height}`);
     if (s.first >= s.last) problems.push(`${where}: first ${s.first} >= last ${s.last}`);
     if (s.x + s.width > SCREEN_WIDTH || s.y + s.height > SCREEN_HEIGHT) {
-      problems.push(`${where}: ${s.width}x${s.height} at ${s.x},${s.y} leaves the ${SCREEN_WIDTH}x${SCREEN_HEIGHT} screen`);
+      problems.push(
+        `${where}: ${s.width}x${s.height} at ${s.x},${s.y} leaves the ${SCREEN_WIDTH}x${SCREEN_HEIGHT} screen`,
+      );
     }
     if (s.unk) problems.push(`${where}: unk ${s.unk} (documented as 0)`);
     if (intro && [...s.rawValues!].some((b) => b !== 0 && b !== INTRO_CLEAR && b !== INTRO_BODY)) {
@@ -197,7 +213,10 @@ export function verifySubtitles(name: string, data: Uint8Array): string[] {
   });
   if (intro) {
     const sorted = subs.every(
-      (s, i) => i === 0 || s.segment! > subs[i - 1].segment! || (s.segment === subs[i - 1].segment && s.first >= subs[i - 1].first),
+      (s, i) =>
+        i === 0 ||
+        s.segment! > subs[i - 1].segment! ||
+        (s.segment === subs[i - 1].segment && s.first >= subs[i - 1].first),
     );
     if (!sorted) problems.push("records not sorted by (segment, first)");
   }

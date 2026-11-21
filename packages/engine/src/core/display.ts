@@ -135,7 +135,8 @@ function layoutCanvas(canvas: HTMLCanvasElement, options: DisplayOptions, doc: D
           logicalWidth: lw,
           logicalHeight: lh,
           targetCssWidth: options.targetCssWidth ?? lw,
-          maxCssWidth: doc.documentElement.clientWidth > margin + 64 ? doc.documentElement.clientWidth - margin : Infinity,
+          maxCssWidth:
+            doc.documentElement.clientWidth > margin + 64 ? doc.documentElement.clientWidth - margin : Infinity,
           dpr,
           mode: options.mode ?? parseScaleMode(win.location.search),
         });

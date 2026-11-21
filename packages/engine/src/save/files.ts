@@ -39,7 +39,12 @@ export function withDefaultExtension(name: string, light: boolean): string {
 /** Filter of the original: a single entry whose description is the pattern, `(*.SAV)` / `(*.SVL)`. */
 export function pickerTypes(light: boolean) {
   const ext = extensionOf(light);
-  return [{ description: `(*.${ext})`, accept: { "application/octet-stream": [`.${ext}`, `.${ext.toLowerCase()}`] } }];
+  return [
+    {
+      description: `(*.${ext})`,
+      accept: { "application/octet-stream": [`.${ext}`, `.${ext.toLowerCase()}`] },
+    },
+  ];
 }
 
 const isAbort = (e: unknown) => e instanceof Error && e.name === "AbortError";
@@ -56,7 +61,10 @@ export class BrowserFilePicker implements FilePicker {
     const name = withDefaultExtension(suggestedName, light);
     if (this.env.showSaveFilePicker) {
       try {
-        const h = await this.env.showSaveFilePicker({ suggestedName: name, types: pickerTypes(light) });
+        const h = await this.env.showSaveFilePicker({
+          suggestedName: name,
+          types: pickerTypes(light),
+        });
         const w = await h.createWritable!();
         await w.write(data);
         await w.close();
@@ -74,7 +82,10 @@ export class BrowserFilePicker implements FilePicker {
   async open(light: boolean): Promise<OpenedFile | null> {
     if (this.env.showOpenFilePicker) {
       try {
-        const [h] = await this.env.showOpenFilePicker({ types: pickerTypes(light), multiple: false });
+        const [h] = await this.env.showOpenFilePicker({
+          types: pickerTypes(light),
+          multiple: false,
+        });
         if (!h) return null;
         const f = await h.getFile!();
         return { name: h.name, data: new Uint8Array(await f.arrayBuffer()) };

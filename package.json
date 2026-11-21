@@ -8,7 +8,10 @@
     "examples/*"
   ],
   "scripts": {
-    "check": "npm run check -w jack-orlando-re && npm run check -w jack-orlando-browser",
+    "check": "eslint . && prettier --check . && npm run check -w jack-orlando-re && npm run check -w jack-orlando-browser",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "build": "npm run build -w jack-orlando-re && npm run build -w jack-orlando-browser",
     "test": "npm test -w jack-orlando-re && npm test -w jack-orlando-browser",
     "test:zip": "npm run test:zip -w jack-orlando-re",
@@ -16,5 +19,12 @@
     "play:desktop": "npm run play -w jack-orlando-desktop --",
     "dev": "npm run dev -w jack-orlando-play",
     "dev:embed": "npm run dev -w jack-orlando-embed"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.15.0",
+    "globals": "^17.14.0",
+    "prettier": "^3.10.1",
+    "typescript-eslint": "^8.73.0"
   }
 }

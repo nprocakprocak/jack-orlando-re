@@ -19,8 +19,16 @@ const BIG = [
   [0, 0, 0, 1000, 1000, 1000],
   [0, 0, 1000, 0, 1000, 1000],
 ];
-const WORLD: WalkWorld = { walk: BIG, objects: [], perspective: { horizonY: 0, refY: 1, refScale: 1 } };
-const direct = (to: Point): WalkPlan => ({ path: [{ x: 0, y: 0 }, to], direct: false, fromOutside: false });
+const WORLD: WalkWorld = {
+  walk: BIG,
+  objects: [],
+  perspective: { horizonY: 0, refY: 1, refScale: 1 },
+};
+const direct = (to: Point): WalkPlan => ({
+  path: [{ x: 0, y: 0 }, to],
+  direct: false,
+  fromOutside: false,
+});
 const STEP = stepTicks(1);
 const FRAME = turnFrameTicks(1);
 
@@ -49,7 +57,16 @@ describe("turn in the walk (Jack_WalkToPoint, Game_Run)", () => {
       if (r.turn?.frame) frames.push(r.turn.frame.file);
       expect([tj.walker.x, tj.walker.y]).toEqual([500, 500]);
     }
-    expect(frames).toEqual(["ROTP02.PBM", "ROTP03.PBM", "ROTP04.PBM", "ROTP05.PBM", "ROTP06.PBM", "ROTP07.PBM", "ROTP08.PBM", "ROTP09.PBM"]);
+    expect(frames).toEqual([
+      "ROTP02.PBM",
+      "ROTP03.PBM",
+      "ROTP04.PBM",
+      "ROTP05.PBM",
+      "ROTP06.PBM",
+      "ROTP07.PBM",
+      "ROTP08.PBM",
+      "ROTP09.PBM",
+    ]);
     expect(ticks).toBe(1 + 7 * FRAME);
     // the next walk step comes a full frame delay after the last turn frame
     let moved = 0;
@@ -65,7 +82,15 @@ describe("turn in the walk (Jack_WalkToPoint, Game_Run)", () => {
 
   it("corner of a path (> 2 points): POINTROTATE is forced, so the turn is on the spot (ROTP), no shift", () => {
     const tj = jack(200, 500, 1, -1);
-    const plan: WalkPlan = { path: [{ x: 200, y: 500 }, { x: 600, y: 500 }, { x: 600, y: 900 }], direct: false, fromOutside: false };
+    const plan: WalkPlan = {
+      path: [
+        { x: 200, y: 500 },
+        { x: 600, y: 500 },
+        { x: 600, y: 900 },
+      ],
+      direct: false,
+      fromOutside: false,
+    };
     followPlanTurning(tj, plan);
     expect(tj.turn).toBeNull(); // already facing right
     expect([tj.pointRotate, tj.pointRotateSaved]).toEqual([true, false]);
@@ -120,7 +145,15 @@ describe("turn in the walk (Jack_WalkToPoint, Game_Run)", () => {
   it("setPointRotate / restorePointRotate: POINTROTATE survives a forced walk", () => {
     const tj = jack(200, 500, 1, -1);
     setPointRotate(tj, true);
-    followPlanTurning(tj, { path: [{ x: 200, y: 500 }, { x: 600, y: 500 }, { x: 600, y: 900 }], direct: false, fromOutside: false });
+    followPlanTurning(tj, {
+      path: [
+        { x: 200, y: 500 },
+        { x: 600, y: 500 },
+        { x: 600, y: 900 },
+      ],
+      direct: false,
+      fromOutside: false,
+    });
     expect([tj.pointRotate, tj.pointRotateSaved]).toEqual([true, true]);
     while (tj.walker.walking || tj.turn) turningTick(tj, WORLD, STEP, FRAME);
     expect(tj.pointRotate).toBe(true);

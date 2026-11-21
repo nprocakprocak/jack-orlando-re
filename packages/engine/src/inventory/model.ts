@@ -27,9 +27,9 @@ export class Inventory {
   /** The item on the cursor (`g_cursorMode == 5`: `g_heldItemName` / `g_heldItemImage`). */
   held: Item | null = null;
   /**
- * The item that was in hand when a combine macro started: the cursor is empty again but the macro's
- * `NOHAVETOOL <held name>` still finds and removes it (`Script_ExecStep` case 0x46 compares with `g_heldItemName`).
- */
+   * The item that was in hand when a combine macro started: the cursor is empty again but the macro's
+   * `NOHAVETOOL <held name>` still finds and removes it (`Script_ExecStep` case 0x46 compares with `g_heldItemName`).
+   */
   limbo: Item | null = null;
   /** Variable MARZECZY: ≠ 0 = region A (0..65, scrollable), 0 = region B (66..83; Jack in the uniform). Start value 1. */
   marzeczy = 1;

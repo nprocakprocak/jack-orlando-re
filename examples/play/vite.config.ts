@@ -33,8 +33,7 @@ function locateGameFile(root: string, segments: readonly string[]): string | nul
       return null;
     }
     const match =
-      names.find((name) => name === segment) ??
-      names.find((name) => name.toUpperCase() === segment.toUpperCase());
+      names.find((name) => name === segment) ?? names.find((name) => name.toUpperCase() === segment.toUpperCase());
     if (!match) return null;
     current = path.join(current, match);
   }
@@ -92,13 +91,22 @@ export default defineConfig({
     alias: [
       // Exact package names, not prefixes. jack-orlando-re/node is a file,
       // not a folder, so it is listed before the <name>/index.ts pattern.
-      { find: "jack-orlando-browser", replacement: path.join(repoRoot, "packages/browser/src/index.ts") },
-      { find: "jack-orlando-re/node", replacement: path.join(repoRoot, "packages/engine/src/node.ts") },
+      {
+        find: "jack-orlando-browser",
+        replacement: path.join(repoRoot, "packages/browser/src/index.ts"),
+      },
+      {
+        find: "jack-orlando-re/node",
+        replacement: path.join(repoRoot, "packages/engine/src/node.ts"),
+      },
       {
         find: /^jack-orlando-re\/(.+)$/,
         replacement: path.join(repoRoot, "packages/engine/src/$1/index.ts"),
       },
-      { find: /^jack-orlando-re$/, replacement: path.join(repoRoot, "packages/engine/src/index.ts") },
+      {
+        find: /^jack-orlando-re$/,
+        replacement: path.join(repoRoot, "packages/engine/src/index.ts"),
+      },
     ],
   },
   server: {

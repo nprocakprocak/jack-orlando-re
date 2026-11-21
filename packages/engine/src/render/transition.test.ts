@@ -1,8 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { createSurface } from "./surface";
-import {
-  FADE_H, FADE_STEPS, FADE_W, mixStep, RED_STEP, SceneTransition, STEP_MS,
-} from "./transition";
+import { FADE_H, FADE_STEPS, FADE_W, mixStep, RED_STEP, SceneTransition, STEP_MS } from "./transition";
 
 const px = (r: number, g: number, b: number): number => (r << 11) | (g << 5) | b;
 const mixOne = (c: number, t: number): number => {

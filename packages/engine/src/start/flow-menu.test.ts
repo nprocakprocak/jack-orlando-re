@@ -1,7 +1,18 @@
 // GameFlow driven by the real MainMenu on synthetic pictures: the same events a host would feed. No game files.
 import { describe, expect, it } from "vitest";
 import { blockFont, flat } from "../gui/fixtures";
-import { BUTTON_H, BUTTON_W, BUTTON_X, BUTTON_YS, LOADING_MIN_MS, MainMenu, WINDOW_X, WINDOW_Y, type MainMenuAssets, type MainMenuEvent } from "../mainmenu";
+import {
+  BUTTON_H,
+  BUTTON_W,
+  BUTTON_X,
+  BUTTON_YS,
+  LOADING_MIN_MS,
+  MainMenu,
+  WINDOW_X,
+  WINDOW_Y,
+  type MainMenuAssets,
+  type MainMenuEvent,
+} from "../mainmenu";
 import { deltaChunk, flxHeader, paletteChunk, rectChunk, u32 } from "../video/synthetic";
 import { GameFlow, type FlowCommand, type FlowEvent } from "./flow";
 
@@ -48,7 +59,11 @@ class Driver {
   send(e: FlowEvent): void {
     for (const c of this.flow.handle(e)) {
       this.commands.push(c);
-      if (c.type === "openMenu") this.menu = new MainMenu(assets(), { sound: false, onEvent: (m: MainMenuEvent) => m.kind === "result" && this.send({ type: "menuResult", result: m.result }) });
+      if (c.type === "openMenu")
+        this.menu = new MainMenu(assets(), {
+          sound: false,
+          onEvent: (m: MainMenuEvent) => m.kind === "result" && this.send({ type: "menuResult", result: m.result }),
+        });
       if (c.type === "menuReturnFromIntro") this.menu!.returnFromIntro();
     }
   }
@@ -127,7 +142,10 @@ describe("GameFlow with the real MainMenu", () => {
   });
 
   it("Exit z gry and Esc: the closing animation, then the start screen", () => {
-    for (const quit of [(d: Driver) => d.press(3), (d: Driver) => (d.until("menu"), d.step(1500), d.menu!.keyDown("Escape"))]) {
+    for (const quit of [
+      (d: Driver) => d.press(3),
+      (d: Driver) => (d.until("menu"), d.step(1500), d.menu!.keyDown("Escape")),
+    ]) {
       const d = new Driver();
       quit(d);
       d.until("start");

@@ -29,7 +29,14 @@ describe("map: the scenes without control", () => {
   it("are exactly SC000D and SC008B (strcmp with the .CCG name)", () => {
     expect(MAP_SCENE).toBe("SC000D");
     expect(["SC000D", "SC008B"].map(isNoControlScene)).toEqual([true, true]);
-    expect(["SC000", "SC000C", "SC008", "SC008A", "SC032", "sc000d"].map(isNoControlScene)).toEqual([false, false, false, false, false, false]);
+    expect(["SC000", "SC000C", "SC008", "SC008A", "SC032", "sc000d"].map(isNoControlScene)).toEqual([
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+    ]);
   });
 
   it("zero the cursor mode and the verb at their start; other scenes keep the verb", () => {
@@ -39,7 +46,11 @@ describe("map: the scenes without control", () => {
   });
 
   it("PlayGame.startNoControl: the lens chosen in SC006 is gone on the map and after it", () => {
-    const g = Object.create(PlayGame.prototype) as unknown as { cursor: { mode: number }; verbMode: number; startNoControl(n: string): void };
+    const g = Object.create(PlayGame.prototype) as unknown as {
+      cursor: { mode: number };
+      verbMode: number;
+      startNoControl(n: string): void;
+    };
     g.cursor = { mode: 1 };
     g.verbMode = 1;
     g.startNoControl("SC006");
@@ -52,7 +63,11 @@ describe("map: the scenes without control", () => {
 describe("map: the patterns of SC000D.MCC on a synthetic script", () => {
   it("[PRE] cycles CITYCOUNT 2..7, 1, 2 (Inc, then 8 -> 1): one value per visit picks the cars of the drive", () => {
     const host = new Host();
-    const it = new Interpreter(compileMcc(bytes("[PRE] Inc CITYCOUNT If CITYCOUNT 8 Let CITYCOUNT 1 EndIf")), host, new Map([["CITYCOUNT", 0]]));
+    const it = new Interpreter(
+      compileMcc(bytes("[PRE] Inc CITYCOUNT If CITYCOUNT 8 Let CITYCOUNT 1 EndIf")),
+      host,
+      new Map([["CITYCOUNT", 0]]),
+    );
     const seen: number[] = [];
     for (let k = 0; k < 9; k++) {
       it.runSynchronous("PRE");
@@ -66,7 +81,14 @@ describe("map: the patterns of SC000D.MCC on a synthetic script", () => {
       "[CZY] UnLock If LOC5 1 DeactiveSelf EndIf IfF MOUSEX < 641 IfF MOUSEX > 541 Anima LAB 0 3 3 0 - EndIf EndIf ActiveMacro CALL_CZY " +
       "[CALL_CZY] UnLock ActiveMacro CZY";
     const host = new Host();
-    const it = new Interpreter(compileMcc(bytes(text)), host, new Map([["LOC5", 0], ["MOUSEX", 0]]));
+    const it = new Interpreter(
+      compileMcc(bytes(text)),
+      host,
+      new Map([
+        ["LOC5", 0],
+        ["MOUSEX", 0],
+      ]),
+    );
     it.start("CZY");
     for (let k = 0; k < 10; k++) {
       it.tick();
@@ -83,9 +105,18 @@ describe("map: the patterns of SC000D.MCC on a synthetic script", () => {
 
 describe("map: Area_Contains on the areas of SC000D (numbers from SC000D.ACE)", () => {
   const hit = (tris: number[][], x: number, y: number) => tris.some((t) => insideTriangleSides(t, x, y));
-  const HAFFEN = [[591, 3, 590, 75, 769, 74], [590, 2, 770, 75, 770, 2]];
-  const JACKH = [[541, 314, 541, 254, 641, 314], [542, 255, 640, 313, 641, 254]];
-  const COCL = [[347, 185, 238, 123, 347, 123], [240, 124, 238, 185, 347, 183]];
+  const HAFFEN = [
+    [591, 3, 590, 75, 769, 74],
+    [590, 2, 770, 75, 770, 2],
+  ];
+  const JACKH = [
+    [541, 314, 541, 254, 641, 314],
+    [542, 255, 640, 313, 641, 254],
+  ];
+  const COCL = [
+    [347, 185, 238, 123, 347, 123],
+    [240, 124, 238, 185, 347, 183],
+  ];
 
   it("JACKH is the rectangle 541..641 x 254..314", () => {
     expect(hit(JACKH, 590, 280)).toBe(true);
@@ -109,13 +140,26 @@ describe("map: Area_Contains on the areas of SC000D (numbers from SC000D.ACE)", 
 
   it("but COCL has no macro: a click there is not handled and goes to the sprites - only STAD13.BM drives to the club", () => {
     const cocl: AreaClick = {
-      area: 2, name: "COCL", walkArea: false, handled: false, macro: null, started: -1, itemMacroFound: false, itemFailed: false,
+      area: 2,
+      name: "COCL",
+      walkArea: false,
+      handled: false,
+      macro: null,
+      started: -1,
+      itemMacroFound: false,
+      itemFailed: false,
     };
     const click = (sprite: boolean) =>
       resolveClick({
-        mode: 0, armed: true, cursorEnabled: true, playerLocked: false, walkAllowed: true, itemInHand: false,
+        mode: 0,
+        armed: true,
+        cursorEnabled: true,
+        playerLocked: false,
+        walkAllowed: true,
+        itemInHand: false,
         area: () => cocl,
-        sprite: () => (sprite ? { macro: "POKAZANIE-STAD13.BM", started: 7, itemMacroFound: false, itemFailed: false } : null),
+        sprite: () =>
+          sprite ? { macro: "POKAZANIE-STAD13.BM", started: 7, itemMacroFound: false, itemFailed: false } : null,
         inWalkArea: () => false, // the map has no walk area
       });
     expect(click(true)).toEqual({ outcome: { kind: "macro", source: "sprite" }, armed: false }); // the label CENTRUM

@@ -195,8 +195,12 @@ describe("GuiWindow", () => {
     const ev = w.pointerDown(w.x + 20 + 23 + 85 + 7, w.y + 45);
     expect(ev).toEqual([{ kind: "slide", name: "S", value: 32, final: false }]);
     expect(w.thumbX("S")).toBe(43 + 85);
-    expect(w.pointerMove(w.x + 20 + 23 + 170 + 7, w.y + 45)).toEqual([{ kind: "slide", name: "S", value: 64, final: false }]);
-    expect(w.pointerUp(w.x + 20 + 23 + 170 + 7, w.y + 200)).toEqual([{ kind: "slide", name: "S", value: 64, final: true }]); // released below the track
+    expect(w.pointerMove(w.x + 20 + 23 + 170 + 7, w.y + 45)).toEqual([
+      { kind: "slide", name: "S", value: 64, final: false },
+    ]);
+    expect(w.pointerUp(w.x + 20 + 23 + 170 + 7, w.y + 200)).toEqual([
+      { kind: "slide", name: "S", value: 64, final: true },
+    ]); // released below the track
   });
 
   it("slider: the grab zone is the track plus the margin, nothing outside it", () => {
@@ -239,7 +243,14 @@ describe("GuiWindow", () => {
     expect(w.pointerDown(sx, sy)).toEqual([]);
     // far below the track: the drag goes on, the thumb follows the mouse's x
     const ev = w.pointerMove(sx + 40, sy + 300);
-    expect(ev).toEqual([{ kind: "slide", name: "S", value: Math.trunc((((w.thumbX("S") - 43)) / 170) * 64), final: false }]);
+    expect(ev).toEqual([
+      {
+        kind: "slide",
+        name: "S",
+        value: Math.trunc(((w.thumbX("S") - 43) / 170) * 64),
+        final: false,
+      },
+    ]);
     expect(w.thumbX("S")).toBe(43 + Math.trunc((10 * 170) / 64) + 40);
     // far left beyond the track and the window (negative coordinates): clamped to 0
     expect(w.pointerMove(-500, sy)).toEqual([{ kind: "slide", name: "S", value: 0, final: false }]);

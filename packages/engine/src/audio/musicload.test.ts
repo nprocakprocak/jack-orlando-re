@@ -19,7 +19,11 @@ function setup(opts: { enabled?: boolean } = {}) {
   const backend = new TimedBackend();
   const mixer = new Mixer(backend);
   const music = new MusicPlayer(mixer, { musicVolume: 40, ...opts });
-  const files = new Map<string, Uint8Array>([["ARREST.PMS", pms()], ["STREET.PMS", pms()], ["OFFICE.PMS", pms()]]);
+  const files = new Map<string, Uint8Array>([
+    ["ARREST.PMS", pms()],
+    ["STREET.PMS", pms()],
+    ["OFFICE.PMS", pms()],
+  ]);
   /** What PlayGame.applyLoaded + enter do: remember the saved track, then start it before the scene's scripts. */
   const load = (saved: string) => {
     music.loadSaved(saved);

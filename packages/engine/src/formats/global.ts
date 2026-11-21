@@ -6,20 +6,23 @@
 import { viewOf } from "./bytes";
 import { decrypt } from "./textcrypt";
 import { GlobalError, tokens } from "./global-tokens";
-import {
-  Stream, frameName, int, parseCm, parseFcm, parseIcs,
-  type FcmFilm, type Ics,
-} from "./global-tables";
+import { Stream, frameName, int, parseCm, parseFcm, parseIcs, type FcmFilm, type Ics } from "./global-tables";
+export { GlobalError, Tokens, bracketName, cAtof, cAtoi, cUpper, s16, strBetween, tokens } from "./global-tokens";
 export {
-  GlobalError, Tokens, bracketName, cAtof, cAtoi, cUpper, s16, strBetween, tokens,
-} from "./global-tokens";
-export {
-  FCM_MAX_EFFECTS, FRAME_NAME_MAX, ICS_MAX_FRAMES, ICS_MAX_SECTIONS, NO_SHADOW, SECTION_NAME_MAX,
-  fcmEffectFile, findSection, frameValues, parseCm, parseFcm, parseIcs,
+  FCM_MAX_EFFECTS,
+  FRAME_NAME_MAX,
+  ICS_MAX_FRAMES,
+  ICS_MAX_SECTIONS,
+  NO_SHADOW,
+  SECTION_NAME_MAX,
+  fcmEffectFile,
+  findSection,
+  frameValues,
+  parseCm,
+  parseFcm,
+  parseIcs,
 } from "./global-tables";
-export type {
-  FcmEffect, FcmFilm, FcmFrame, Ics, IcsEffect, IcsFrame, IcsSection,
-} from "./global-tables";
+export type { FcmEffect, FcmFilm, FcmFrame, Ics, IcsEffect, IcsFrame, IcsSection } from "./global-tables";
 
 // ---------------------------------------------------------------- GLOBAL.CCG.MCC.SSD
 
@@ -39,7 +42,10 @@ export function parseGlobalCcg(plain: Uint8Array): CcgItem[] {
     if (tok === undefined) throw new GlobalError("GLOBAL.CCG: missing closing []");
     if (tok === "[]") break;
     const name = frameName(tok);
-    items.push({ name, values: Array.from({ length: 13 }, (_, i) => int(s.next(), `${tok} value ${i + 1}`)) });
+    items.push({
+      name,
+      values: Array.from({ length: 13 }, (_, i) => int(s.next(), `${tok} value ${i + 1}`)),
+    });
   }
   if (!s.done()) throw new GlobalError("GLOBAL.CCG: data after []");
   return items;
@@ -81,9 +87,21 @@ export type HotSpot = [number, number, number];
 
 /** Frame counts of the series each table belongs to. */
 export const SFB_COUNTS: Record<string, number> = {
-  FRON: 12, BACK: 12, PROF: 12, SKFR: 12, SKBA: 12,
-  FRONW: 12, BACKW: 12, PROFW: 12, SKFRW: 12, SKBAW: 12,
-  ROTP: 17, ROTW: 17, OBPLBF: 8, OBPLFB: 8, PROPRO: 9,
+  FRON: 12,
+  BACK: 12,
+  PROF: 12,
+  SKFR: 12,
+  SKBA: 12,
+  FRONW: 12,
+  BACKW: 12,
+  PROFW: 12,
+  SKFRW: 12,
+  SKBAW: 12,
+  ROTP: 17,
+  ROTW: 17,
+  OBPLBF: 8,
+  OBPLFB: 8,
+  PROPRO: 9,
   ...Object.fromEntries(Array.from({ length: 8 }, (_, i) => [`OBPL_${i}`, 4])),
 };
 
@@ -91,7 +109,8 @@ export function parseSfb(data: Uint8Array): HotSpot[] {
   if (data.length === 0 || data.length % 6) throw new GlobalError(`size ${data.length} is not a multiple of 6`);
   const dv = viewOf(data);
   const out: HotSpot[] = [];
-  for (let i = 0; i < data.length; i += 6) out.push([dv.getInt16(i, true), dv.getInt16(i + 2, true), dv.getInt16(i + 4, true)]);
+  for (let i = 0; i < data.length; i += 6)
+    out.push([dv.getInt16(i, true), dv.getInt16(i + 2, true), dv.getInt16(i + 4, true)]);
   return out;
 }
 
@@ -134,7 +153,8 @@ export function decodeGlobal(name: string, data: Uint8Array): Decoded {
       const entries = parseSfb(data);
       const expected = SFB_COUNTS[name.toUpperCase().slice(0, -4)];
       if (expected === undefined) throw new GlobalError(`unknown .SFB table ${name}`);
-      if (entries.length !== expected) throw new GlobalError(`${entries.length} entries, the series has ${expected} frames`);
+      if (entries.length !== expected)
+        throw new GlobalError(`${entries.length} entries, the series has ${expected} frames`);
       return { kind, value: entries };
     }
     case "cm":

@@ -111,8 +111,15 @@ export function keyActions(input: KeyInput, c: KeyContext): KeyAction[] {
 
   // Backspace (the table entry of the scene decides: backspaceTarget)
   if (
-    hit(DIK.BACKSPACE) && !c.sceneNoControl && !c.answerMenuOpen && !c.captionShown &&
-    !c.bulletMenuOpen && !c.topBarOpen && !c.macroPlayerLocked && c.keysEnabled && c.backspace
+    hit(DIK.BACKSPACE) &&
+    !c.sceneNoControl &&
+    !c.answerMenuOpen &&
+    !c.captionShown &&
+    !c.bulletMenuOpen &&
+    !c.topBarOpen &&
+    !c.macroPlayerLocked &&
+    c.keysEnabled &&
+    c.backspace
   ) {
     out.push({ kind: "backspace", file: c.backspace.file, last: c.backspace.last });
   }
@@ -137,8 +144,15 @@ export function keyActions(input: KeyInput, c: KeyContext): KeyAction[] {
   if (!input.down.has(DIK.CONTROL) && hit(DIK.M) && gate(c) && c.mapAvailable) out.push({ kind: "map" });
   // F1 (or a request from the mouse): then the coat opens only when no macro runs and the top bar is closed
   if (
-    (hit(DIK.F1) || c.coatRequest) && !c.bulletMenuOpen && !c.facesShown && c.menuVar && c.cursorEnabled && !c.barFlag &&
-    !c.noticeShown && !c.macroActive && !c.topBarOpen
+    (hit(DIK.F1) || c.coatRequest) &&
+    !c.bulletMenuOpen &&
+    !c.facesShown &&
+    c.menuVar &&
+    c.cursorEnabled &&
+    !c.barFlag &&
+    !c.noticeShown &&
+    !c.macroActive &&
+    !c.topBarOpen
   ) {
     out.push({ kind: "coat" });
   }

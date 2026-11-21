@@ -12,7 +12,12 @@ export function isZoneMode(mode: number): boolean {
 
 /** Cursor modes of the exit areas: name → mode. 12, 16, 18, 19 are never set. */
 export const EXIT_CURSOR_MODE: Readonly<Record<string, number>> = {
-  LEWO: 10, PRAWO: 11, DOL: 13, TO_IN: 14, UP: 15, TO_OUT: 17,
+  LEWO: 10,
+  PRAWO: 11,
+  DOL: 13,
+  TO_IN: 14,
+  UP: 15,
+  TO_OUT: 17,
 };
 
 /** Cursor modes of the scroll edges. */
@@ -41,7 +46,11 @@ export function isEnabledExit(areas: readonly Area[], st: AreaState, index: numb
  * enabled exits count. `skip` lets the cursor test pass over IGNOREAREA-d areas.
  */
 export function areaUnder(
-  areas: readonly Area[], st: AreaState, p: Point, cursorMode: number, skipIgnored = false,
+  areas: readonly Area[],
+  st: AreaState,
+  p: Point,
+  cursorMode: number,
+  skipIgnored = false,
 ): number {
   for (let i = areas.length - 1; i >= 0; i--) {
     if (!areaHit(areas, st, i, p, cursorMode)) continue;

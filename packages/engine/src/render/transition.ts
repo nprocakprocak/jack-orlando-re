@@ -23,9 +23,7 @@ export const STEP_MS_SCENE_C9 = 55;
  * Both arrays hold `count` RGB565 pixels, rows packed without stride.
  * Returns the number of pixels that were not yet equal to the target.
  */
-export function mixStep(
-  cur: Uint16Array, target: Uint16Array, count = cur.length, redStep = RED_STEP,
-): number {
+export function mixStep(cur: Uint16Array, target: Uint16Array, count = cur.length, redStep = RED_STEP): number {
   let changed = 0;
   for (let i = 0; i < count; i++) {
     let p = cur[i];
@@ -53,11 +51,11 @@ export interface TransitionOptions {
   /** Milliseconds per pass; default STEP_MS. */
   stepMs?: number;
   /**
- * The original reads the target as a flat array of 640*480 pixels from the start of the new
- * scene image, ignoring its row width. For a background wider than 640 (most scenes are 1016
- * wide) that gives a skewed target. false (default) takes the left 640x480 columns instead;
- * true reproduces the original.
- */
+   * The original reads the target as a flat array of 640*480 pixels from the start of the new
+   * scene image, ignoring its row width. For a background wider than 640 (most scenes are 1016
+   * wide) that gives a skewed target. false (default) takes the left 640x480 columns instead;
+   * true reproduces the original.
+   */
   flatTarget?: boolean;
 }
 

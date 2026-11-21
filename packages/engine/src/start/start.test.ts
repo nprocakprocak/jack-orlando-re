@@ -1,21 +1,48 @@
 import { describe, expect, it } from "vitest";
-import { Pak } from "../formats/pak";
+import type { Pak } from "../formats/pak";
 import { darkenPixel } from "../gui/darken";
 import { fakeAssets, flat } from "../gui/fixtures";
 import { TEXTS_PL } from "../gui/texts";
 import type { KeyValueStorage } from "../settings/store";
 import { setupBackground } from "./assets";
 import {
-  DEFAULT_MODES, MODES_KEY, MODE_PENDING, MODE_VALUES, PAUSE_ON_BLUR_KEY, StartStore, cycleMode, defaultModes, sanitizeModes,
-  skipStartScreen, type GameModes, type ModeKey,
+  DEFAULT_MODES,
+  MODES_KEY,
+  MODE_PENDING,
+  MODE_VALUES,
+  PAUSE_ON_BLUR_KEY,
+  StartStore,
+  cycleMode,
+  defaultModes,
+  sanitizeModes,
+  skipStartScreen,
+  type GameModes,
+  type ModeKey,
 } from "./modes";
 import {
-  BACKGROUND_DARKEN, LABEL_X, ROW_DY, ROW_Y0, START_H, START_TEXTS_PL, START_W, START_Y, StartScreen, VALUE_H, VALUE_W, VALUE_X, WINDOW_W,
-  type StartAction, type StartState,
+  BACKGROUND_DARKEN,
+  LABEL_X,
+  ROW_DY,
+  ROW_Y0,
+  START_H,
+  START_TEXTS_PL,
+  START_W,
+  START_Y,
+  StartScreen,
+  VALUE_H,
+  VALUE_W,
+  VALUE_X,
+  WINDOW_W,
+  type StartAction,
+  type StartState,
 } from "./screen";
 import { Disposables } from "./session";
 
-const NONE: { readonly [K in ModeKey]: string | null } = { inventory: null, easy: null, saves: null };
+const NONE: { readonly [K in ModeKey]: string | null } = {
+  inventory: null,
+  easy: null,
+  saves: null,
+};
 /** The pending mechanism stays for future modes; tests exercise it with the inventory row as it was before. */
 const PENDING_BAR: { readonly [K in ModeKey]: string | null } = { ...NONE, inventory: "T74" };
 
@@ -49,15 +76,27 @@ describe("game modes", () => {
   });
 
   it("sanitize keeps valid values, drops unknown keys and bad values", () => {
-    expect(sanitizeModes({ inventory: "bar", easy: true, saves: "slots", junk: 1 }, NONE)).toEqual({ inventory: "bar", easy: true, saves: "slots" });
+    expect(sanitizeModes({ inventory: "bar", easy: true, saves: "slots", junk: 1 }, NONE)).toEqual({
+      inventory: "bar",
+      easy: true,
+      saves: "slots",
+    });
     expect(sanitizeModes({ inventory: "pocket", easy: "yes", saves: 3 }, NONE)).toEqual(DEFAULT_MODES);
     expect(sanitizeModes(null, NONE)).toEqual(DEFAULT_MODES);
     expect(sanitizeModes("x", NONE)).toEqual(DEFAULT_MODES);
   });
 
   it("sanitize forces pending modes to their default", () => {
-    expect(sanitizeModes({ inventory: "bar", easy: true, saves: "slots" }, PENDING_BAR)).toEqual({ ...DEFAULT_MODES, easy: true, saves: "slots" });
-    expect(sanitizeModes({ inventory: "bar", easy: true, saves: "slots" }, { ...NONE, easy: "T78" })).toEqual({ inventory: "bar", easy: false, saves: "slots" });
+    expect(sanitizeModes({ inventory: "bar", easy: true, saves: "slots" }, PENDING_BAR)).toEqual({
+      ...DEFAULT_MODES,
+      easy: true,
+      saves: "slots",
+    });
+    expect(sanitizeModes({ inventory: "bar", easy: true, saves: "slots" }, { ...NONE, easy: "T78" })).toEqual({
+      inventory: "bar",
+      easy: false,
+      saves: "slots",
+    });
   });
 
   it("cycle goes through every value and back; pending modes stay", () => {
@@ -88,7 +127,11 @@ describe("StartStore", () => {
     const s = new FakeStorage();
     const store = new StartStore(s);
     expect(store.saveModes({ inventory: "bar", easy: true, saves: "slots" })).toBe(true);
-    expect(JSON.parse(s.data.get(MODES_KEY)!)).toEqual({ inventory: "bar", easy: true, saves: "slots" });
+    expect(JSON.parse(s.data.get(MODES_KEY)!)).toEqual({
+      inventory: "bar",
+      easy: true,
+      saves: "slots",
+    });
     expect(store.loadModes(NONE)).toEqual({ inventory: "bar", easy: true, saves: "slots" });
     expect(store.loadModes()).toEqual({ inventory: "bar", easy: true, saves: "slots" }); // nothing pending since
     expect(store.loadModes(PENDING_BAR)).toEqual({ ...DEFAULT_MODES, easy: true, saves: "slots" });
@@ -110,7 +153,7 @@ describe("StartStore", () => {
     expect(new StartStore(new ThrowingStorage()).savePauseOnBlur(true)).toBe(false);
   });
 
-  it("pauseOnBlur: \"1\"/\"0\" under jack-orlando.pauseOnBlur, default on", () => {
+  it('pauseOnBlur: "1"/"0" under jack-orlando.pauseOnBlur, default on', () => {
     const s = new FakeStorage();
     const store = new StartStore(s);
     expect(PAUSE_ON_BLUR_KEY).toBe("jack-orlando.pauseOnBlur");
@@ -143,7 +186,13 @@ describe("skipStartScreen", () => {
 const STATE: StartState = { modes: defaultModes(), pauseOnBlur: true };
 
 function screen(pending = MODE_PENDING) {
-  return new StartScreen({ assets: fakeAssets(), texts: TEXTS_PL, background: flat(640, 480, 0x7bef), state: STATE, pending });
+  return new StartScreen({
+    assets: fakeAssets(),
+    texts: TEXTS_PL,
+    background: flat(640, 480, 0x7bef),
+    state: STATE,
+    pending,
+  });
 }
 
 /** Clicks the centre of a window-relative rectangle. */
@@ -166,7 +215,11 @@ describe("StartScreen", () => {
   });
 
   it("has no bullet row (BulletOnOff is only in the options window)", () => {
-    expect(screen().rows().map((r) => r.key)).toEqual(["inventory", "easy", "saves", "pauseOnBlur"]);
+    expect(
+      screen()
+        .rows()
+        .map((r) => r.key),
+    ).toEqual(["inventory", "easy", "saves", "pauseOnBlur"]);
   });
 
   it("does not share the caller's state object", () => {
@@ -208,7 +261,10 @@ describe("StartScreen", () => {
 
   it("ready rows cycle their values", () => {
     const s = screen({ inventory: null, easy: null, saves: null });
-    expect(clickRow(s, 0)[0]).toMatchObject({ key: "inventory", state: { modes: { inventory: "bar" } } });
+    expect(clickRow(s, 0)[0]).toMatchObject({
+      key: "inventory",
+      state: { modes: { inventory: "bar" } },
+    });
     expect(clickRow(s, 1)[0]).toMatchObject({ key: "easy", state: { modes: { easy: true } } });
     expect(clickRow(s, 2)[0]).toMatchObject({ key: "saves", state: { modes: { saves: "slots" } } });
     expect(s.rows().map((r) => r.value)).toEqual(["Górna belka", "Tak", "Sloty w grze", "Tak"]);
@@ -219,7 +275,8 @@ describe("StartScreen", () => {
     const ready = screen({ inventory: null, easy: null, saves: null }).render();
     const win = screen().win;
     // a pixel of the label area of row 0 (left of any text) and of row 3
-    const at = (s: typeof pending, row: number) => s.pixels[(win.y + ROW_Y0 + row * ROW_DY + VALUE_H) * s.width + win.x + LABEL_X - 2];
+    const at = (s: typeof pending, row: number) =>
+      s.pixels[(win.y + ROW_Y0 + row * ROW_DY + VALUE_H) * s.width + win.x + LABEL_X - 2];
     expect(at(pending, 0)).not.toBe(at(ready, 0));
     expect(at(pending, 3)).toBe(at(ready, 3));
   });

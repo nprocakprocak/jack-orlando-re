@@ -138,7 +138,14 @@ export function zoomStep(srcW: number, srcH: number, scale: number): ZoomStep {
  * Only steps >= 1 are valid: with a block width of 0 the original's do-while loop would run 65536
  * times and read garbage, so this throws instead. Reads past the end of the source read as 0.
  */
-export function boxScale(src: Image16, dstW: number, dstH: number, high: number, low: number, mirror = false): Uint16Array {
+export function boxScale(
+  src: Image16,
+  dstW: number,
+  dstH: number,
+  high: number,
+  low: number,
+  mirror = false,
+): Uint16Array {
   if (high < 1) throw new Error("boxScale needs a step of at least 1");
   const out = new Uint16Array(Math.max(0, dstW) * Math.max(0, dstH));
   if (dstW <= 0 || dstH <= 0) return out;
@@ -154,7 +161,10 @@ export function boxScale(src: Image16, dstW: number, dstH: number, high: number,
     for (let x = 0; x < dstW; x++) {
       const colSum = colFrac + step;
       const cols = Math.floor(colSum / 0x10000);
-      let r = 0, g = 0, b = 0, n = 0;
+      let r = 0,
+        g = 0,
+        b = 0,
+        n = 0;
       for (let j = 0; j < rows; j++) {
         for (let i = 0; i < cols; i++) {
           const idx = colStart + i + j * srcW;
@@ -181,5 +191,10 @@ export function boxScale(src: Image16, dstW: number, dstH: number, high: number,
 export function zoomImage(src: Image16, scale: number): Image16 | null {
   const z = zoomStep(src.width, src.height, scale);
   if (z.w === 0) return null;
-  return { width: z.w, height: z.h, kind: "rgb565", pixels: boxScale(src, z.w, z.h, z.high, z.low) };
+  return {
+    width: z.w,
+    height: z.h,
+    kind: "rgb565",
+    pixels: boxScale(src, z.w, z.h, z.high, z.low),
+  };
 }

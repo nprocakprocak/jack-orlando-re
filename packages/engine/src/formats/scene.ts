@@ -4,31 +4,74 @@
 // Same model as the external checker (camelCase here, snake_case there).
 
 import { insideTriangleSides } from "./halfplane";
-import { Pak } from "./pak";
+import type { Pak } from "./pak";
 import { decrypt } from "./textcrypt";
 
 import {
-  Tokens, bracketName, cAtoi, cAtof, cUpper, frameValues, parseIcs as parseGlobalIcs,
-  parseSsd as parseGlobalSsd, s16, strBetween, tokens, type IcsEffect,
+  Tokens,
+  bracketName,
+  cAtoi,
+  cAtof,
+  cUpper,
+  frameValues,
+  parseIcs as parseGlobalIcs,
+  parseSsd as parseGlobalSsd,
+  s16,
+  strBetween,
+  tokens,
+  type IcsEffect,
 } from "./global";
 export { Tokens, bracketName, cAtoi, cAtof, cUpper, s16, strBetween, tokens };
 import {
-  SceneError, parseAce, parseAci, parseCcg, parseMcc, parsePcs,
-  type Area, type Ccg, type Macros, type ObjectAnim, type Person, type Perspective, type Shadow,
+  SceneError,
+  parseAce,
+  parseAci,
+  parseCcg,
+  parseMcc,
+  parsePcs,
+  type Area,
+  type Ccg,
+  type Macros,
+  type ObjectAnim,
+  type Person,
+  type Perspective,
+  type Shadow,
 } from "./scene-text";
 export {
-  EXIT_NAMES, MAX_AREA_TRIANGLES, MAX_REC_POSITIONS, SceneError, TYPE_PBM, TYPE_PBM_TO16, TYPE_RAW16, micro,
-  parseAce, parseAci, parseCcg, parseMcc, parsePcs,
+  EXIT_NAMES,
+  MAX_AREA_TRIANGLES,
+  MAX_REC_POSITIONS,
+  SceneError,
+  TYPE_PBM,
+  TYPE_PBM_TO16,
+  TYPE_RAW16,
+  micro,
+  parseAce,
+  parseAci,
+  parseCcg,
+  parseMcc,
+  parsePcs,
 } from "./scene-text";
 export type {
-  Area, Ccg, JackStart, Macros, ObjectAnim, Person, PersonDirection, Perspective, SceneObject, Shadow,
+  Area,
+  Ccg,
+  JackStart,
+  Macros,
+  ObjectAnim,
+  Person,
+  PersonDirection,
+  Perspective,
+  SceneObject,
+  Shadow,
 } from "./scene-text";
 
 const f32 = Math.fround;
 
 /** intersection of the diagonals P0-P2 and P1-P3 (relative to the object), truncated. */
 export function quadCenter(quad: number[]): number[] | null {
-  let [x0, y0, x1, y1, x2, y2, x3, y3] = quad;
+  const [x0, y0, x1, y1, , y2, , y3] = quad;
+  let x2 = quad[4];
+  let x3 = quad[6];
   if (x2 === x0) x2++;
   const k1 = f32((y2 - y0) / (x2 - x0));
   const b1 = f32(y2 - x2 * k1);
@@ -102,7 +145,11 @@ export function parseIcs(plain: Uint8Array): Insertion[] {
   return parseGlobalIcs(plain).sections.map((sec) => {
     const out: Insertion = {
       name: sec.name,
-      frames: sec.frames.map((f) => ({ file: f.file, values: frameValues(f), effect: effect(f.effect) })),
+      frames: sec.frames.map((f) => ({
+        file: f.file,
+        values: frameValues(f),
+        effect: effect(f.effect),
+      })),
     };
     if (sec.trailingEffect) out.trailingEffect = effect(sec.trailingEffect)!;
     return out;
@@ -161,7 +208,12 @@ export function parseScene(pak: Pak, scene: string): Scene {
   const ace = text("ACE");
   const { areas, complete } = ace ? parseAce(ace) : { areas: [], complete: true };
   const aci = text("ACI");
-  const { anims, shadows } = aci ? parseAci(aci, used.map((o) => o.name)) : { anims: [], shadows: [] };
+  const { anims, shadows } = aci
+    ? parseAci(
+        aci,
+        used.map((o) => o.name),
+      )
+    : { anims: [], shadows: [] };
   const empty = new Uint8Array(0);
   return {
     scene,

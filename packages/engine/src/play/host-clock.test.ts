@@ -9,7 +9,13 @@ describe("AUTOINCRANGE clock (Script_ExecStep case 0x5b, Game_TimerTick, Game_Ru
   const clockSetup = (text: string) => {
     const clock = new AutoIncClock();
     const s = setup(text, 3, undefined, clock);
-    return { s, clock, ticks: (n: number) => { for (let i = 0; i < n; i++) s.host.tick(); } };
+    return {
+      s,
+      clock,
+      ticks: (n: number) => {
+        for (let i = 0; i < n; i++) s.host.tick();
+      },
+    };
   };
 
   it("sets the variable to min, takes the range, and raises the variable every 64 logic ticks", () => {
@@ -41,7 +47,12 @@ describe("AUTOINCRANGE clock (Script_ExecStep case 0x5b, Game_TimerTick, Game_Ru
 
   it("a variable set above max by a script wraps to min at the next step (SC082: LET OCHR 21 with max 60 stays)", () => {
     const clock = new AutoIncClock();
-    const vars = new Variables(new Map([["X", 0], ["OCHR", 70]]));
+    const vars = new Variables(
+      new Map([
+        ["X", 0],
+        ["OCHR", 70],
+      ]),
+    );
     clock.start(1, 0, 60);
     for (let i = 0; i < AUTOINC_PERIOD; i++) clock.tick(vars);
     expect(vars.get("OCHR")).toBe(0);
@@ -85,7 +96,13 @@ describe("AUTOINCRANGE clock (Script_ExecStep case 0x5b, Game_TimerTick, Game_Ru
   });
 
   it("a chapter-3 scene start runs the OCHR clock 0..60 and keeps OCHR's value; other chapters leave the clock", () => {
-    const vars = new Variables(new Map([["LOC7", 0], ["A", 0], ["OCHR", 17]]));
+    const vars = new Variables(
+      new Map([
+        ["LOC7", 0],
+        ["A", 0],
+        ["OCHR", 17],
+      ]),
+    );
     const clock = new AutoIncClock();
     clock.start(0, 0, 200); // SC000D [PRE]: AUTOINCRANGE LOC7 0 200
     clock.sceneStart(2, vars);

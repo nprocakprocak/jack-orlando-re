@@ -49,7 +49,10 @@ function soleTopDirectory(names: readonly string[]): string | null {
   const tops = new Set<string>();
   for (const raw of names) {
     const slash = raw.replace(/\\/g, "/");
-    const parts = slash.replace(/^\/+/, "").split("/").filter((part) => part.length > 0);
+    const parts = slash
+      .replace(/^\/+/, "")
+      .split("/")
+      .filter((part) => part.length > 0);
     if (parts.length === 0) continue;
     if (parts.some((part) => part === "." || part === "..")) return null;
     const isDirectory = slash.endsWith("/");
@@ -165,7 +168,7 @@ async function unpackZip(
   unzipper.register(UnzipInflate);
 
   const total = bytes.length;
-  for (let offset = 0; offset < total; ) {
+  for (let offset = 0; offset < total;) {
     if (signal.aborted) throw signal.reason ?? new DOMException("aborted", "AbortError");
     const next = Math.min(offset + SLICE, total);
     unzipper.push(bytes.subarray(offset, next), next === total);
@@ -299,10 +302,14 @@ export function showZipFallback(
     current = controller;
     input.disabled = true;
     showProgress("Reading ZIP…", 0, 1);
-    void filesFromZip(file, (phase, loaded, total) => {
-      if (controller.signal.aborted) return;
-      showProgress(phase === "read" ? "Reading ZIP…" : "Unpacking ZIP…", loaded, total);
-    }, controller.signal)
+    void filesFromZip(
+      file,
+      (phase, loaded, total) => {
+        if (controller.signal.aborted) return;
+        showProgress(phase === "read" ? "Reading ZIP…" : "Unpacking ZIP…", loaded, total);
+      },
+      controller.signal,
+    )
       .then((files) => {
         if (controller.signal.aborted) return;
         progress.hidden = true;

@@ -1,13 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  checkText,
-  decrypt,
-  decryptText,
-  encrypt,
-  isEncryptedName,
-  MAZOVIA,
-} from "./textcrypt";
-
+import { checkText, decrypt, decryptText, encrypt, isEncryptedName, MAZOVIA } from "./textcrypt";
 
 // --- synthetic data ----------------------------------------------------------
 
@@ -47,13 +39,34 @@ describe("textcrypt on synthetic data", () => {
     expect(MAZOVIA.length).toBe(256);
     expect(new Set(MAZOVIA).size).toBe(256);
     const polish: Record<number, string> = {
-      0x86: "ą", 0x8d: "ć", 0x8f: "Ą", 0x90: "Ę", 0x91: "ę", 0x92: "ł", 0x95: "Ć", 0x98: "Ś", 0x9c: "Ł",
-      0x9e: "ś", 0xa0: "Ź", 0xa1: "Ż", 0xa2: "ó", 0xa3: "Ó", 0xa4: "ń", 0xa5: "Ń", 0xa6: "ź", 0xa7: "ż",
+      0x86: "ą",
+      0x8d: "ć",
+      0x8f: "Ą",
+      0x90: "Ę",
+      0x91: "ę",
+      0x92: "ł",
+      0x95: "Ć",
+      0x98: "Ś",
+      0x9c: "Ł",
+      0x9e: "ś",
+      0xa0: "Ź",
+      0xa1: "Ż",
+      0xa2: "ó",
+      0xa3: "Ó",
+      0xa4: "ń",
+      0xa5: "Ń",
+      0xa6: "ź",
+      0xa7: "ż",
     };
     for (const [b, c] of Object.entries(polish)) expect(MAZOVIA[Number(b)]).toBe(c);
     // the rest is CP437
     expect([MAZOVIA[0x41], MAZOVIA[0x80], MAZOVIA[0x82], MAZOVIA[0xb0], MAZOVIA[0xe1], MAZOVIA[0xff]]).toEqual([
-      "A", "Ç", "é", "░", "ß", " ",
+      "A",
+      "Ç",
+      "é",
+      "░",
+      "ß",
+      " ",
     ]);
   });
 

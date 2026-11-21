@@ -6,9 +6,23 @@ import { f32, ftol, s16 } from "../walk/geometry";
 import { PersonShadow } from "./shadow";
 import { walkAngle, Y_SQUASH } from "../walk/walker";
 import {
-  ARRIVE_DX, ARRIVE_DY, MAX_PERSONS, NO_SHADOW, PERSON_MAX_FRAMES, SCRIPT_MIN_SCALE, WALK_MIN_SCALE,
-  effectVolumes, personBrightness, personDirection, personScale, personSector,
-  type PersonDef, type PersonEnv, type PersonOptions, type PersonSprite, type PersonUpdate, type ShadowCall,
+  ARRIVE_DX,
+  ARRIVE_DY,
+  NO_SHADOW,
+  PERSON_MAX_FRAMES,
+  SCRIPT_MIN_SCALE,
+  WALK_MIN_SCALE,
+  effectVolumes,
+  personBrightness,
+  personDirection,
+  personScale,
+  personSector,
+  type PersonDef,
+  type PersonEnv,
+  type PersonOptions,
+  type PersonSprite,
+  type PersonUpdate,
+  type ShadowCall,
 } from "./persons";
 
 interface Insertion extends InsertionStart {
@@ -61,7 +75,10 @@ export class ScenePerson {
   /** step timer (15 ms ticks) */
   counter = 0;
   /** walk effects / per frame: scene sound slot and volume; sound < 0 = none */
-  effects: { sound: number; volume: number }[] = Array.from({ length: PERSON_MAX_FRAMES }, () => ({ sound: -1, volume: 0 }));
+  effects: { sound: number; volume: number }[] = Array.from({ length: PERSON_MAX_FRAMES }, () => ({
+    sound: -1,
+    volume: 0,
+  }));
   /** shadow offsets / */
   shadowDx = 0;
   shadowDy = 0;
@@ -76,7 +93,10 @@ export class ScenePerson {
   insFacing: 1 | -1 = 1;
   private ins: Insertion | null = null;
 
-  constructor(readonly def: PersonDef, opts: PersonOptions) {
+  constructor(
+    readonly def: PersonDef,
+    opts: PersonOptions,
+  ) {
     this.horizon = opts.horizon;
     this.shadow = new PersonShadow(def.mode);
   }
@@ -117,9 +137,9 @@ export class ScenePerson {
   }
 
   /**
- * SETPERSONDATA delay refY speed f (case 3): `f` 3.0 = the scale is no longer recomputed,
- * 2.0 = scale 1, else the reference scale (the new scale is not clamped here).
- */
+   * SETPERSONDATA delay refY speed f (case 3): `f` 3.0 = the scale is no longer recomputed,
+   * 2.0 = scale 1, else the reference scale (the new scale is not clamped here).
+   */
   setPersonData(delay: number, refY: number, speed: number, f: number): void {
     this.delay = delay;
     this.refY = refY;
@@ -162,9 +182,9 @@ export class ScenePerson {
   }
 
   /**
- * start walking to (tx, ty). `forced` = WALKTODIR's direction (0..7) instead of
- * the one from the angle. Chooses direction and mirror, sets the velocity.
- */
+   * start walking to (tx, ty). `forced` = WALKTODIR's direction (0..7) instead of
+   * the one from the angle. Chooses direction and mirror, sets the velocity.
+   */
   startWalk(tx: number, ty: number, forced?: number): void {
     this.targetX = s16(tx);
     this.targetY = s16(ty);
@@ -182,13 +202,13 @@ export class ScenePerson {
   }
 
   /**
- * INITFIRST (`fresh`, Script_ExecStep case 2) / RUNINSERTION (case 7) on a person: `dir` 0 = right (1),
- * 1 = left (-1), 2 = the person's mirror. Only INITFIRST zeroes the step timer and recomputes the scale (perspective
- * clamped to 0.1..1, 1.0 with f = 2; the fixed-scale flag f = 3 is not checked). RUNINSERTION touches neither: the insertion is
- * drawn with the scale the person already has - from the last SETPOSITION, SETPERSONDATA, walking step or INITFIRST - even
- * after a MOVEP (SC116 [MAJOR]: `MOVEP MAJOR 35 17` between OBROT_MAJOR and OBROT_MAJOR1 keeps 0.711;), and its first
- * frame waits for the timer left by the last step.
- */
+   * INITFIRST (`fresh`, Script_ExecStep case 2) / RUNINSERTION (case 7) on a person: `dir` 0 = right (1),
+   * 1 = left (-1), 2 = the person's mirror. Only INITFIRST zeroes the step timer and recomputes the scale (perspective
+   * clamped to 0.1..1, 1.0 with f = 2; the fixed-scale flag f = 3 is not checked). RUNINSERTION touches neither: the insertion is
+   * drawn with the scale the person already has - from the last SETPOSITION, SETPERSONDATA, walking step or INITFIRST - even
+   * after a MOVEP (SC116 [MAJOR]: `MOVEP MAJOR 35 17` between OBROT_MAJOR and OBROT_MAJOR1 keeps 0.711;), and its first
+   * frame waits for the timer left by the last step.
+   */
   startInsertion(ins: InsertionStart, dir: 0 | 1 | 2, fresh = false): void {
     if (ins.start < 0 || ins.count < 0 || ins.start + ins.count > ins.frames.length) {
       throw new Error(`insertion ${ins.name ?? ""} ${ins.start}+${ins.count} outside ${ins.frames.length} frames`);
@@ -223,8 +243,24 @@ export class ScenePerson {
   }
 
   /** `scale` = the scale the frame is drawn with; the light is computed from the person's own scale before any override. */
-  private sprite(file: string, x: number, y: number, mirrored: boolean, env: PersonEnv, source: FrameSprite["source"], scale = this.scale): PersonSprite {
-    return { file, source, x, y, scale, mirrored, brightness: personBrightness(this.x, this.y, env.lights, this.scale, this.def.lightScale, env.brightness) };
+  private sprite(
+    file: string,
+    x: number,
+    y: number,
+    mirrored: boolean,
+    env: PersonEnv,
+    source: FrameSprite["source"],
+    scale = this.scale,
+  ): PersonSprite {
+    return {
+      file,
+      source,
+      x,
+      y,
+      scale,
+      mirrored,
+      brightness: personBrightness(this.x, this.y, env.lights, this.scale, this.def.lightScale, env.brightness),
+    };
   }
 
   /** Game_Run: one walking step. */
@@ -252,13 +288,26 @@ export class ScenePerson {
     const f = this.def.dirs[this.dir]?.[frame];
     if (f) {
       const hx = this.facing === -1 ? f.hotLeft : f.hotRight;
-      out.sprite = this.sprite(f.file, ftol(this.x - hx * this.scale), ftol(this.y - f.hotY * this.scale), this.facing < 0, env, "scene");
+      out.sprite = this.sprite(
+        f.file,
+        ftol(this.x - hx * this.scale),
+        ftol(this.y - f.hotY * this.scale),
+        this.facing < 0,
+        env,
+        "scene",
+      );
     }
     const fx = this.effects[frame];
     if (fx && fx.sound >= 0) {
-      out.sounds.push({ sound: fx.sound, channels: [1, 2], volumes: [...effectVolumes(fx.volume, this.scale, this.x, env.scrollX)], kind: "walk" });
+      out.sounds.push({
+        sound: fx.sound,
+        channels: [1, 2],
+        volumes: [...effectVolumes(fx.volume, this.scale, this.x, env.scrollX)],
+        kind: "walk",
+      });
     }
-    if (env.shadows) out.shadow = this.nextShadow(this.x + this.shadowDx * this.scale, this.y + this.shadowDy * this.scale);
+    if (env.shadows)
+      out.shadow = this.nextShadow(this.x + this.shadowDx * this.scale, this.y + this.shadowDy * this.scale);
     const n = this.def.framesPerDir;
     if (this.reverse) {
       this.frame--;
@@ -287,7 +336,12 @@ export class ScenePerson {
     if (fr?.effect) {
       const e = fr.effect;
       const channels = e.channel === 0 ? [1, 2] : [e.channel];
-      out.sounds.push({ sound: e.sound, channels, volumes: channels.map(() => e.volume), kind: "insertion" });
+      out.sounds.push({
+        sound: e.sound,
+        channels,
+        volumes: channels.map(() => e.volume),
+        kind: "insertion",
+      });
     }
     if (ins.cur + 1 > ins.end) {
       this.ins = null;
@@ -315,49 +369,4 @@ export class ScenePerson {
   }
 }
 
-// --- the scene's persons ---------------------------------------------------------------------
-
-function merge(a: PersonUpdate, b: PersonUpdate): PersonUpdate {
-  return { sprite: b.sprite ?? a.sprite, sounds: [...a.sounds, ...b.sounds], shadow: b.shadow !== undefined ? b.shadow : a.shadow, events: [...a.events, ...b.events] };
-}
-
-/** All persons of a scene, ticked like Game_Run: every walking part first, then every insertion part. */
-export class ScenePersons {
-  readonly persons: ScenePerson[];
-  private byName = new Map<string, number>();
-
-  constructor(defs: readonly PersonDef[], opts: PersonOptions) {
-    if (defs.length > MAX_PERSONS) throw new Error(`${defs.length} persons, the game has room for ${MAX_PERSONS}`);
-    this.persons = defs.map((d) => new ScenePerson(d, opts));
-    // Script_FindPerson returns the FIRST person of that name: SC083's .PCS has two GANGSTER sections
-    defs.forEach((d, i) => {
-      if (!this.byName.has(d.name)) this.byName.set(d.name, i);
-    });
-  }
-
-  /** Script_FindPerson: index of the first person with that name, -1 when missing. */
-  find(name: string): number {
-    return this.byName.get(name) ?? -1;
-  }
-
-  get(name: string): ScenePerson | undefined {
-    const i = this.find(name);
-    return i < 0 ? undefined : this.persons[i];
-  }
-
-  /** One 15 ms tick: timers, walking steps, insertion steps. Result index = person index. */
-  tick(env: PersonEnv): (PersonUpdate | null)[] {
-    const res: (PersonUpdate | null)[] = this.persons.map(() => null);
-    for (const p of this.persons) p.countdown();
-    this.persons.forEach((p, i) => {
-      if (p.walkDue) res[i] = p.walkStep(env);
-    });
-    this.persons.forEach((p, i) => {
-      if (!p.insertionDue) return;
-      const u = p.insertionStep(env);
-      const prev = res[i];
-      res[i] = prev ? merge(prev, u) : u;
-    });
-    return res;
-  }
-}
+export { ScenePersons } from "./persons-scene";

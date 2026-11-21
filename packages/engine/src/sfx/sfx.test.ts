@@ -235,8 +235,8 @@ describe("footsteps", () => {
     const { sfx, mixer } = setup();
     sfx.jackStep(1, 160, 0); // left 48, right 16
     expect(sfx.channelOf(3)).toBe(1);
-    expect(mixer.level(2)).toBe(Math.trunc(Math.min(16 * 2, 64) * 32 / 64) * 2);
-    expect(mixer.level(1)).toBe(Math.trunc(Math.min(48 * 2, 64) * 32 / 64) * 2);
+    expect(mixer.level(2)).toBe(Math.trunc((Math.min(16 * 2, 64) * 32) / 64) * 2);
+    expect(mixer.level(1)).toBe(Math.trunc((Math.min(48 * 2, 64) * 32) / 64) * 2);
     sfx.jackStep(1, 160, 0);
     expect(sfx.channelOf(2)).not.toBe(0);
   });
@@ -280,7 +280,7 @@ describe("footsteps", () => {
     expect(sfx.walkEffectOf(3, 4).sound).toBe(-1);
   });
 
-  it("persons: sound slot 0 is a sound (KROK1L of POL1 in SC001), not \"effect off\"", () => {
+  it('persons: sound slot 0 is a sound (KROK1L of POL1 in SC001), not "effect off"', () => {
     const { sfx, mixer } = setup();
     sfx.setWalkEffect(5, 0, 0, 64, true);
     expect(sfx.walkEffectOf(5, 0).sound).toBe(0);
@@ -394,7 +394,6 @@ describe("scene sound list", () => {
     expect(psdName("X")).toBe("X.PSD");
   });
 });
-
 
 describe("scene change stops the effect channels (Scene_Load)", () => {
   it("channels 1..4 are silent after loadScene, the music channel is not touched", () => {

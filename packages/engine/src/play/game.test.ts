@@ -43,7 +43,11 @@ describe("play: Jack's refusal, the click on Jack and the Ctrl point 3 (without 
   function stubGame(scene: string, scrollX = 0) {
     const voices: [number, string][] = [];
     const dialog = new DialogController({
-      host: { playVoice: (ch, file) => (voices.push([ch, file]), null), stopVoices: () => undefined, resume: () => undefined },
+      host: {
+        playVoice: (ch, file) => (voices.push([ch, file]), null),
+        stopVoices: () => undefined,
+        resume: () => undefined,
+      },
       tables: {
         lipPair: () => [1, 1],
         mouthCycle: [0, 1, 2, 3, 4, 3, 2, 1, 0, 1],
@@ -65,7 +69,12 @@ describe("play: Jack's refusal, the click on Jack and the Ctrl point 3 (without 
       refusalCounter: 0,
       refusal: null,
       armed: true,
-      vars: new Variables(new Map([["JACKISMENU", 1], ["LAST", 0]])),
+      vars: new Variables(
+        new Map([
+          ["JACKISMENU", 1],
+          ["LAST", 0],
+        ]),
+      ),
       jackIsMenu: true,
       fadeRequested: false,
       pendingScene: null,
@@ -73,7 +82,8 @@ describe("play: Jack's refusal, the click on Jack and the Ctrl point 3 (without 
     });
     return { g, voices, dialog };
   }
-  const call = (g: unknown, name: string, ...a: unknown[]) => (g as Record<string, (...x: unknown[]) => unknown>)[name](...a);
+  const call = (g: unknown, name: string, ...a: unknown[]) =>
+    (g as Record<string, (...x: unknown[]) => unknown>)[name](...a);
 
   it("a refusal shows Jack's face, says the line with its voice and the width, spends the click and closes the face when it ends", () => {
     const { g, voices, dialog } = stubGame("SC001");
@@ -126,10 +136,18 @@ describe("play: Jack's refusal, the click on Jack and the Ctrl point 3 (without 
   });
 
   it("Ctrl point 3 on the map: scene SC000D as a hard cut (no fade) and LAST from the chapter of the scene", () => {
-    for (const [scene, last] of [["SC005", 6], ["SC040", 32], ["SC080", 75]] as const) {
+    for (const [scene, last] of [
+      ["SC005", 6],
+      ["SC040", 32],
+      ["SC080", 75],
+    ] as const) {
       const { g } = stubGame(scene);
       call(g, "ctrlPoint", 3);
-      const s = g as unknown as { pendingScene: string | null; fadeRequested: boolean; vars: Variables };
+      const s = g as unknown as {
+        pendingScene: string | null;
+        fadeRequested: boolean;
+        vars: Variables;
+      };
       expect([s.pendingScene, s.fadeRequested, s.vars.get("LAST")]).toEqual(["SC000D", false, last]);
     }
     const { g } = stubGame("SC150"); // chapter 4: LAST is left alone
@@ -168,10 +186,21 @@ describe("play: the night music at SC007 → SC008 (synthetic)", () => {
     audio.music.trackName = "TR22-22.PMS";
     for (let i = 0; i < 60; i++) audio.music.tick14ms(); // fade-in over: full volume
     const log: string[] = [];
-    const scene = new Proxy({ scene: { areas: [] }, persons: { find: () => -1, get: () => undefined, persons: [] } } as Record<string | symbol, unknown>, {
-      get: (t, k) => (k in t ? t[k] : () => true),
-    });
-    const vars = new Variables(new Map([["LAST", 7], ["AFTER", 0]]));
+    const scene = new Proxy(
+      {
+        scene: { areas: [] },
+        persons: { find: () => -1, get: () => undefined, persons: [] },
+      } as Record<string | symbol, unknown>,
+      {
+        get: (t, k) => (k in t ? t[k] : () => true),
+      },
+    );
+    const vars = new Variables(
+      new Map([
+        ["LAST", 7],
+        ["AFTER", 0],
+      ]),
+    );
     const env: HostEnv = {
       scene: scene as unknown as ScenePlayer,
       areas: new AreaState(),
@@ -228,7 +257,14 @@ describe("play: caption stays where it started (deviation, synthetic)", () => {
     const cap = { lines: [{ text: "Line A", x: 130, y: 10 }] };
     const scene = { scrollX: 124 };
     const g = Object.create(PlayGame.prototype) as unknown as Record<string, unknown>;
-    Object.assign(g, { dialog: { caption: cap }, scene, captionSeen: null, captionHidden: false, captionTicks: 0, captionScroll: 0 });
+    Object.assign(g, {
+      dialog: { caption: cap },
+      scene,
+      captionSeen: null,
+      captionHidden: false,
+      captionTicks: 0,
+      captionScroll: 0,
+    });
     const run = () => (g as unknown as { captionTimer: () => void }).captionTimer();
     run();
     scene.scrollX = 200; // the scene goes on scrolling under the line
@@ -244,7 +280,10 @@ describe("play: caption stays where it started (deviation, synthetic)", () => {
 describe("play: an avoid walk interrupts the action macro (synthetic)", () => {
   it("jackAvoidWalk -> interruptOutMacros(-1) (Jack_WalkTo); the other scene events do not", () => {
     const calls: number[] = [];
-    const g = shell({ host: { finish: () => undefined }, interpreter: { interruptOutMacros: (e: number) => calls.push(e) } });
+    const g = shell({
+      host: { finish: () => undefined },
+      interpreter: { interruptOutMacros: (e: number) => calls.push(e) },
+    });
     g.release({ kind: "jackArrived" });
     expect(calls).toEqual([]);
     g.release({ kind: "jackAvoidWalk" });

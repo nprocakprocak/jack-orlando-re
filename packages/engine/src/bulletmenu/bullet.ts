@@ -45,12 +45,18 @@ export class BulletMenu {
   x = 0;
   y = 0;
   /**
- * g_rightReleased: set when the right button is up and never cleared (a bug of the original):
- * after the first release the menu opens also while the button is held.
- */
+   * g_rightReleased: set when the right button is up and never cleared (a bug of the original):
+   * after the first release the menu opens also while the button is held.
+   */
   rightReleased = false;
   /** prev[i] of step 13: icon i was pressed last frame. Survives Esc (original quirk). */
-  readonly prev: Record<IconId, boolean> = { look: false, pointer: false, take: false, hit: false, gun: false };
+  readonly prev: Record<IconId, boolean> = {
+    look: false,
+    pointer: false,
+    take: false,
+    hit: false,
+    gun: false,
+  };
   /** local_11 of step 13: this frame's left click must not reach the scene (the bullet is open). */
   blockLeft = false;
 

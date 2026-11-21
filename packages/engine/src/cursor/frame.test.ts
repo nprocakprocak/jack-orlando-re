@@ -1,7 +1,15 @@
 import { describe, expect, it } from "vitest";
 import { frameOverlay, frameVisible, type FrameEnv } from "./frame";
 
-const env = (o: Partial<FrameEnv> = {}): FrameEnv => ({ idle: false, mode: 5, barOpen: false, menuOpen: false, captionShown: false, bulletOpen: false, ...o });
+const env = (o: Partial<FrameEnv> = {}): FrameEnv => ({
+  idle: false,
+  mode: 5,
+  barOpen: false,
+  menuOpen: false,
+  captionShown: false,
+  bulletOpen: false,
+  ...o,
+});
 const IMG = { width: 48, height: 41, pixels: new Uint16Array(48 * 41) };
 
 describe("RAMKA frame", () => {

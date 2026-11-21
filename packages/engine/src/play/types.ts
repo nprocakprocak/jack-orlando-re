@@ -54,9 +54,9 @@ export interface PlayOptions {
   /** WalkSpeed option (default 1) */
   walkSpeed?: number;
   /**
- * The dialog layer (faces, captions, the answer menu, speech): default on. `false`: a line waits
- * `talkTicks`, and `DIALOG` takes the answer from `answer`.
- */
+   * The dialog layer (faces, captions, the answer menu, speech): default on. `false`: a line waits
+   * `talkTicks`, and `DIALOG` takes the answer from `answer`.
+   */
   dialogs?: boolean;
   /** Where the sound goes (WebAudioBackend in the page, a fake one in tests); null / absent = a game without sound */
   backend?: AudioBackend | null;
@@ -67,9 +67,9 @@ export interface PlayOptions {
   /** Loads the `MUSIC\*.PMS` tracks ahead (default on when there is a backend) */
   preloadMusic?: boolean;
   /**
- * The options of the game (`g_config`); the F4 menu edits this very object. Absent = built from
- * `config` / `walkSpeed` and the defaults. The page passes what `ConfigStore` loaded.
- */
+   * The options of the game (`g_config`); the F4 menu edits this very object. Absent = built from
+   * `config` / `walkSpeed` and the defaults. The page passes what `ConfigStore` loaded.
+   */
   settings?: GameConfig;
   /** Called when an options window is left (the original writes the registry then; the page saves to localStorage) */
   persistSettings?: (config: GameConfig) => void;
@@ -80,10 +80,10 @@ export interface PlayOptions {
   /** `Inventory_Clear`: a new game and the return after an exit film empty the coat (hangs the inventory here) */
   onNewGame?: () => void;
   /**
- * Saving and loading: F2/F3 and the menu open the file windows (`saveMode` "files") or the
- * slot windows ("slots", the start screen's mode), F5/F6 the quick save, the autosave runs at the first frame of a scene.
- * Absent = the keys do nothing and the menu's "Load"/"Save" stay without effect (tests, `?scene=` without storage).
- */
+   * Saving and loading: F2/F3 and the menu open the file windows (`saveMode` "files") or the
+   * slot windows ("slots", the start screen's mode), F5/F6 the quick save, the autosave runs at the first frame of a scene.
+   * Absent = the keys do nothing and the menu's "Load"/"Save" stay without effect (tests, `?scene=` without storage).
+   */
   save?: SaveManager;
   saveMode?: "files" | "slots";
   /** The inventory of the start screen: "coat" (default) or "bar" — the item bar at the top of the screen instead of the coat (F1) */

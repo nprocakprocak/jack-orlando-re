@@ -26,7 +26,14 @@ import { Renderer, SCALE_KEEP, Z_UI, type Rect } from "../render";
 import { createWalker, walkWorld, type Walker, type WalkPlan, type WalkWorld } from "../walk";
 import { turningJack, type TurningJack } from "../walk/turn";
 import * as decode from "./decode";
-import type { ObjectSprite, SceneEvent, SceneOptions, ScenePlayerState, SceneSources, TickResult } from "./player-state";
+import type {
+  ObjectSprite,
+  SceneEvent,
+  SceneOptions,
+  ScenePlayerState,
+  SceneSources,
+  TickResult,
+} from "./player-state";
 import * as jackBody from "./player-jack";
 import * as objectBody from "./player-objects";
 import * as personBody from "./player-persons";
@@ -53,6 +60,8 @@ function emptyWorld(): WalkWorld {
   return { walk: [], objects: [], perspective: { horizonY: 0, refY: 1, refScale: 1 } };
 }
 
+// Prototype wrappers stay one call. Prettier would split them past the 400-line ceiling.
+// prettier-ignore
 export class ScenePlayer {
   readonly scene: Scene;
   readonly world: WalkWorld;

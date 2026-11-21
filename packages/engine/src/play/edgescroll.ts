@@ -64,7 +64,13 @@ export function edgeFrame(st: EdgeState, inp: EdgeInput): EdgeResult {
   let { mode, saved } = st;
   const out: EdgeResult = { mode, saved, prevScrolling: st.prevScrolling, dir: null, walkTo: null };
   const inZone = mode === MODE_SCROLL_LEFT || mode === MODE_SCROLL_RIGHT;
-  const env = { mode, mouseX: inp.mouseX + inp.scrollX, scrollX: inp.scrollX, scrollMin: inp.scrollMin, scrollMax: inp.scrollMax };
+  const env = {
+    mode,
+    mouseX: inp.mouseX + inp.scrollX,
+    scrollX: inp.scrollX,
+    scrollMin: inp.scrollMin,
+    scrollMax: inp.scrollMax,
+  };
   if (!inZone && mode !== CursorMode.Item && !inp.noControl && inp.bgWide && !inp.menuOrText) {
     ({ mode, saved } = edgeScrollMode(env, saved));
     env.mode = mode;

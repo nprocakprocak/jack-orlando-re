@@ -20,7 +20,16 @@ import {
 } from "./turn";
 
 /** All (dir, facing) states Jack_WalkToPoint can produce (front and back are never mirrored). */
-const STATES: [number, Facing][] = [[0, 1], [2, 1], [1, 1], [1, -1], [3, 1], [3, -1], [4, 1], [4, -1]];
+const STATES: [number, Facing][] = [
+  [0, 1],
+  [2, 1],
+  [1, 1],
+  [1, -1],
+  [3, 1],
+  [3, -1],
+  [4, 1],
+  [4, -1],
+];
 /** ROTP image showing each direction: 1 front, 5 three-quarter front, 9 profile, 13 three-quarter back, 17 back. */
 const POSE: Record<number, number> = { 0: 1, 3: 5, 1: 9, 4: 13, 2: 17 };
 const isSpot = (s: TurnStep[]) => s.every((x) => x.anim >= 13 && x.anim <= 20);
@@ -168,9 +177,23 @@ describe("frames, hot spots, timing", () => {
   });
 
   it("turnShadow: walking turns offset the still shadow, on-the-spot turns use SHROT with y offset only", () => {
-    expect(turnShadow(3, 1, -1, 100, 200, 0.5)).toEqual({ kind: "walk", x: 90, y: 202, frame: 3, file: null, facing: -1 });
+    expect(turnShadow(3, 1, -1, 100, 200, 0.5)).toEqual({
+      kind: "walk",
+      x: 90,
+      y: 202,
+      frame: 3,
+      file: null,
+      facing: -1,
+    });
     expect(turnShadow(8, 0, 1, 100, 200, 1)?.frame).toBe(6);
-    expect(turnShadow(15, 1, 1, 100.7, 200, 0.5)).toEqual({ kind: "rot", x: 100, y: 205, frame: 1, file: "SHROT07.PBM", facing: 1 });
+    expect(turnShadow(15, 1, 1, 100.7, 200, 0.5)).toEqual({
+      kind: "rot",
+      x: 100,
+      y: 205,
+      frame: 1,
+      file: "SHROT07.PBM",
+      facing: 1,
+    });
     expect(turnShadow(11, 0, 1, 0, 0, 1)).toBeNull();
   });
 });
@@ -188,7 +211,9 @@ describe("TurnPlayer", () => {
       if (r.ended) ends.push(r.ended.anim);
       expect(r.done).toBe(i === 15);
     }
-    expect(drawn).toEqual([8, 7, 6, 5, 4, 3, 2, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((n) => `ROTP${String(n).padStart(2, "0")}.PBM`));
+    expect(drawn).toEqual(
+      [8, 7, 6, 5, 4, 3, 2, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((n) => `ROTP${String(n).padStart(2, "0")}.PBM`),
+    );
     expect(sounds).toBe(1);
     expect(ends).toEqual([15, 16, 17, 18]);
     expect(p.step(false, 0.5)).toEqual({ frame: null, stepSound: false, ended: null, done: true });

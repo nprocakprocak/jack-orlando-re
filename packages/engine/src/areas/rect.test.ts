@@ -1,5 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { cursorHitRect, spriteFlagged, spritePasses, spriteClickTarget, spriteReaction, type FlagSprite, type SpriteCandidate } from "./index";
+import {
+  cursorHitRect,
+  spriteFlagged,
+  spritePasses,
+  spriteClickTarget,
+  spriteReaction,
+  type FlagSprite,
+  type SpriteCandidate,
+} from "./index";
 
 describe("cursorHitRect (Sprite_SetOverlay)", () => {
   it("is the cursor image centred on the mouse when there was no previous rectangle", () => {
@@ -45,7 +53,11 @@ describe("the flag makes small sprites easy to take", () => {
   it("the pointer (0) and the magnifier (1) need the pixel for a click; the pointer's test also sees the flag", () => {
     expect(spriteClickTarget([tool, wall], 0)).toBe(-1);
     expect(spriteClickTarget([tool, wall], 1)).toBe(-1);
-    const port = { exists: (n: string) => n === "BRANIE-PRZYBORNIK", start: () => -1, interruptOutMacros: () => {} } as never;
+    const port = {
+      exists: (n: string) => n === "BRANIE-PRZYBORNIK",
+      start: () => -1,
+      interruptOutMacros: () => {},
+    } as never;
     expect(spriteReaction([tool, wall], port, 4, { verb: "BRANIE", item: null }).exists).toBe(true);
     expect(spriteReaction([tool], port, 1, { verb: "PATRZENIE", item: null }).over).toBe(false);
   });

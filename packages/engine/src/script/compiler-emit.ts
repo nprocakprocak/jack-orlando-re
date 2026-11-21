@@ -1,7 +1,24 @@
 import { Tokens, cAtof, cAtoi, cUpper, s16 } from "../formats/global";
 import {
-  A, DONOTHING, ENDIF, JACK, MAX_COMMANDS, MAX_MACROS, MacroError, O, P, S, SPEC, V, WORDS, stripBrackets,
-  type Command, type Macro, type Program, type RefKind, type Step,
+  A,
+  DONOTHING,
+  ENDIF,
+  JACK,
+  MAX_COMMANDS,
+  MAX_MACROS,
+  MacroError,
+  O,
+  P,
+  S,
+  SPEC,
+  V,
+  WORDS,
+  stripBrackets,
+  type Command,
+  type Macro,
+  type Program,
+  type RefKind,
+  type Step,
 } from "./compiler-words";
 
 const SPEAKERS: Readonly<Record<string, [number, number | null]>> = {
@@ -86,7 +103,12 @@ class Compiler {
       head = this.word("head");
     }
     for (;;) {
-      const macro: Macro = { name: cUpper(stripBrackets(head)), start: this.commands.length, count: 0, line: this.line(headPos) };
+      const macro: Macro = {
+        name: cUpper(stripBrackets(head)),
+        start: this.commands.length,
+        count: 0,
+        line: this.line(headPos),
+      };
       this.macros.push(macro);
       for (;;) {
         const { word, start } = this.nextCommandWord();
@@ -111,7 +133,17 @@ class Compiler {
 
   private command(word: string, line: number): void {
     const code = WORDS[word] ?? DONOTHING;
-    this.cmd = { code, word, line, n1: "", n2: "", a: [0, 0, 0, 0, 0, 0, 0], f: null, c: null, refs: [] };
+    this.cmd = {
+      code,
+      word,
+      line,
+      n1: "",
+      n2: "",
+      a: [0, 0, 0, 0, 0, 0, 0],
+      f: null,
+      c: null,
+      refs: [],
+    };
     this.commands.push(this.cmd);
     const spec = SPEC[code];
     if (spec) this.steps(spec);
@@ -179,7 +211,11 @@ class Compiler {
         this.steps(["n1", ["s", 0], ["r", 0, "dialog", 0]]);
         break;
       case 0x0e: // IFANSWER
-        this.steps([["s", 2], ["s", 0], ["r", 2, "dialog", 2]]);
+        this.steps([
+          ["s", 2],
+          ["s", 0],
+          ["r", 2, "dialog", 2],
+        ]);
         a[1] = this.depth++;
         break;
       case ENDIF:
@@ -229,7 +265,10 @@ class Compiler {
       case 0x96: // SETPOSSCROLL L|R x y
         this.steps(["n1"]);
         a[2] = cmd.n1.slice(0, 1) === "L" ? 0 : 1;
-        this.steps([["s", 0], ["s", 1]]);
+        this.steps([
+          ["s", 0],
+          ["s", 1],
+        ]);
         break;
       case 0x9b: // SHOWSHADOW EXTRA|person a b f
       case 0x9d: // HIDESHADOW EXTRA|person
@@ -248,7 +287,10 @@ class Compiler {
     const tok = this.argToken("tmp");
     const i = tok.indexOf("-", 1);
     cmd.n1 = (i < 0 ? tok : tok.slice(0, i + 1)) + "22.PMS";
-    this.steps([["s", 0], ["s", 1]]);
+    this.steps([
+      ["s", 0],
+      ["s", 1],
+    ]);
   }
 
   /** WALKEFFECT person steps sound, with the extra shorts when the person is not Jack. */
@@ -256,7 +298,12 @@ class Compiler {
     const cmd = this.cmd;
     const a = cmd.a;
     this.steps(["n1", ["s", 0], "n2", ["r", 3, P, "n1"]]);
-    if (a[3] !== JACK) this.steps([["s", 1], ["s", 2], ["s", 5]]);
+    if (a[3] !== JACK)
+      this.steps([
+        ["s", 1],
+        ["s", 2],
+        ["s", 5],
+      ]);
     this.steps([["r", 4, S, "n2"]]);
   }
 

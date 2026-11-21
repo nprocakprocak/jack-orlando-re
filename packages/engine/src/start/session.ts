@@ -15,9 +15,9 @@ export class Disposables {
   }
 
   /**
- * Runs every disposer once, last added first. A failing one does not stop the rest; the failures are returned
- * as "name: message". Disposers added while disposing belong to the next round.
- */
+   * Runs every disposer once, last added first. A failing one does not stop the rest; the failures are returned
+   * as "name: message". Disposers added while disposing belong to the next round.
+   */
   async dispose(): Promise<string[]> {
     const items = this.list.splice(0).reverse();
     const errors: string[] = [];

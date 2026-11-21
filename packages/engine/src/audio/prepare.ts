@@ -1,6 +1,7 @@
 // Sound (formats/sound.ts) -> PreparedSound.
 
-import { Sound, SOUND_RATE } from "../formats/sound";
+import type { Sound } from "../formats/sound";
+import { SOUND_RATE } from "../formats/sound";
 import type { PreparedSound } from "./types";
 
 /**

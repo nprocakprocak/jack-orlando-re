@@ -6,8 +6,14 @@ const ANIM: ObjectAnim = {
   object: 3,
   name: "KA1.BM",
   count: 1,
-  recs: [[1, 2, 3, 2], [3, -2, 1]],
-  images: [["KA2.PBM", 1, -2], ["KA3.PBM", 0, 4]],
+  recs: [
+    [1, 2, 3, 2],
+    [3, -2, 1],
+  ],
+  images: [
+    ["KA2.PBM", 1, -2],
+    ["KA3.PBM", 0, 4],
+  ],
 };
 
 function run(a: ObjectAnimation, n: number): ObjectTick[] {
@@ -77,7 +83,10 @@ describe("ObjectAnimation (.ACI)", () => {
     const a = new ObjectAnimation(ANIM);
     a.start({ mode: 4, delay: 1, rec: 0 });
     a.stopAt = 2;
-    a.effects = [{ frame: 1, rec: 0, sound: "X.SND", channel: 0, volume: 40 }, { frame: 1, rec: 1, sound: "Y.SND", channel: 0, volume: 40 }];
+    a.effects = [
+      { frame: 1, rec: 0, sound: "X.SND", channel: 0, volume: 40 },
+      { frame: 1, rec: 1, sound: "Y.SND", channel: 0, volume: 40 },
+    ];
     const t = run(a, 3);
     expect(t[1].sounds.map((e) => e.sound)).toEqual(["X.SND"]);
     expect(t[1].stopped).toBe("stop");

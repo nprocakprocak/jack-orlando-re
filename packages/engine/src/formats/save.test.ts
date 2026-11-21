@@ -64,7 +64,12 @@ const bytes = (s: SaveGame) => writeSave(s);
 
 describe("save on synthetic data", () => {
   it("writes the documented layout", () => {
-    const s = makeSave({ items: [item(5), item(0, "MONEY.BM")], autoincMin: -2, autoincMax: 200, autoincVar: 21 });
+    const s = makeSave({
+      items: [item(5), item(0, "MONEY.BM")],
+      autoincMin: -2,
+      autoincMax: 200,
+      autoincVar: 21,
+    });
     const d = bytes(s);
     expect(d.length).toBe(EMPTY_SIZE + 2 * ITEM_SIZE);
     expect(new TextDecoder().decode(d.subarray(0, 25))).toBe("Jack Orlando - normal ver");
@@ -83,7 +88,12 @@ describe("save on synthetic data", () => {
   });
 
   it("round-trips parse -> write -> parse", () => {
-    const s = makeSave({ items: [item(0), item(83, "GAZ_I.047", 42, 42)], jackScale: 0.1, jackFacing: -1, jackDir: 4 });
+    const s = makeSave({
+      items: [item(0), item(83, "GAZ_I.047", 42, 42)],
+      jackScale: 0.1,
+      jackFacing: -1,
+      jackDir: 4,
+    });
     const d = bytes(s);
     const p = parseSave(d);
     expect(writeSave(p)).toEqual(d);
@@ -204,7 +214,9 @@ describe("save on synthetic data", () => {
     ]);
     const odd = copyHeader(currentHeader(false));
     odd[20] = 0x58;
-    expect(check("x.SAV", { header: odd, restorePose: 0 })).toEqual(["copy header: rest differs from the current header"]);
+    expect(check("x.SAV", { header: odd, restorePose: 0 })).toEqual([
+      "copy header: rest differs from the current header",
+    ]);
     expect(check("x.SAV", { header: new Uint8Array(HEADER_SIZE).fill(0x41) })).toEqual(["header has no NUL"]);
     expect(check("x.SAV", { music: encodeCstr("TR02-22.PMS", MUSIC_SIZE) })).toEqual([
       "menu music TR02 saved (the writer replaces it)",

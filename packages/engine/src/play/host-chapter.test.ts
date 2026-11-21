@@ -69,10 +69,20 @@ describe("SceneHost: commands of chapter 1", () => {
   });
 
   it("the object commands of reach the scene and are 'done' whatever they return", () => {
-    const s = setup("[A] ShowAnimaFrame DRB 13 SetDarknessAnima SZYBY 0.7 BrightnessE D0 0.5 ClearAnimaBuffer FLX0 MoveEP SAS 17 -3 RelativeMulP BOB 0.8 RelativeMulP JACK 0.9 Let A 1");
+    const s = setup(
+      "[A] ShowAnimaFrame DRB 13 SetDarknessAnima SZYBY 0.7 BrightnessE D0 0.5 ClearAnimaBuffer FLX0 MoveEP SAS 17 -3 RelativeMulP BOB 0.8 RelativeMulP JACK 0.9 Let A 1",
+    );
     s.it.start("A");
     for (let i = 0; i < 9; i++) step(s);
-    expect(s.scene.calls).toEqual(["frame DRB 13", "dark SZYBY 0.699999988079071", "bright D0 0.5", "clear FLX0", "movep SAS 17,-3", "light 0 0.800000011920929", "light null 0.8999999761581421"]);
+    expect(s.scene.calls).toEqual([
+      "frame DRB 13",
+      "dark SZYBY 0.699999988079071",
+      "bright D0 0.5",
+      "clear FLX0",
+      "movep SAS 17,-3",
+      "light 0 0.800000011920929",
+      "light null 0.8999999761581421",
+    ]);
     expect(s.it.vars.get("A")).toBe(1);
     expect(s.host.skipped.size).toBe(0);
   });

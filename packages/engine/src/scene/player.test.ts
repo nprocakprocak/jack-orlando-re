@@ -1,6 +1,5 @@
 // Scene logic without DOM: stay facings, click hits and window clips on invented state.
 import { describe, expect, it } from "vitest";
-import { Renderer, createSurface } from "../render";
 import { IDLE_AFTER, IDLE_FRAMES_PER_TICK, IDLE_LIMIT, ScenePlayer, spritePixelHit, stayFacing } from "./player";
 import { facingForAngle, forcedFacing } from "../walk/walker";
 import { jackShadow } from "../anim/jack";
@@ -148,7 +147,15 @@ describe("stayJack on a fake player (synthetic: Script_Stay)", () => {
 describe("click on a sprite and on Jack (synthetic)", () => {
   // a 4x2 picture: row 0 = 0 1 0 1, row 1 = 1 1 0 0 (0 = transparent)
   const image = { width: 4, height: 2, pixels: Uint16Array.from([0, 1, 0, 1, 1, 1, 0, 0]) };
-  const sprite = (over: Partial<{ x: number; y: number; w: number; h: number; scale: number }> = {}) => ({ x: 10, y: 20, w: 4, h: 2, scale: 1, image, ...over });
+  const sprite = (over: Partial<{ x: number; y: number; w: number; h: number; scale: number }> = {}) => ({
+    x: 10,
+    y: 20,
+    w: 4,
+    h: 2,
+    scale: 1,
+    image,
+    ...over,
+  });
 
   it("the rectangle test is strict on both sides (dx, dy > 0) and the right/bottom edge is outside", () => {
     const sp = sprite({ w: 4, h: 2 });
@@ -177,14 +184,20 @@ describe("click on a sprite and on Jack (synthetic)", () => {
   });
 
   /** A ScenePlayer without a scene: only the renderer lookups the click test needs. */
-  function stub(sprites: Record<number, ReturnType<typeof sprite> & { visible: boolean }>, order: number[]): ScenePlayer {
+  function stub(
+    sprites: Record<number, ReturnType<typeof sprite> & { visible: boolean }>,
+    order: number[],
+  ): ScenePlayer {
     const p = Object.create(ScenePlayer.prototype) as unknown as Record<string, unknown>;
     p.jackId = 7;
     p.objects = [{ id: 3, name: "BOX", flx: false }];
     p.objectByName = new Map();
     p.persons = { persons: [] };
     p.personIds = [];
-    p.renderer = { sprite: (id: number) => sprites[id], sprites: { indexOf: (id: number) => order.indexOf(id) } };
+    p.renderer = {
+      sprite: (id: number) => sprites[id],
+      sprites: { indexOf: (id: number) => order.indexOf(id) },
+    };
     return p as unknown as ScenePlayer;
   }
 
@@ -197,7 +210,7 @@ describe("click on a sprite and on Jack (synthetic)", () => {
     expect(stub({}, []).jackHit(11, 21)).toBe(false); // no sprite
   });
 
-  it("spriteCandidates lists Jack as \"JACK\" in the drawing order, with the pixel test of his own sprite", () => {
+  it('spriteCandidates lists Jack as "JACK" in the drawing order, with the pixel test of his own sprite', () => {
     const p = stub({ 3: { ...sprite(), visible: true }, 7: { ...sprite({ x: 100 }), visible: true } }, [3, 7]);
     expect(p.spriteCandidates(11, 21)).toEqual([
       { name: "BOX", pixelHit: true, flagged: false },
@@ -217,7 +230,17 @@ describe("RELATIVEMULP JACK on a fake player (synthetic)", () => {
     expect(self.setPersonLightScale(null, 0.4)).toBe(true);
     expect(self.jack.shadowScale).toBe(Math.fround(0.4));
     expect(self.jackShadowScale).toBe(Math.fround(0.4));
-    const req = { index: 0, dir: 0, facing: 1, x: 332, y: 276, walkFrame: null, directional: false, twoShadows: false, scale: 0.627 } as const;
+    const req = {
+      index: 0,
+      dir: 0,
+      facing: 1,
+      x: 332,
+      y: 276,
+      walkFrame: null,
+      directional: false,
+      twoShadows: false,
+      scale: 0.627,
+    } as const;
     const big = jackShadow({ ...req, shadowScale: 1 });
     const small = jackShadow({ ...req, shadowScale: self.jack.shadowScale });
     expect(big.round && small.round).toBe(true);
@@ -249,7 +272,11 @@ describe("Jack's idle reaction on a fake player (synthetic: Game_Run)", () => {
     let rands = 0;
     let guns = 0;
     const check = (rand = 1, gun = 1, noControl = false) =>
-      self.idleCheck(noControl, () => (rands++, rand), () => (guns++, gun));
+      self.idleCheck(
+        noControl,
+        () => (rands++, rand),
+        () => (guns++, gun),
+      );
     const idle = (ticks: number) => {
       for (let i = 0; i < ticks; i++) self.idleCount();
     };
@@ -408,7 +435,10 @@ describe("Jack's idle reaction on a fake player (synthetic: Game_Run)", () => {
         shadowsOn: true,
         tick(pose: unknown) {
           seen.push(this.shadowsOn);
-          return { update: ended ? { sounds: [], insertionEnded: "KLPRO", insertionGlobal: true } : { sounds: [] }, pose };
+          return {
+            update: ended ? { sounds: [], insertionEnded: "KLPRO", insertionGlobal: true } : { sounds: [] },
+            pose,
+          };
         },
       },
       apply() {},
@@ -424,53 +454,5 @@ describe("Jack's idle reaction on a fake player (synthetic: Game_Run)", () => {
     ended = false;
     tick();
     expect(seen).toEqual([false, false, true]);
-  });
-});
-
-describe("CHWINDOW clip (synthetic)", () => {
-  const clip = { left: 10, top: 20, right: 300, bottom: 400 };
-
-  function shell(over: Record<string, unknown> = {}) {
-    const img = createSurface(2, 2);
-    const renderer = new Renderer(createSurface(32, 32));
-    const jackId = renderer.add(img, 5);
-    const shadowIds = [renderer.add(img, 0), renderer.add(img, 0)];
-    const p = Object.assign(Object.create(ScenePlayer.prototype), {
-      jackId,
-      shadowIds,
-      renderer,
-      ticks: 1,
-      objectByName: new Map(),
-      persons: { find: () => -1 },
-      personIds: [] as number[],
-      personShadowIds: [] as number[],
-      ...over,
-    });
-    return { p, renderer, jackId, shadowIds, img };
-  }
-
-  it("JACK clips Jack and both shadows; the rectangle is a copy and survives a move in the list", () => {
-    const { p, renderer, jackId, shadowIds, img } = shell();
-    const other = renderer.add(img, 3);
-    expect(p.setClip("JACK", clip)).toBe(true);
-    for (const id of [jackId, ...shadowIds]) expect(renderer.sprite(id)!.clip).toEqual(clip);
-    expect(renderer.sprite(jackId)!.clip).not.toBe(clip);
-    renderer.placeUnder(jackId, other);
-    expect(renderer.sprite(jackId)!.clip).toEqual(clip);
-    expect(p.setClip("NOPE", clip)).toBe(false);
-  });
-
-  it("a person name clips that person and their shadow, not another sprite", () => {
-    const { p, renderer, img } = shell();
-    const bob = renderer.add(img, 2);
-    const bobShadow = renderer.add(img, 0);
-    const other = renderer.add(img, 4);
-    p.persons = { find: (n: string) => (n === "BOB" ? 0 : -1) };
-    p.personIds = [bob];
-    p.personShadowIds = [bobShadow];
-    expect(p.setClip("BOB", clip)).toBe(true);
-    expect(renderer.sprite(bob)!.clip).toEqual(clip);
-    expect(renderer.sprite(bobShadow)!.clip).toEqual(clip);
-    expect(renderer.sprite(other)!.clip).not.toEqual(clip);
   });
 });

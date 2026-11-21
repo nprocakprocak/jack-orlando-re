@@ -51,7 +51,11 @@ export function captionLineX(worldX: number, scrollAtStart: number): number {
  * so the first refusal is the second line); a click right of the middle of the screen (`clickX > scrollX + 320`) opens Jack's face in the
  * left window (channel 1), else in the right one (channel 2); the caption is on that side.
  */
-export function jackRefusal(counter: number, clickX: number, scrollX: number): { index: number; side: Side; channel: number } {
+export function jackRefusal(
+  counter: number,
+  clickX: number,
+  scrollX: number,
+): { index: number; side: Side; channel: number } {
   const left = scrollX + 0x140 < clickX;
   return { index: (counter + 1) % 3, side: left ? "L" : "R", channel: left ? 1 : 2 };
 }

@@ -3,7 +3,17 @@ import { describe, expect, it } from "vitest";
 import type { Pak } from "../formats/pak";
 import { AnimError } from "./animator";
 import { loadWalkFrames } from "./assets";
-import { STAND_FRAMES, STAND_FRAMES_UNIFORM, standFrameFile, standHotSpot, WALK_SERIES, WALK_SERIES_UNIFORM, uniformAfterLoad, walkFrameFile, walkHotSpotFile } from "./jack";
+import {
+  STAND_FRAMES,
+  STAND_FRAMES_UNIFORM,
+  standFrameFile,
+  standHotSpot,
+  WALK_SERIES,
+  WALK_SERIES_UNIFORM,
+  uniformAfterLoad,
+  walkFrameFile,
+  walkHotSpotFile,
+} from "./jack";
 
 /** .SFB of 12 triples (x, 100 - x, y) with x = base + i. */
 function sfb(base: number): Uint8Array {
@@ -54,7 +64,11 @@ describe("uniform frame names", () => {
 
   it("standing hot spots are the hard-coded ones of", () => {
     expect([0, 1, 2, 3, 4].map((d) => standHotSpot(d as 0, 100, true))).toEqual([
-      [47, 53, 268], [24, 76, 262], [46, 54, 264], [39, 61, 266], [49, 51, 263],
+      [47, 53, 268],
+      [24, 76, 262],
+      [46, 54, 264],
+      [39, 61, 266],
+      [49, 51, 263],
     ]);
   });
 });

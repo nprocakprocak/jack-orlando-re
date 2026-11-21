@@ -31,10 +31,7 @@ function subpathDeclarationEntries(): Plugin {
       for (const name of SUBPATH_ENTRIES) {
         const barrel = path.join(distDir, name, "index.d.ts");
         if (!fs.existsSync(barrel)) continue;
-        fs.writeFileSync(
-          path.join(distDir, `${name}.d.ts`),
-          `export * from "./${name}/index";\n`,
-        );
+        fs.writeFileSync(path.join(distDir, `${name}.d.ts`), `export * from "./${name}/index";\n`);
       }
     },
   };

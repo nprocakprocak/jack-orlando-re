@@ -16,7 +16,14 @@ function rawSound(pcm: number[], opts: { size?: number; loopStart?: number; loop
 function packedSound(
   type: number,
   payload: number[],
-  opts: { packed?: number; unpacked?: number; size?: number; pred?: number; index?: number; predRight?: number } = {},
+  opts: {
+    packed?: number;
+    unpacked?: number;
+    size?: number;
+    pred?: number;
+    index?: number;
+    predRight?: number;
+  } = {},
 ) {
   const head = [
     ...u32(type, opts.packed ?? payload.length, opts.unpacked ?? 0, 0),
@@ -97,11 +104,20 @@ describe("sound on synthetic data", () => {
   it("parses packed IMA mono (.PSD) and stereo (type 0x33) files", () => {
     const mono = new Sound(packedSound(0x32, [0x07, 0, 0, 0], { unpacked: 16, pred: -5, index: 3 }), "PSD");
     expect([mono.kind, mono.dataOffset, mono.size, mono.predictor, mono.index, mono.verify()]).toEqual([
-      "ima", 0x24, 16, -5, 3, [],
+      "ima",
+      0x24,
+      16,
+      -5,
+      3,
+      [],
     ]);
     const stereo = new Sound(packedSound(0x33, Array(8).fill(0), { unpacked: 32, predRight: 7 }));
     expect([stereo.kind, stereo.channels, stereo.dataOffset, stereo.size, stereo.frames]).toEqual([
-      "ima-stereo", 2, 0x18, 32, 8,
+      "ima-stereo",
+      2,
+      0x18,
+      32,
+      8,
     ]);
     expect([...stereo.pcm.subarray(0, 2)]).toEqual([0, 7]);
     expect(stereo.channelData()[1][0]).toBeCloseTo(7 / 32768);
@@ -151,7 +167,10 @@ describe("sound on synthetic data", () => {
     const v = new DataView(w.buffer);
     expect(String.fromCharCode(...w.subarray(0, 4), ...w.subarray(8, 16))).toBe("RIFFWAVEfmt ");
     expect([v.getUint16(22, true), v.getUint32(24, true), v.getUint16(34, true), v.getUint32(40, true)]).toEqual([
-      1, SOUND_RATE, 16, 4,
+      1,
+      SOUND_RATE,
+      16,
+      4,
     ]);
     expect([...w.subarray(44)]).toEqual([1, 0, 2, 0]);
     expect(w.length).toBe(48);

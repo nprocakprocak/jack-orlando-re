@@ -113,9 +113,9 @@ export class JackAnimator {
   shadowScale: number;
   noScale: boolean;
   /**
- * g_jackUniform (mis-read before as "gun"): which frame set the walk and standing frames come from. The game
- * swaps the images in place ; the shown sprite changes with the next frame Jack_Stand or the walk sets.
- */
+   * g_jackUniform (mis-read before as "gun"): which frame set the walk and standing frames come from. The game
+   * swaps the images in place ; the shown sprite changes with the next frame Jack_Stand or the walk sets.
+   */
   uniform: boolean;
   /** horizontal scroll used to pan footsteps */
   scrollX = 0;
@@ -130,7 +130,10 @@ export class JackAnimator {
   private shadowShown: [boolean, boolean] = [false, false];
   private ins: (InsertionStart & { cur: number; end: number }) | null = null;
 
-  constructor(private readonly data: WalkFrames, opts: JackOptions = {}) {
+  constructor(
+    private readonly data: WalkFrames,
+    opts: JackOptions = {},
+  ) {
     this.frameDelay = opts.frameDelay ?? DEFAULT_FRAME_DELAY;
     this.walkSpeed = opts.walkSpeed ?? DEFAULT_WALK_SPEED;
     this.shadowsOn = opts.shadows ?? true;
@@ -160,10 +163,25 @@ export class JackAnimator {
     const u = this.useUniform;
     const hot = standHotSpot(pose.dir, this.set.standWidths[pose.dir], u);
     const [x, y] = placeFrame(pose.x, pose.y, hot, pose.facing, scale, false);
-    const sprite: FrameSprite = { file: standFrameFile(pose.dir, u), source: "resource", x, y, scale, mirrored: pose.facing < 0 };
+    const sprite: FrameSprite = {
+      file: standFrameFile(pose.dir, u),
+      source: "resource",
+      x,
+      y,
+      scale,
+      mirrored: pose.facing < 0,
+    };
     const shadow = jackShadow({
-      index: 0, dir: pose.dir, facing: pose.facing, x: ftol(pose.x), y: ftol(pose.y), walkFrame: null,
-      directional: true, twoShadows: false, scale, shadowScale: this.shadowScale,
+      index: 0,
+      dir: pose.dir,
+      facing: pose.facing,
+      x: ftol(pose.x),
+      y: ftol(pose.y),
+      walkFrame: null,
+      directional: true,
+      twoShadows: false,
+      scale,
+      shadowScale: this.shadowScale,
     });
     this.walkFrame = WALK_FRAME_AFTER_STAND;
     this.shadowShown[0] = true;
@@ -194,10 +212,10 @@ export class JackAnimator {
   }
 
   /**
- * One 15-ms logic tick: Game_TimerTick decrements the delay, then Game_Run shows the next
- * frame if it ran out. move: called on walk steps before the frame is drawn (the game moves Jack
- * by its step times the scale there, ; path following is 's).
- */
+   * One 15-ms logic tick: Game_TimerTick decrements the delay, then Game_Run shows the next
+   * frame if it ran out. move: called on walk steps before the frame is drawn (the game moves Jack
+   * by its step times the scale there, ; path following is 's).
+   */
   tick(pose: JackPose, move?: (p: JackPose) => JackPose): { update: JackUpdate; pose: JackPose } {
     this.delay--;
     if (this.delay > 0) return { update: { sounds: [] }, pose };
@@ -217,20 +235,40 @@ export class JackAnimator {
     if (f === 0 || f === 6) {
       // KROK1/KROK2 alternately; the game checks that the scene has the sound
       const [v1, v2] = stepVolumes(pose.scale, pose.x, this.scrollX);
-      sounds.push({ sound: this.stepToggle ? "KROK1.SND" : "KROK2.SND", channels: [2, 1], volumes: [v2, v1], kind: "step" });
+      sounds.push({
+        sound: this.stepToggle ? "KROK1.SND" : "KROK2.SND",
+        channels: [2, 1],
+        volumes: [v2, v1],
+        kind: "step",
+      });
       this.stepToggle = !this.stepToggle;
     }
     // the walk path has no noScale test (is read only by Jack_Stand and insertions)
     const scale = pose.scale;
     const hot = this.set.hotSpots[pose.dir][f];
     const [x, y] = placeFrame(pose.x, pose.y, hot, pose.facing, scale, false);
-    const sprite: FrameSprite = { file: walkFrameFile(pose.dir, f, this.useUniform), source: "resource", x, y, scale, mirrored: pose.facing < 0 };
+    const sprite: FrameSprite = {
+      file: walkFrameFile(pose.dir, f, this.useUniform),
+      source: "resource",
+      x,
+      y,
+      scale,
+      mirrored: pose.facing < 0,
+    };
     this.walkFrame = (f + 1) % WALK_FRAMES;
     const update: JackUpdate = { sprite, sounds, walkFrame: f };
     if (this.shadowsOn) {
       const s1 = jackShadow({
-        index: 0, dir: pose.dir, facing: pose.facing, x: ftol(pose.x), y: ftol(pose.y), walkFrame: this.walkFrame,
-        directional: false, twoShadows: false, scale: pose.scale, shadowScale: this.shadowScale,
+        index: 0,
+        dir: pose.dir,
+        facing: pose.facing,
+        x: ftol(pose.x),
+        y: ftol(pose.y),
+        walkFrame: this.walkFrame,
+        directional: false,
+        twoShadows: false,
+        scale: pose.scale,
+        shadowScale: this.shadowScale,
       });
       this.shadowShown[0] = true;
       update.shadows = [s1, this.hide(1)];
@@ -248,7 +286,12 @@ export class JackAnimator {
     if (frame?.effect) {
       const e = frame.effect;
       const channels = e.channel === 0 ? [1, 2] : [e.channel];
-      sounds.push({ sound: e.sound, channels, volumes: channels.map(() => e.volume), kind: "insertion" });
+      sounds.push({
+        sound: e.sound,
+        channels,
+        volumes: channels.map(() => e.volume),
+        kind: "insertion",
+      });
     }
     this.delay = this.frameDelay;
     if (ins.cur + 1 > ins.end) {
@@ -262,7 +305,14 @@ export class JackAnimator {
     if (ins.global) s = Math.min(1, Math.max(f32(MIN_SCALE), f32(s * (ins.scaleMul ?? 1))));
     const hot: HotSpot = [frame.xRight, frame.xLeft, frame.y];
     const [x, y] = placeFrame(pose.x, pose.y, hot, ins.facing, s, true);
-    const sprite: FrameSprite = { file: frame.file, source: ins.global ? "global" : "scene", x, y, scale: s, mirrored: ins.facing < 0 };
+    const sprite: FrameSprite = {
+      file: frame.file,
+      source: ins.global ? "global" : "scene",
+      x,
+      y,
+      scale: s,
+      mirrored: ins.facing < 0,
+    };
     const update: JackUpdate = { sprite, sounds };
     if (this.shadowsOn) update.shadows = this.insertionShadows(frame, pose, base, ins.facing);
     ins.cur++;
@@ -281,10 +331,17 @@ export class JackAnimator {
       }
       const k = this.noScale ? 1 : scale;
       out[index] = jackShadow({
-        index, dir: pose.dir, facing: pose.facing,
-        x: ftol(insFacing === 1 ? pose.x + dx * k : pose.x - dx * k), y: ftol(pose.y + dy * k), walkFrame: null,
+        index,
+        dir: pose.dir,
+        facing: pose.facing,
+        x: ftol(insFacing === 1 ? pose.x + dx * k : pose.x - dx * k),
+        y: ftol(pose.y + dy * k),
+        walkFrame: null,
         // is set for shadow 1 only when both exist, and always before shadow 2
-        directional: false, twoShadows: index === 1 || both, scale, shadowScale: this.shadowScale,
+        directional: false,
+        twoShadows: index === 1 || both,
+        scale,
+        shadowScale: this.shadowScale,
       });
       this.shadowShown[index] = true;
     }

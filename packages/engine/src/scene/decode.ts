@@ -23,18 +23,29 @@ export function decodeSceneImage(data: Uint8Array, file: string, pbm = false): I
 /** An empty sprite image: the shadow sprites exist from the start (Sprite_Add at scene start) and get their image when drawn. */
 export const BLANK: Image16 = { width: 1, height: 1, kind: "rgb565", pixels: new Uint16Array(1) };
 
-export function image(this: ScenePlayerState, source: FrameSprite["source"] | "phk", file: string, pbm = false): Image16 {
-    const key = `${source}:${file}`;
-    let img = this.cache.get(key);
-    if (!img) {
-      const pak =
-        source === "resource" ? this.src.resource : source === "scene" ? this.src.ph2 : source === "global" ? this.src.global : this.src.phk;
-      if (!pak) throw new Error(`${this.src.name}: no archive for ${key}`);
-      const data = pak.read(file);
-      img = decodeSceneImage(data, file, pbm);
-      this.cache.set(key, img);
-    }
-    return img;
+export function image(
+  this: ScenePlayerState,
+  source: FrameSprite["source"] | "phk",
+  file: string,
+  pbm = false,
+): Image16 {
+  const key = `${source}:${file}`;
+  let img = this.cache.get(key);
+  if (!img) {
+    const pak =
+      source === "resource"
+        ? this.src.resource
+        : source === "scene"
+          ? this.src.ph2
+          : source === "global"
+            ? this.src.global
+            : this.src.phk;
+    if (!pak) throw new Error(`${this.src.name}: no archive for ${key}`);
+    const data = pak.read(file);
+    img = decodeSceneImage(data, file, pbm);
+    this.cache.set(key, img);
+  }
+  return img;
 }
 
 /**
@@ -42,13 +53,20 @@ export function image(this: ScenePlayerState, source: FrameSprite["source"] | "p
  * is scaled when the brightness is < 1, like the persons' frames.
  */
 export function jackImage(this: ScenePlayerState, source: FrameSprite["source"], file: string): Image16 {
-    const pose = this.pose();
-    const lit = jackBrightness(pose.x, pose.y, this.scene.ccg.lights, pose.scale, this.brightness);
-    // outside every light's range Jack_Stand leaves g_jackBrightness as it was
-    const inRange = lit > this.brightness;
-    if (this.jack.mode !== "stand" || inRange) this.jackLight = lit;
-    if (this.jackLight >= 1 || !file.toUpperCase().endsWith(".PBM")) return this.image(source, file);
-    const pak = source === "resource" ? this.src.resource : source === "scene" ? this.src.ph2 : source === "global" ? this.src.global : this.src.phk;
-    if (!pak) throw new Error(`${this.src.name}: no archive for ${source}:${file}`);
-    return decodePbm(brightenPbm(pak.read(file), this.jackLight), file);
+  const pose = this.pose();
+  const lit = jackBrightness(pose.x, pose.y, this.scene.ccg.lights, pose.scale, this.brightness);
+  // outside every light's range Jack_Stand leaves g_jackBrightness as it was
+  const inRange = lit > this.brightness;
+  if (this.jack.mode !== "stand" || inRange) this.jackLight = lit;
+  if (this.jackLight >= 1 || !file.toUpperCase().endsWith(".PBM")) return this.image(source, file);
+  const pak =
+    source === "resource"
+      ? this.src.resource
+      : source === "scene"
+        ? this.src.ph2
+        : source === "global"
+          ? this.src.global
+          : this.src.phk;
+  if (!pak) throw new Error(`${this.src.name}: no archive for ${source}:${file}`);
+  return decodePbm(brightenPbm(pak.read(file), this.jackLight), file);
 }

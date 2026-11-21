@@ -4,7 +4,17 @@ import type { Font, Glyph } from "../formats/fnt";
 import { createSurface, type Surface16 } from "../render/surface";
 import { Inventory } from "./model";
 import {
-  BAR_HIDDEN_Y, BAR_SHOWN_Y, SLOT_W, STRIP_H, STRIP_W, TopBar, inside, STRIP_BOX, type BarInput, type TopBarHost, type TopBarImages,
+  BAR_HIDDEN_Y,
+  BAR_SHOWN_Y,
+  SLOT_W,
+  STRIP_H,
+  STRIP_W,
+  TopBar,
+  inside,
+  STRIP_BOX,
+  type BarInput,
+  type TopBarHost,
+  type TopBarImages,
 } from "./topbar";
 
 const img = (w: number, h: number, v: number): Surface16 => {
@@ -12,7 +22,13 @@ const img = (w: number, h: number, v: number): Surface16 => {
   s.pixels.fill(v);
   return s;
 };
-const glyph = (code: number): Glyph => ({ code, offset: 0, width: 3, height: 5, pixels: new Uint8Array(15).fill(2) });
+const glyph = (code: number): Glyph => ({
+  code,
+  offset: 0,
+  width: 3,
+  height: 5,
+  pixels: new Uint8Array(15).fill(2),
+});
 const font: Font = { glyphs: Array.from({ length: 256 }, (_, i) => glyph(i)), dataEnd: 0 };
 const images: TopBarImages = {
   panel: img(640, 71, 0x0841),
@@ -43,7 +59,16 @@ function make(macros: string[] = []) {
   return { inv, bar, started, running, log };
 }
 
-const at = (x: number, y: number, o: Partial<BarInput> = {}): BarInput => ({ x, y, down: false, pressed: false, right: false, rightPressed: false, inWindow: true, ...o });
+const at = (x: number, y: number, o: Partial<BarInput> = {}): BarInput => ({
+  x,
+  y,
+  down: false,
+  pressed: false,
+  right: false,
+  rightPressed: false,
+  inWindow: true,
+  ...o,
+});
 const click = (x: number, y: number): BarInput => at(x, y, { down: true, pressed: true });
 const item = (v = 0x7777) => img(10, 10, v);
 

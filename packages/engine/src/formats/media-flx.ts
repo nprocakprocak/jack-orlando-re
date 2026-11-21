@@ -66,7 +66,8 @@ function readChunk(data: Uint8Array, pos: number, end: number): Chunk {
   if (pos + CHUNK_HEAD_SIZE > end) throw new MediaError(`chunk head truncated at ${pos}`);
   const type = data[pos];
   const size = viewOf(data).getUint32(pos + 2, true);
-  if (size < CHUNK_HEAD_SIZE || pos + size > end) throw new MediaError(`chunk type ${type} at ${pos}: bad size ${size}`);
+  if (size < CHUNK_HEAD_SIZE || pos + size > end)
+    throw new MediaError(`chunk type ${type} at ${pos}: bad size ${size}`);
   return { type, size };
 }
 
@@ -178,26 +179,31 @@ export class FrameBuffer {
   }
 
   /**
- * /: head (size, start pixel), then pairs: skip u8,
- * count u8, count index bytes, until the walk reaches base + size. A run may read
- * past that end like in the game; bytes past the end of src read as 0.
- * Returns the offset (from base) where the walk stopped.
- */
+   * /: head (size, start pixel), then pairs: skip u8,
+   * count u8, count index bytes, until the walk reaches base + size. A run may read
+   * past that end like in the game; bytes past the end of src read as 0.
+   * Returns the offset (from base) where the walk stopped.
+   */
   applyDelta(src: Uint8Array, base = 0): number {
     const limit = this.capacity;
     const at = (i: number) => (i < src.length ? src[i] : 0);
     const { indices, pixels, palette } = this;
-    return walkDelta(src, base, (start) => {
-      if (start > limit) throw new MediaError(`delta start ${start} outside the buffer (${limit})`);
-    }, (pos, n, p, end) => {
-      if (p + n > end) this.overruns++;
-      if (pos + n > limit) throw new MediaError(`delta writes pixel ${pos + n - 1} outside the buffer (${limit})`);
-      for (let k = 0; k < n; k++) {
-        const c = at(p + k);
-        indices[pos + k] = c;
-        pixels[pos + k] = palette[c];
-      }
-    });
+    return walkDelta(
+      src,
+      base,
+      (start) => {
+        if (start > limit) throw new MediaError(`delta start ${start} outside the buffer (${limit})`);
+      },
+      (pos, n, p, end) => {
+        if (p + n > end) this.overruns++;
+        if (pos + n > limit) throw new MediaError(`delta writes pixel ${pos + n - 1} outside the buffer (${limit})`);
+        for (let k = 0; k < n; k++) {
+          const c = at(p + k);
+          indices[pos + k] = c;
+          pixels[pos + k] = palette[c];
+        }
+      },
+    );
   }
 }
 
@@ -271,7 +277,12 @@ export function decodeFrame(
       case CHUNK_RECT:
         if (!allowRect || frame.rect) throw new MediaError(`unexpected rect chunk at ${pos}`);
         if (size !== CHUNK_HEAD_SIZE + RECT_SIZE) throw new MediaError(`rect chunk at ${pos}: size ${size}`);
-        frame.rect = [v.getInt16(body, true), v.getInt16(body + 2, true), v.getInt16(body + 4, true), v.getInt16(body + 6, true)];
+        frame.rect = [
+          v.getInt16(body, true),
+          v.getInt16(body + 2, true),
+          v.getInt16(body + 4, true),
+          v.getInt16(body + 6, true),
+        ];
         break;
       case CHUNK_EMPTY:
         if (size !== CHUNK_HEAD_SIZE) throw new MediaError(`empty frame chunk at ${pos}: size ${size}`);
@@ -284,7 +295,8 @@ export function decodeFrame(
       case CHUNK_PACKED: {
         const { buf, next } = unpackRle(data, body, pos + size, fb.unpacked);
         fb.unpacked = buf;
-        if (next !== pos + size) throw new MediaError(`packed chunk at ${pos}: ${pos + size - next} bytes left after unpacking`);
+        if (next !== pos + size)
+          throw new MediaError(`packed chunk at ${pos}: ${pos + size - next} bytes left after unpacking`);
         fb.applyDelta(buf);
         break;
       }

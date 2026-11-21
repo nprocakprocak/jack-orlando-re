@@ -6,7 +6,16 @@ import { drawWindowFrame } from "../gui/draw";
 import type { Surface16 } from "../render/surface";
 import { blitCopy, createSurface } from "../render/surface";
 import {
-  DIK_MAP, FRAME_MS, IMAGE_INSET, MAP_X, MAP_Y, MARKER_FRAMES, MARKER_SCALE, MARKER_SETS, WINDOW_H, WINDOW_W,
+  DIK_MAP,
+  FRAME_MS,
+  IMAGE_INSET,
+  MAP_X,
+  MAP_Y,
+  MARKER_FRAMES,
+  MARKER_SCALE,
+  MARKER_SETS,
+  WINDOW_H,
+  WINDOW_W,
 } from "./layout";
 
 export interface MiniMapAssets {
@@ -49,9 +58,9 @@ export class MiniMapScreen {
   }
 
   /**
- * Entry: `scene` = the visible 640x480 picture without the cursor (`Sprite_Remove` of the cursor
- * sprite, then `Render_ComposeRegion` of the window rectangle). `mHeld` = M is still down (it is, right after the press).
- */
+   * Entry: `scene` = the visible 640x480 picture without the cursor (`Sprite_Remove` of the cursor
+   * sprite, then `Render_ComposeRegion` of the window rectangle). `mHeld` = M is still down (it is, right after the press).
+   */
   open(assets: MiniMapAssets, scene: Surface16, mHeld = true): void {
     this.assets = assets;
     this.scaled = new Array(assets.frames.length).fill(null);
@@ -97,7 +106,16 @@ export class MiniMapScreen {
 
   /** The picture to show: the window with the marker, or (after the close key) the scene alone. */
   draw(screen: Surface16): void {
-    blitCopy(this.phase === "showing" || this.phase === "waitOpen" ? this.canvas : this.snapshot, 0, 0, 640, 480, screen, 0, 0);
+    blitCopy(
+      this.phase === "showing" || this.phase === "waitOpen" ? this.canvas : this.snapshot,
+      0,
+      0,
+      640,
+      480,
+      screen,
+      0,
+      0,
+    );
   }
 
   /** Index of the marker frame drawn last (MARKER_FRAMES - 1 before the first one). */

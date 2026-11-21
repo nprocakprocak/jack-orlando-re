@@ -26,7 +26,9 @@ describe("SceneHost: the inventory commands", () => {
   }
 
   it("TAKE, HAVETOOL, NOHAVETOOL, NOHAVE, MOUSETOTOOL and CLEARMENUBAR reach the game, in order, with the object / item name", () => {
-    const s = withItems("[A] Take KEY.011 HaveTool MIOT.BM NoHaveTool KEY.011 NoHave MouseToTool ClearMenuBar 1 Let A 1");
+    const s = withItems(
+      "[A] Take KEY.011 HaveTool MIOT.BM NoHaveTool KEY.011 NoHave MouseToTool ClearMenuBar 1 Let A 1",
+    );
     s.it.start("A");
     for (let i = 0; i < 8; i++) step(s);
     expect(s.calls).toEqual(["take KEY.011", "haveTool MIOT.BM", "noHaveTool KEY.011", "noHave", "mouseToTool"]);

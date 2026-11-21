@@ -22,7 +22,12 @@ export interface Rect {
   bottom: number;
 }
 
-export const DEFAULT_CLIP: Readonly<Rect> = { left: 0, top: 0, right: CLIP_RIGHT, bottom: CLIP_BOTTOM };
+export const DEFAULT_CLIP: Readonly<Rect> = {
+  left: 0,
+  top: 0,
+  right: CLIP_RIGHT,
+  bottom: CLIP_BOTTOM,
+};
 
 export interface Sprite {
   /** +0x00, from the counter */
@@ -60,9 +65,9 @@ export class SpriteList {
   }
 
   /**
- * Sprite_Add / Sprite_AddRaw: inserts before the first sprite whose z
- * is >= the new one (so among equal z the newest is drawn first, i.e. lowest).
- */
+   * Sprite_Add / Sprite_AddRaw: inserts before the first sprite whose z
+   * is >= the new one (so among equal z the newest is drawn first, i.e. lowest).
+   */
   insert(fields: Omit<Sprite, "id">): Sprite {
     if (this.items.length >= MAX_SPRITES) throw new SpriteError(`sprite list full (${MAX_SPRITES})`);
     let i = 0;
@@ -79,9 +84,9 @@ export class SpriteList {
   }
 
   /**
- * Sprite_MoveBack / Sprite_MoveFront: swaps the sprite with its neighbour one slot
- * down / up the list; the z values stay with the slots, so the list stays sorted. No-op at the end.
- */
+   * Sprite_MoveBack / Sprite_MoveFront: swaps the sprite with its neighbour one slot
+   * down / up the list; the z values stay with the slots, so the list stays sorted. No-op at the end.
+   */
   swapWithNeighbour(index: number, dir: -1 | 1): boolean {
     const j = index + dir;
     if (index < 0 || j < 0 || j >= this.items.length) return false;

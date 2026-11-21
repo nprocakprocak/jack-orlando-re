@@ -237,13 +237,15 @@ export class Sound {
       if (this.unpackedSize !== 4 * this.packedSize) {
         problems.push(`IMA unpacked size ${this.unpackedSize} != 4 * packed ${this.packedSize}`);
       }
-      if (this.size !== this.unpackedSize) problems.push(`buffer size ${this.size} != unpacked size ${this.unpackedSize}`);
+      if (this.size !== this.unpackedSize)
+        problems.push(`buffer size ${this.size} != unpacked size ${this.unpackedSize}`);
     }
     if ((this.kind === "gsm8" || this.kind === "gsm16") && this.packedSize % GSM_BLOCK) {
       problems.push(`GSM data size ${this.packedSize} is not a multiple of ${GSM_BLOCK}`);
     }
     try {
-      if (this.decodedBytes < this.size) problems.push(`decodes to ${this.decodedBytes} bytes, buffer size is ${this.size}`);
+      if (this.decodedBytes < this.size)
+        problems.push(`decodes to ${this.decodedBytes} bytes, buffer size is ${this.size}`);
     } catch (e) {
       if (!(e instanceof SoundError)) throw e;
       problems.push(e.message);

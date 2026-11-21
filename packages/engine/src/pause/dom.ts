@@ -28,9 +28,9 @@ export interface BindPauseOptions {
   /** the option (settings.ts readPauseOnBlur) */
   pauseOnBlur: boolean;
   /**
- * Called when the pause flips, after loop.setActive: suspend/resume the sound here
- * (`game.audio.mixer.setPaused(paused)` -> AudioContext.suspend/resume: music, effects, speech, the film's sound).
- */
+   * Called when the pause flips, after loop.setActive: suspend/resume the sound here
+   * (`game.audio.mixer.setPaused(paused)` -> AudioContext.suspend/resume: music, effects, speech, the film's sound).
+   */
   onChange?(paused: boolean, reason: PauseReason | null): void;
   /** watchdog period (ms), default 250 */
   watchdogMs?: number;

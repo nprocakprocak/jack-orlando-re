@@ -26,8 +26,7 @@ function locateFile(root: string, segments: readonly string[], listed: Map<strin
       listed.set(current, names);
     }
     const match =
-      names.find((name) => name === segment) ??
-      names.find((name) => name.toUpperCase() === segment.toUpperCase());
+      names.find((name) => name === segment) ?? names.find((name) => name.toUpperCase() === segment.toUpperCase());
     if (!match) return null;
     current = path.join(current, match);
   }
