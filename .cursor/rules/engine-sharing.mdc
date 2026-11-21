@@ -1,0 +1,25 @@
+---
+description: One copy of an identical algorithm, placed in the lower module
+globs: packages/engine/**/*.ts
+alwaysApply: false
+---
+
+# Shared algorithms
+
+One algorithm has one function. It lives in the lower module. `formats/`, `core/`, and `render/` do not import `play/` or `scene/`.
+
+Share the steps that match, including the reaction to a missing file. The caller keeps its loop, its nibble order, its clip, and its bounds check.
+
+Two functions that round or clip differently stay two functions. `jackBrightness` clips with `ftol` and finishes with `f32(base)`. `personBrightness` clips with `s16`, scales the range by `lightScale`, and returns the raw `base` when the light is far.
+
+A helper that would import upward moves down. The upper module re-exports it, as `walk/geometry.ts` re-exports `formats/halfplane.ts`.
+
+```ts
+// Wrong: a second copy of the nibble step inside the music decoder.
+function step(pred: number, index: number, code: number) {
+  /* same IMA math as imaStep */
+}
+
+// Right: imaStep is the shared step. The caller still walks nibbles and loop points.
+const stepped = imaStep(this.pred, this.index, code);
+```

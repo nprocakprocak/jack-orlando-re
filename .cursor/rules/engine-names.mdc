@@ -1,0 +1,33 @@
+---
+description: Use an existing name for a literal; keep one operation's coordinates positional
+globs: packages/engine/**/*.ts
+alwaysApply: false
+---
+
+# Names and literals
+
+A literal that already has a name uses that name.
+
+- Command codes are `WORDS` in `script/compiler-words.ts`. `GOTOSCENE` is `0x14`. `SETSHADOW` is `0x13`. `UNLOCKWALK` is `0x66`. `WAITWHILEEFFECT` is `0x67`.
+- `JACK` (`0x66`) is the person index. It is not `UNLOCKWALK`.
+- Cursor modes are `CursorMode` in `cursor/modes.ts`.
+- The visible screen is `SCREEN_WIDTH` and `SCREEN_HEIGHT`. The work buffer is `WORK_BUFFER_WIDTH` and `WORK_BUFFER_HEIGHT`, from `core/constants.ts`.
+- An unset scroll point is `NO_SCROLL_POINT`. Light distances are `LIGHT_FAR`, `LIGHT_Y_WEIGHT`, and `LIGHT_RANGE`.
+
+A scroll offset that is not the screen size (`376`, `1016`, `4`) stays a literal. Do not rebuild it from `SCREEN_WIDTH`.
+
+Arguments that are the coordinates of one blit, scale, or text draw stay positional (`blit16`, `blitScaled`, `drawText`, `darkenRect`, `remapRect`). They are not an options object.
+
+A name is a word of the domain: `turning`, `shadowSlot`.
+
+The compiler alphabet `P`, `A`, `O`, `V`, `S` stays. The values are already `"person"`, `"anim"`, `"object"`, `"var"`, `"sound"`.
+
+```ts
+// Wrong: a bare opcode, or a rectangle wrapped in an object.
+case 0x14:
+darkenRect({ x, y, w, h });
+
+// Right: the existing constant, and the coordinates in order.
+case WORDS.GOTOSCENE:
+darkenRect(x, y, w, h);
+```

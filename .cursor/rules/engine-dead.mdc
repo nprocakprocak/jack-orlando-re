@@ -1,0 +1,21 @@
+---
+description: Delete a symbol with no reader; keep a table that holds content
+globs: packages/engine/**/*.ts
+alwaysApply: false
+---
+
+# Dead code
+
+Delete a symbol only when nothing in the repository reads it.
+
+Keep an export that is a table or a public constant, even when nothing selects it today. `MAIN_MENU_TEXTS_DE` is the menu captions for language `D`. `CursorMode`, the work-buffer sizes, and `GlobalKind` stay.
+
+An unused constant that described a cap the code never enforced is deleted. The check is not added. `addAnimaEffect` does not stop at 30 because `ANIMA_EFFECTS_MAX` used to say 30. The sentence in the method comment stays.
+
+```ts
+// Wrong: drop the German menu table because no caller passes "D" yet.
+// Wrong: if (effects.length >= 30) return;
+
+// Right: IDLE_FRAMES goes when IDLE_LIMIT is the live threshold.
+// The comment on idleChoice points at scene/player-jack.ts.
+```

@@ -1,0 +1,23 @@
+---
+description: A comment names the effect, and an opcode in it matches WORDS
+globs: packages/engine/**/*.ts
+alwaysApply: false
+---
+
+# Comments
+
+A comment states the effect. An opcode in a comment is the value in `WORDS`, and the name is that command. `GOTOSCENE` is `0x14`. `WAITWHILEEFFECT` is `0x67`.
+
+Do not add a procedure address. A comment points at a file in this repository.
+
+Finish the sentence. An empty `/** */` is not a comment.
+
+The comment moves with the function.
+
+```ts
+// Wrong: the name and the code disagree, or the sentence stops.
+/** GOTOSCENE is 0x13. After the coat */
+
+// Right: the command, the code from WORDS, and the effect.
+/** Scene name of GOTOSCENE (case 0x14): the extension is cut at the last ".". */
+```

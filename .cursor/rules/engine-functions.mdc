@@ -1,0 +1,29 @@
+---
+description: Split a procedure into phases; leave opcode switches and pixel loops whole
+globs: packages/engine/**/*.ts
+alwaysApply: false
+---
+
+# Functions
+
+A function that runs a sequence of phases is several functions. The function that owns the order (`frame`, `enter`, `tick`) keeps the early returns and the `await` order. A phase is one call.
+
+An opcode `switch` stays one `switch`. `SceneHost.run` and `Interpreter.step` are dispatch, not a hidden second algorithm. Cases that share a body stay adjacent and call one function. `noFallthroughCasesInSwitch` is on.
+
+A loop over pixels or samples stays nested. That depth is the algorithm (`boxScale`, `darken`, `softenEdges`, `drawFrame`).
+
+A nest that only skips input, or that hides a second decision, becomes a named function. The outer function stays the search or the scan (`Search.rec`, `resolveClick`, `turningTick`).
+
+A boolean gate is a local name (`walking`, `ignoreClick`). It is not a new function.
+
+A file under the line limit stays one file, unless a shared helper is leaving it.
+
+```ts
+// Wrong: one function per opcode.
+case WORDS.TALK:
+  return runTalk(host);
+
+// Right: the switch stays. A phase of frame is a call, in the same order.
+if (hotspotFrame.call(this, input) === "verb") return;
+pendingFrame.call(this);
+```

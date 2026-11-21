@@ -1,0 +1,23 @@
+---
+description: A formula keeps its casts, and a move keeps call order
+globs: packages/engine/**/*.ts
+alwaysApply: false
+---
+
+# Behavior
+
+A numeric step keeps the casts in `docs/dev/engine/`: `s16`, `ftol`, `f32`. A truncating store and a final `f32` stay.
+
+A move keeps the same calls and the same `await` order. One `try` / `finally` stays one `try` / `finally`.
+
+After a change in this package, `npm test` and `npm run check` pass.
+
+A mismatch with the notes goes in `docs/dev/engine/refactor-findings.md`: the effect, in English, with no quoted line and no script. The code keeps the behavior it had. Create that file only when there is a finding.
+
+```ts
+// Wrong: the product is rounded before the compare.
+return f32((px - ax) * slope) <= py - ay;
+
+// Right: pointBelowLine compares the product unrounded.
+return (px - ax) * slope <= py - ay;
+```

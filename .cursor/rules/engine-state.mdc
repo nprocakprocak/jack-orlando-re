@@ -1,0 +1,27 @@
+---
+description: PlayGame and ScenePlayer stay field bags with thin prototype wrappers
+globs: packages/engine/**/*.ts
+alwaysApply: false
+---
+
+# State classes
+
+`PlayGame` and `ScenePlayer` are bags of fields. A field stays `this.field`. Grouping fields into subobjects rewrites every read.
+
+A method the host or a test calls stays on the prototype as one line. It calls the function in the neighboring file with `this` cast to the state type (`GameState`). The file that holds the body imports the class only as `import type`.
+
+A method nothing outside the class calls is a plain function in that file. It leaves the prototype.
+
+`play/index.ts` re-exports `play/game.ts` only. A new file is not added there. A symbol that callers already import from the old file is re-exported by that file.
+
+The public paths stay: `src/index.ts`, `play/index.ts`, and the `exports` in `packages/engine/package.json`.
+
+```ts
+// Wrong: fields nested, so every former this.armed read changes.
+this.input.armed = false;
+
+// Right: the field stays on the instance. The prototype method is the wrapper.
+frame(rawInput: PlayInput): void {
+  return frameBody.frame.call(this as unknown as GameState, rawInput);
+}
+```

@@ -1,0 +1,21 @@
+---
+description: A new helper has one short test; a moved method keeps its old test
+globs: packages/engine/**/*.ts
+alwaysApply: false
+---
+
+# Engine tests
+
+A new function gets a short test beside it. The test builds its own bytes and uses an invented label.
+
+A method that stays on the prototype stays covered by the test that already calls it (`Object.create(PlayGame.prototype)`, or `ScenePlayer.prototype.stayJack`). That scenario is not copied into a second file.
+
+Splitting a test file keeps every assertion. Cut on an existing `describe`. When two files need the same setup, it lives in `play/testing.ts`.
+
+```ts
+// Wrong: a second stayJack test after the body moved to scene/player-jack.ts.
+expect(player.stayJack()).toBe(true);
+
+// Right: the old test still calls the prototype, and pad2 has its own short test.
+expect(pad2(3)).toBe("03");
+```
