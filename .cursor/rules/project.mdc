@@ -1,0 +1,14 @@
+---
+description: The repository is in English, and tests use invented bytes
+alwaysApply: true
+---
+
+# Project
+
+The whole repository is in English: code, comments, tests, and notes.
+
+Do not add game archives, the executable, saves, screenshots, cover art, or the logo. Do not paste a spoken line, a script body, or a complete game configuration into notes. `docs/LEGAL.md` is the boundary. Menu captions, verb labels, slot labels, the three refusal captions, and the numeric tables live in the modules that use them.
+
+A test runs only on bytes built in the test. Use a short invented label.
+
+A comment points only at a file in this repository.

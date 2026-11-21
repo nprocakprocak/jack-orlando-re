@@ -1,0 +1,20 @@
+node_modules/
+dist/
+dist-www/
+
+# Game files the user supplies. See docs/LEGAL.md.
+*.pak
+*.phk
+*.ph2
+*.exe
+*.sav
+*.avx
+*.zip
+
+# Screenshots, cover art, and the logo.
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.webp
+*.bmp

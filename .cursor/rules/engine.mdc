@@ -1,0 +1,13 @@
+---
+description: PlayGame has no DOM, and files go through GameFiles
+globs: packages/engine/src/**/*.ts
+alwaysApply: false
+---
+
+# Engine
+
+`PlayGame` has no DOM. The page that hosts it owns the document.
+
+Files go through `GameFiles`. The engine does not open a path of its own.
+
+Behavior is described in `docs/dev/engine/`.

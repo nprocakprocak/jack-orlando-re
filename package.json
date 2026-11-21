@@ -1,0 +1,20 @@
+{
+  "name": "jack-orlando",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "workspaces": [
+    "packages/*",
+    "examples/*"
+  ],
+  "scripts": {
+    "check": "npm run check -w jack-orlando-re && npm run check -w jack-orlando-browser",
+    "build": "npm run build -w jack-orlando-re && npm run build -w jack-orlando-browser",
+    "test": "npm test -w jack-orlando-re && npm test -w jack-orlando-browser",
+    "test:zip": "npm run test:zip -w jack-orlando-re",
+    "play:node": "npm run play:node -w jack-orlando-re --",
+    "play:desktop": "npm run play -w jack-orlando-desktop --",
+    "dev": "npm run dev -w jack-orlando-play",
+    "dev:embed": "npm run dev -w jack-orlando-embed"
+  }
+}

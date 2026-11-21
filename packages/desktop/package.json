@@ -1,0 +1,19 @@
+{
+  "name": "jack-orlando-desktop",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "description": "Desktop window that serves a directory or a ZIP and mounts the player page.",
+  "scripts": {
+    "build": "vite build",
+    "play": "vite build && electron main.mjs"
+  },
+  "dependencies": {
+    "electron": "45.4.1",
+    "jack-orlando-browser": "*",
+    "jack-orlando-re": "*"
+  },
+  "devDependencies": {
+    "vite": "^7.1.0"
+  }
+}

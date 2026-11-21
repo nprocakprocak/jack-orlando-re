@@ -1,0 +1,17 @@
+{
+  "name": "jack-orlando-play",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite"
+  },
+  "dependencies": {
+    "fflate": "^0.8.2",
+    "jack-orlando-browser": "*",
+    "jack-orlando-re": "*"
+  },
+  "devDependencies": {
+    "vite": "^7.1.0"
+  }
+}

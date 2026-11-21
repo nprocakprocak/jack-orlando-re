@@ -1,0 +1,27 @@
+---
+description: The repository contains no game files, decompilation, or quoted lines
+alwaysApply: true
+---
+
+# Game files stay out of the repository
+
+The repository contains no game archives, decompilation, or quoted dialogue in notes. The engine does not read the executable. Fonts come from the user's `Resource.pak`. Menu captions, verb labels, slot labels, the three refusal captions, and the numeric tables live in the modules that use them.
+
+Do not add to git:
+
+- game archives (`*.pak`, `*.phk`, `*.ph2`), the executable (`*.exe`), saves (`*.sav`, `*.avx`), or a ZIP of the game
+- screenshots, cover art, and the logo
+- a decompilation or a binary-analysis project
+- a quoted line, a script body, or a complete game configuration file (scene, dialogue, variable table)
+
+Do not paste a spoken line, a script body, or a complete configuration into notes or into a module that does not own that text. A test of other behavior uses a short, invented label. A note describes the effect, without the wording of the line.
+
+```ts
+// Wrong: a caption copied into a random module, or a quoted spoken line.
+expect(texts.load).toBe("<menu caption copied into this test>");
+
+// Right: short invented label. State the outcome without quoting the line.
+expect(texts.load).toBe("Open slot");
+```
+
+Pre-publication checklist: `docs/LEGAL.md`.

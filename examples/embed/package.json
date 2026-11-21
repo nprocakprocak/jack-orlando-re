@@ -1,0 +1,16 @@
+{
+  "name": "jack-orlando-embed",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite"
+  },
+  "dependencies": {
+    "jack-orlando-browser": "*",
+    "jack-orlando-re": "*"
+  },
+  "devDependencies": {
+    "vite": "^7.1.0"
+  }
+}

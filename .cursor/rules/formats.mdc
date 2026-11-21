@@ -1,0 +1,11 @@
+---
+description: Format notes are the source of truth, and tests build their own bytes
+globs: packages/engine/src/formats/**/*.ts
+alwaysApply: false
+---
+
+# Formats
+
+The format source of truth is `docs/dev/formats/`.
+
+A new test uses bytes built in the test.

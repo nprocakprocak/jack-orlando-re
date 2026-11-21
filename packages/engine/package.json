@@ -1,0 +1,121 @@
+{
+  "name": "jack-orlando-re",
+  "version": "0.0.0",
+  "type": "module",
+  "description": "An engine that plays Jack Orlando from files the user supplies.",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "browser": "./dist/index.js",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./node": {
+      "types": "./dist/node.d.ts",
+      "node": "./dist/node.js",
+      "import": "./dist/node.js",
+      "default": "./dist/node.js"
+    },
+    "./audio": {
+      "types": "./dist/audio.d.ts",
+      "browser": "./dist/audio.js",
+      "import": "./dist/audio.js",
+      "default": "./dist/audio.js"
+    },
+    "./core": {
+      "types": "./dist/core.d.ts",
+      "browser": "./dist/core.js",
+      "import": "./dist/core.js",
+      "default": "./dist/core.js"
+    },
+    "./cursor": {
+      "types": "./dist/cursor.d.ts",
+      "browser": "./dist/cursor.js",
+      "import": "./dist/cursor.js",
+      "default": "./dist/cursor.js"
+    },
+    "./gui": {
+      "types": "./dist/gui.d.ts",
+      "browser": "./dist/gui.js",
+      "import": "./dist/gui.js",
+      "default": "./dist/gui.js"
+    },
+    "./launcher": {
+      "types": "./dist/launcher.d.ts",
+      "browser": "./dist/launcher.js",
+      "import": "./dist/launcher.js",
+      "default": "./dist/launcher.js"
+    },
+    "./mainmenu": {
+      "types": "./dist/mainmenu.d.ts",
+      "browser": "./dist/mainmenu.js",
+      "import": "./dist/mainmenu.js",
+      "default": "./dist/mainmenu.js"
+    },
+    "./pause": {
+      "types": "./dist/pause.d.ts",
+      "browser": "./dist/pause.js",
+      "import": "./dist/pause.js",
+      "default": "./dist/pause.js"
+    },
+    "./play": {
+      "types": "./dist/play.d.ts",
+      "browser": "./dist/play.js",
+      "import": "./dist/play.js",
+      "default": "./dist/play.js"
+    },
+    "./render": {
+      "types": "./dist/render.d.ts",
+      "browser": "./dist/render.js",
+      "import": "./dist/render.js",
+      "default": "./dist/render.js"
+    },
+    "./save": {
+      "types": "./dist/save.d.ts",
+      "browser": "./dist/save.js",
+      "import": "./dist/save.js",
+      "default": "./dist/save.js"
+    },
+    "./settings": {
+      "types": "./dist/settings.d.ts",
+      "browser": "./dist/settings.js",
+      "import": "./dist/settings.js",
+      "default": "./dist/settings.js"
+    },
+    "./start": {
+      "types": "./dist/start.d.ts",
+      "browser": "./dist/start.js",
+      "import": "./dist/start.js",
+      "default": "./dist/start.js"
+    },
+    "./video": {
+      "types": "./dist/video.d.ts",
+      "browser": "./dist/video.js",
+      "import": "./dist/video.js",
+      "default": "./dist/video.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "check": "tsc --noEmit",
+    "build": "vite build",
+    "play:node": "node --experimental-strip-types scripts/play-node.ts",
+    "test": "vitest run",
+    "test:zip": "vitest run src/files/zip.test.ts"
+  },
+  "dependencies": {
+    "fflate": "^0.8.2"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "typescript": "^5.9.0",
+    "vite": "^7.1.0",
+    "vite-plugin-dts": "^5.1.2",
+    "vitest": "^3.2.0"
+  }
+}
