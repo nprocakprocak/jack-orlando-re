@@ -26,7 +26,6 @@ const ALLOW = {
   "src/play/facewin.ts": 614,
   "src/play/game.test.ts": 856,
   "src/play/host.test.ts": 1010,
-  "src/play/host.ts": 1055,
   "src/scene/player.test.ts": 502,
   "src/script/compiler.ts": 527,
   "src/script/interpreter.ts": 484,
