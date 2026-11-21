@@ -3,16 +3,15 @@
 // presents (Video_PresentIfDue -> the hook).
 import { SCREEN_HEIGHT, SCREEN_WIDTH } from "../core/constants";
 import type { Font } from "../formats/fnt";
-import { StripeWipe, WIPE_TOTAL_MS } from "../launcher/wipe";
-import type { Surface16 } from "../render/surface";
-import { blitCopy, blitKeyed, createSurface } from "../render/surface";
-import { MenuSmoke, SMOKE_X, SMOKE_Y } from "./smoke";
+import type { StripeWipe } from "../launcher/wipe";
+import { createSurface, type Surface16 } from "../render/surface";
+import { MenuSmoke } from "./smoke";
 import { MAIN_MENU_TEXTS_PL, type MainMenuTexts } from "./texts";
-import {
-  DEFAULT_MUSIC_VOLUME, fadeInSteps, fadeOutSteps, INTERLACE_TOTAL_MS, interlaceRows, interlaceRowsAt, MUSIC_STEP_MS,
-  PRESENT_MS, REVEAL_TOTAL_MS, revealPixels, revealPixelsAt, TICK_MS,
-} from "./timing";
-import { BLEND_MAX, BLEND_STEP, BLEND_STEPS, BUTTON_NAMES, MenuWindow, type ButtonName } from "./window";
+import { DEFAULT_MUSIC_VOLUME, PRESENT_MS } from "./timing";
+import { BLEND_MAX, BLEND_STEP, BLEND_STEPS, BUTTON_NAMES, type ButtonName, type MenuWindow } from "./window";
+import * as frameBody from "./menu-frame";
+import * as stateBody from "./menu-state";
+import type { MenuFields } from "./menu-state";
 
 export { SCREEN_HEIGHT as SCREEN_H, SCREEN_WIDTH as SCREEN_W };
 /**
@@ -101,14 +100,6 @@ export interface MainMenuOptions {
   onEvent?: (e: MainMenuEvent) => void;
 }
 
-function copyScreen(s?: Surface16): Surface16 {
-  const out = createSurface(SCREEN_WIDTH, SCREEN_HEIGHT);
-  if (s) blitCopy(s, 0, 0, Math.min(SCREEN_WIDTH, s.width), Math.min(SCREEN_HEIGHT, s.height), out, 0, 0);
-  return out;
-}
-
-const RESULT_OF: Record<ButtonName, MainMenuResult> = { Intro: "intro", Start: "newGame", Load: "load", Quit: "quit" };
-
 export class MainMenu {
   phase: MainMenuPhase = "blackout";
   result: MainMenuResult | null = null;
@@ -181,7 +172,18 @@ export class MainMenu {
     this.nextPresent = this.presentMs;
     this.smoke = new MenuSmoke(assets.smoke);
     this.screen = createSurface(SCREEN_WIDTH, SCREEN_HEIGHT);
-    this.still = copyScreen(options.previous);
+    this.still = stateBody.copyScreen(options.previous);
+    this.retain();
+  }
+
+  /** The moved steps read these. A reference keeps the private names in use. */
+  private retain(): void {
+    void [
+      this.texts, this.sound, this.volume, this.onEvent, this.nextTick, this.nextPresent, this.done, this.wipe,
+      this.still, this.discImage, this.loadingSprite, this.mouseInside, this.emit, this.music, this.phaseLength,
+      this.progress, this.finishPhase, this.resetAfterIntro, this.openWindow, this.leave, this.finish, this.tick,
+      this.present, this.cursorImage,
+    ];
   }
 
   get elapsedMs(): number {
@@ -216,223 +218,31 @@ export class MainMenu {
     return this.pressed >= 0 && this.pressedOver ? this.pressed : -1;
   }
 
-  private emit(e: MainMenuEvent): void {
-    this.onEvent?.(e);
-  }
+  private emit(e: MainMenuEvent): void { stateBody.emit.call(this as unknown as MenuFields, e); }
 
-  private music(command: MusicCommand): void {
-    if (this.sound) this.emit({ kind: "music", command });
-  }
+  private music(command: MusicCommand): void { stateBody.music.call(this as unknown as MenuFields, command); }
 
-  private enter(phase: MainMenuPhase): void {
-    this.phase = phase;
-    this.phaseT0 = this.t;
-    this.done = 0;
-    if (phase === "musicIn") {
-      // (0) stops channel 5, Music_StartStream, volume 0
-      this.music({ op: "stop" });
-      this.music({ op: "start", file: MENU_MUSIC });
-    }
-  }
+  private enter(phase: MainMenuPhase): void { stateBody.enter.call(this as unknown as MenuFields, phase); }
 
-  private phaseLength(): number {
-    switch (this.phase) {
-      case "blackout":
-      case "quitting":
-        return INTERLACE_TOTAL_MS;
-      case "wipe":
-        return WIPE_TOTAL_MS;
-      case "musicIn":
-        return this.sound ? fadeInSteps(this.volume) * MUSIC_STEP_MS : 0;
-      case "reveal":
-        return REVEAL_TOTAL_MS;
-      case "musicOut":
-        return this.sound ? fadeOutSteps(this.volume) * MUSIC_STEP_MS : 0;
-      default:
-        return Infinity;
-    }
-  }
+  private phaseLength(): number { return stateBody.phaseLength.call(this as unknown as MenuFields); }
 
-  /** Runs the menu for `dtMs` of game time. */
-  advance(dtMs: number): void {
-    const end = this.t + Math.max(0, dtMs);
-    for (let guard = 0; guard < 100000; guard++) {
-      const phaseEnd = this.phaseT0 + this.phaseLength();
-      const next = Math.min(phaseEnd, this.nextTick, this.nextPresent);
-      if (next > end) break;
-      this.t = next;
-      this.progress();
-      if (next === phaseEnd) this.finishPhase();
-      else if (next === this.nextTick) {
-        this.nextTick += TICK_MS;
-        this.tick();
-      } else {
-        this.nextPresent += this.presentMs;
-        this.present();
-      }
-    }
-    this.t = end;
-    this.progress();
-  }
+  advance(dtMs: number): void { stateBody.advance.call(this as unknown as MenuFields, dtMs); }
 
-  /** Blocking effects driven by time within the phase. */
-  private progress(): void {
-    const ms = this.t - this.phaseT0;
-    switch (this.phase) {
-      case "blackout":
-      case "quitting": {
-        const rows = interlaceRowsAt(ms);
-        interlaceRows(this.still, this.done, rows);
-        this.done = rows;
-        break;
-      }
-      case "wipe":
-        this.wipe!.advance(ms - this.wipe!.elapsedMs);
-        break;
-      case "reveal": {
-        const px = revealPixelsAt(ms);
-        revealPixels(this.still, this.assets.background, this.done, px);
-        this.done = px;
-        break;
-      }
-      case "musicIn": {
-        if (!this.sound) break;
-        // volume 0, 1... vol - 1, one per 15 ms step
-        const steps = Math.min(fadeInSteps(this.volume), Math.floor(ms / MUSIC_STEP_MS) + 1);
-        for (; this.done < steps; this.done++) this.music({ op: "volume", value: this.done });
-        break;
-      }
-      case "musicOut": {
-        if (!this.sound) break;
-        const n = fadeOutSteps(this.volume);
-        const steps = Math.min(n, Math.floor(ms / MUSIC_STEP_MS) + 1);
-        for (; this.done < steps; this.done++) this.music({ op: "volume", value: this.volume - 2 * this.done });
-        break;
-      }
-    }
-  }
+  private progress(): void { stateBody.progress.call(this as unknown as MenuFields); }
 
-  private finishPhase(): void {
-    switch (this.phase) {
-      case "blackout":
-        // Timer_Start(1, 17 ms) — then the branch for g_cfgPlayIntro == 0: Menu_FlxStep (sprite not shown yet)
-        this.nextTick = this.t + TICK_MS;
-        this.smoke.step();
-        this.enter("musicIn");
-        break;
-      case "wipe":
-        this.resetAfterIntro();
-        this.enter("musicIn");
-        break;
-      case "musicIn":
-        this.music({ op: "volume", value: this.volume });
-        this.enter("reveal");
-        break;
-      case "reveal":
-        this.openWindow();
-        break;
-      case "musicOut":
-        this.music({ op: "stop" });
-        this.leave();
-        break;
-      case "quitting":
-        this.enter("done");
-        this.still.pixels.fill(0);
-        this.finish("quit");
-        break;
-    }
-  }
+  private finishPhase(): void { stateBody.finishPhase.call(this as unknown as MenuFields); }
 
-  /** Launcher_PlayIntro after Media_Close: variables back to the start values, Menu_FlxStep. */
-  private resetAfterIntro(): void {
-    this.smokeDelay = SMOKE_FIRST_DELAY;
-    this.truckTicks = 0;
-    this.arrowFrame = 0;
-    this.lastMouseX = 0;
-    this.discFrame = 0;
-    this.arrowTicks = 0;
-    this.discTicks = 0;
-    this.waitCursor = false;
-    this.discImage = false;
-    this.smoke.restart();
-    this.smoke.step();
-  }
+  private resetAfterIntro(): void { stateBody.resetAfterIntro.call(this as unknown as MenuFields); }
 
-  /** The loop of Launcher_Run: Gui_CreateWindow + buttons, then the open blend. */
-  private openWindow(): void {
-    this.loadingSprite = false;
-    this.hook = true;
-    this.window = new MenuWindow(this.assets.font, this.assets.background, this.texts);
-    this.blendStep = 0;
-    this.level = 0;
-    this.buttonsShown = false;
-    this.closeFrom = null;
-    this.enter("open");
-  }
+  private openWindow(): void { stateBody.openWindow.call(this as unknown as MenuFields); }
 
-  /** Gui_RunWindow returned: name (or Esc). */
-  private choose(name: ButtonName | null): void {
-    this.chosen = name;
-    this.pressed = -1;
-    this.pressedOver = false;
-    this.enterHeld = false;
-    this.active = false;
-    this.closeFrom = this.window!.snapshot();
-    this.blendStep = 0;
-    this.enter("close");
-  }
+  private choose(name: ButtonName | null): void { stateBody.choose.call(this as unknown as MenuFields, name); }
 
-  private leave(): void {
-    const result: MainMenuResult = this.chosen ? RESULT_OF[this.chosen] : "quit";
-    if (result === "intro") {
-      // Sprite_Set(LADEN, 0xd7, 200), Launcher_PlayIntro: = 1 (disc cursor)
-      this.loadingSprite = true;
-      this.waitCursor = true;
-      this.discImage = true; // [engine, user decision] the disc at once (the original switches on the next 2nd tick)
-      this.enter("intro");
-      this.finish("intro");
-      return;
-    }
-    // Sprite_Remove (cursor, truck, smoke), Blit_KeyedToScreen of the smoke picture, then LADEN for Start/Load
-    this.hook = false;
-    if (result === "quit") this.nextTick = Infinity; // Timer_Stop(1)
-    else {
-      // [engine, not original; user decision 2026-11-06] the original stops the timer and removes the cursor; the engine
-      // keeps the 17 ms clock for a spinning disc cursor while "Loading" is shown
-      this.waitCursor = true;
-      this.discImage = true;
-    }
-    const s = copyScreen(this.assets.background);
-    blitKeyed(this.smoke.surface, 0, 0, this.smoke.surface.width, this.smoke.surface.height, s, SMOKE_X, SMOKE_Y);
-    if (result !== "quit") {
-      const l = this.assets.loading;
-      blitCopy(l, 0, 0, l.width, l.height, s, LOADING_X, LOADING_Y);
-      this.still = s;
-      this.enter("loading");
-      this.finish(result);
-    } else {
-      this.still = s;
-      this.enter("quitting");
-    }
-  }
+  private leave(): void { stateBody.leave.call(this as unknown as MenuFields); }
 
-  private finish(result: MainMenuResult): void {
-    this.result = result;
-    this.emit({ kind: "result", result });
-  }
+  private finish(result: MainMenuResult): void { stateBody.finish.call(this as unknown as MenuFields, result); }
 
-  /**
- * After the intro movie (plays it): Launcher_PlayIntro blackens the last frame with stripes, restarts the
- * music and the smoke, reveals the background and the menu window opens again.
- */
-  returnFromIntro(lastFrame?: Surface16): void {
-    if (this.phase !== "intro") throw new Error(`returnFromIntro in phase ${this.phase}`);
-    this.result = null;
-    this.chosen = null;
-    this.still = copyScreen(lastFrame);
-    this.wipe = new StripeWipe(this.still);
-    this.enter("wipe");
-  }
+  returnFromIntro(lastFrame?: Surface16): void { stateBody.returnFromIntro.call(this as unknown as MenuFields, lastFrame); }
 
   /** Launcher_TimerTick. */
   private tick(): void {
@@ -546,48 +356,7 @@ export class MainMenu {
     this.choose(BUTTON_NAMES[0]);
   }
 
-  // --- picture ---
+  private cursorImage(): Surface16 | null { return frameBody.cursorImage.call(this as unknown as MenuFields); }
 
-  private cursorImage(): Surface16 | null {
-    if (!this.mouseInside || !this.hook) return null;
-    return this.discImage ? this.assets.discs[this.discFrame] : this.assets.arrows[this.arrowFrame];
-  }
-
-  /** Composes the current picture into `screen` and returns it. */
-  frame(): Surface16 {
-    const s = this.screen;
-    switch (this.phase) {
-      case "blackout":
-      case "wipe":
-      case "musicIn":
-      case "reveal":
-      case "quitting":
-      case "done":
-        s.pixels.set(this.still.pixels);
-        return s;
-      case "loading": {
-        s.pixels.set(this.still.pixels);
-        // [engine, user decision] the disc cursor over "Loading" (the original removed the cursor sprite)
-        const d = this.assets.discs[this.discFrame];
-        if (this.mouseInside) blitKeyed(d, 0, 0, d.width, d.height, s, this.mouseX, this.mouseY);
-        return s;
-      }
-    }
-    const a = this.assets;
-    s.pixels.set(a.background.pixels);
-    // z order: LADEN 18, window 1050 and its buttons, truck 1750, smoke 1800, cursor 1950
-    if (this.loadingSprite) blitKeyed(a.loading, 0, 0, a.loading.width, a.loading.height, s, LOADING_X, LOADING_Y);
-    if (this.window) {
-      this.window.drawBody(s);
-      if (this.buttonsShown) this.window.drawButtons(s, this.pressedButton);
-    }
-    if (this.hook && this.truckShifted) blitKeyed(a.truck, 0, 0, a.truck.width, a.truck.height, s, TRUCK_X, TRUCK_Y);
-    if (this.smokeShown) {
-      const f = this.smoke.surface;
-      blitKeyed(f, 0, 0, f.width, f.height, s, SMOKE_X, SMOKE_Y);
-    }
-    const c = this.cursorImage();
-    if (c) blitKeyed(c, 0, 0, c.width, c.height, s, this.mouseX, this.mouseY);
-    return s;
-  }
+  frame(): Surface16 { return frameBody.frame.call(this as unknown as MenuFields); }
 }

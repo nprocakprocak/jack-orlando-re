@@ -16,19 +16,9 @@ const SKIP_DIRECTORIES = new Set(["node_modules", "dist", "dist-www"]);
 // Files already over the limit. The number is the line count that file has now.
 // Do not raise a number. Lower it when the file shrinks. Delete the entry at the limit.
 const ALLOW = {
-  "src/formats/global.ts": 507,
-  "src/formats/media.ts": 583,
-  "src/formats/scene.ts": 544,
-  "src/formats/sound.ts": 470,
-  "src/inventory/topbar.ts": 456,
-  "src/mainmenu/menu.ts": 593,
-  "src/persons/persons.ts": 536,
-  "src/play/facewin.ts": 614,
   "src/play/game.test.ts": 856,
   "src/play/host.test.ts": 1010,
   "src/scene/player.test.ts": 502,
-  "src/script/compiler.ts": 527,
-  "src/script/interpreter.ts": 484,
   "src/sfx/sfx.test.ts": 564,
   "src/sfx/sfx.ts": 437,
 };
