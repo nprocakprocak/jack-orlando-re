@@ -6,7 +6,7 @@ import { Avx } from "../formats/media";
 import { decodePbm } from "../formats/pbm";
 import { isIntro, parseSubtitles, SubtitleTrack } from "../formats/subtitles";
 import { MoviePlayer, MODE_OUTRO, MODE_SCENE, type MovieSoundSink, type OutroImages } from "../video";
-import type { GameFiles } from "./game";
+import type { GameFiles } from "./types";
 
 /** The name the script gives (`ONCAR.AVX`) -> the file on disk (`Movies\ONCAR16.AVX`); the DLG has the same base. */
 export function movieBase(film: string): string {
