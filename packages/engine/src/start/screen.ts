@@ -23,6 +23,8 @@ export type StartAction =
   | { type: "change"; key: RowKey; state: StartState };
 
 export interface StartTexts {
+  /** window title; "/2" sets the letter spacing */
+  title: string;
   /** the big button; not `newGame` of the F4 menu (user request) */
   start: string;
   inventory: string;
@@ -34,9 +36,12 @@ export interface StartTexts {
   saveSlots: string;
   pauseOnBlur: string;
   pendingNote: string;
+  /** small line under the Start button */
+  fullscreenHint: string;
 }
 
 export const START_TEXTS_PL: StartTexts = {
+  title: "/2- Wybierz tryb gry -",
   start: "Start",
   inventory: "Ekwipunek",
   coat: "Płaszcz",
@@ -47,6 +52,7 @@ export const START_TEXTS_PL: StartTexts = {
   saveSlots: "Sloty w grze",
   pauseOnBlur: "Pauza poza oknem gry",
   pendingNote: "Przyciemnione: jeszcze nie działa w grze",
+  fullscreenHint: "Użyj F11 by przełączać tryb pełnoekranowy",
 };
 
 export const WINDOW_W = 560;
@@ -60,6 +66,8 @@ export const LABEL_X = 15;
 export const START_W = 370;
 export const START_H = 33;
 export const START_Y = 256;
+/** small-font line under the Start button */
+export const HINT_Y = START_Y + START_H + 8;
 /** darkening of a pending row (0..32, the window interior uses 16) */
 export const PENDING_DARKEN = 20;
 /** darkening of the whole background under the window (0..32) **[engine, user requests 2026-11-09, 2026-11-15, 2026-11-16]**:
@@ -137,9 +145,9 @@ export class StartScreen {
   }
 
   private build(): void {
-    const { assets, texts } = this.o;
+    const { assets } = this.o;
     const w = new GuiWindow(assets, this.dimmed, 0, 0, WINDOW_W, WINDOW_H, true);
-    w.addLabel(texts.title, true, 0, 14, COLOR_OUTLINE_BLACK, COLOR_YELLOW);
+    w.addLabel(this.st.title, true, 0, 14, COLOR_OUTLINE_BLACK, COLOR_YELLOW);
     // button 1, so Enter starts (Gui_RunWindow: Enter presses button 1)
     w.addButton("Start", this.st.start, centerOffset(WINDOW_W, START_W) - 1, START_Y, START_W, START_H);
     this.rows().forEach((r, i) => {
@@ -147,8 +155,9 @@ export class StartScreen {
       w.addLabel(r.label, false, LABEL_X, y + 6, COLOR_BLUE, COLOR_WHITE);
       w.addButton(r.key, r.value, VALUE_X, y, VALUE_W, VALUE_H);
     });
+    w.addLabel(this.st.fullscreenHint, true, 0, HINT_Y, COLOR_BLUE, COLOR_WHITE, false);
     if (this.rows().some((r) => r.pending))
-      w.addLabel(this.st.pendingNote, true, 0, START_Y + START_H + 18, COLOR_BLUE, COLOR_WHITE, false);
+      w.addLabel(this.st.pendingNote, true, 0, HINT_Y + 18, COLOR_BLUE, COLOR_WHITE, false);
     this.window = w;
   }
 

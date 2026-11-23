@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { Pak } from "../formats/pak";
 import { darkenPixel } from "../gui/darken";
+import { COLOR_WHITE, COLOR_YELLOW } from "../gui/draw";
 import { fakeAssets, flat } from "../gui/fixtures";
 import { TEXTS_PL } from "../gui/texts";
 import type { KeyValueStorage } from "../settings/store";
@@ -21,6 +22,7 @@ import {
 } from "./modes";
 import {
   BACKGROUND_DARKEN,
+  HINT_Y,
   LABEL_X,
   ROW_DY,
   ROW_Y0,
@@ -35,6 +37,7 @@ import {
   WINDOW_W,
   type StartAction,
   type StartState,
+  type StartTexts,
 } from "./screen";
 import { Disposables } from "./session";
 
@@ -185,14 +188,26 @@ describe("skipStartScreen", () => {
 
 const STATE: StartState = { modes: defaultModes(), pauseOnBlur: true };
 
-function screen(pending = MODE_PENDING) {
+function screen(pending = MODE_PENDING, startTexts?: StartTexts) {
   return new StartScreen({
     assets: fakeAssets(),
     texts: TEXTS_PL,
     background: flat(640, 480, 0x7bef),
     state: STATE,
     pending,
+    startTexts,
   });
+}
+
+/** Fill pixels of `color` in a window-relative y band. */
+function fills(s: StartScreen, color: number, y0: number, y1: number): number {
+  const frame = s.render();
+  const win = s.win;
+  let n = 0;
+  for (let y = y0; y < y1; y++) {
+    for (let x = 0; x < win.w; x++) if (frame.pixels[(win.y + y) * frame.width + win.x + x] === color) n++;
+  }
+  return n;
 }
 
 /** Clicks the centre of a window-relative rectangle. */
@@ -226,6 +241,17 @@ describe("StartScreen", () => {
     const s = screen();
     s.press("pauseOnBlur");
     expect(STATE.pauseOnBlur).toBe(true);
+  });
+
+  it("the title asks for a mode, and a line under Start names F11", () => {
+    expect(START_TEXTS_PL.title).toBe("/2- Wybierz tryb gry -");
+    expect(START_TEXTS_PL.fullscreenHint).toBe("Użyj F11 by przełączać tryb pełnoekranowy");
+    expect(fills(screen(), COLOR_YELLOW, 0, START_Y)).toBeGreaterThan(0);
+    expect(fills(screen(MODE_PENDING, { ...START_TEXTS_PL, title: "" }), COLOR_YELLOW, 0, START_Y)).toBe(0);
+    expect(fills(screen(), COLOR_WHITE, HINT_Y, HINT_Y + 8)).toBeGreaterThan(0);
+    expect(
+      fills(screen(MODE_PENDING, { ...START_TEXTS_PL, fullscreenHint: "" }), COLOR_WHITE, HINT_Y, HINT_Y + 8),
+    ).toBe(0);
   });
 
   it("the Start button and Enter start", () => {
