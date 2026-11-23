@@ -5,7 +5,8 @@
 // This file only obtains files and hands them over.
 //
 // - JO_GAME_DIR, set before `npm run dev`, is served at /game/.
-// - When that directory has no game files, zip.ts shows the ZIP field.
+// - When that directory has no game files, zip.ts shows #how-dev and the ZIP field.
+// - A production build shows #how-prod instead. That text does not name JO_GAME_DIR.
 // - The query string is read in query.ts.
 
 import { httpGameFiles, mountPlayer, type PlayerHandle } from "jack-orlando-browser";

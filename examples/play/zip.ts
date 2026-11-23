@@ -260,9 +260,10 @@ export async function filesFromZip(
   return filesFromZipBytes(bytes, (loaded, total) => onProgress("unpack", loaded, total), signal);
 }
 
-// Called only when /game/ has no game files. Reveals #info and #zip-box from
-// index.html. The progress line under the file field stays hidden until a
-// file is chosen.
+// Called only when /game/ has no game files. Reveals the instructions for this
+// build and #zip-box from index.html. Dev shows #how-dev. Production shows
+// #how-prod; the dev block is removed from that HTML. The progress line under
+// the file field stays hidden until a file is chosen.
 //
 // Each choice aborts the previous read or unpack. The aborted call rejects;
 // that rejection is ignored, and the input stays disabled until the choice
@@ -273,15 +274,17 @@ export function showZipFallback(
   onError: (message: string) => void,
 ): void {
   const info = document.getElementById("info");
+  const how = document.getElementById(import.meta.env.PROD ? "how-prod" : "how-dev");
   const box = document.getElementById("zip-box");
   const input = document.getElementById("zip");
   const progress = document.getElementById("zip-progress");
-  if (!(info instanceof HTMLElement) || !(box instanceof HTMLElement)) return;
+  if (!(info instanceof HTMLElement) || !(how instanceof HTMLElement) || !(box instanceof HTMLElement)) return;
   if (!(input instanceof HTMLInputElement) || !(progress instanceof HTMLElement)) return;
   const bar = progress.querySelector("progress");
   const label = progress.querySelector("span");
   if (!(bar instanceof HTMLProgressElement) || !(label instanceof HTMLElement)) return;
 
+  how.hidden = false;
   info.hidden = false;
   box.hidden = false;
 

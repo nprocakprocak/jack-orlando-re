@@ -1,6 +1,7 @@
 node_modules/
 dist/
 dist-www/
+.vercel
 
 # Game files the user supplies. See docs/LEGAL.md.
 *.pak

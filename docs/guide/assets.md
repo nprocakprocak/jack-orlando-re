@@ -85,4 +85,4 @@ $env:JO_GAME_DIR = "C:\path\to\the\game"
 npm run dev
 ```
 
-The variable is only for the dev server. `openDirectory`, `openZip`, and `openZipFile` do not read it.
+The variable is only for the dev server. `npm run build:web` and a hosted copy of this page do not read it; those use the ZIP field. `openDirectory`, `openZip`, and `openZipFile` do not read it.

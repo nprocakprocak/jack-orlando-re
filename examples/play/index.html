@@ -28,6 +28,7 @@
       #info:empty {
         display: none;
       }
+      .how,
       #info {
         max-width: 640px;
       }
@@ -49,11 +50,20 @@
     <h1>Jack Orlando Reverse Engineered</h1>
     <p>Plays Jack Orlando from files you supply.</p>
     <canvas id="screen" width="640" height="480"></canvas>
-    <p id="info" hidden>
-      Game files were not found under JO_GAME_DIR. JO_GAME_DIR is an environment variable: set it to the folder that
-      contains the game files, then start the dev server again. You can also load a ZIP of the game directory. Pack that
-      directory as it is: the assets may sit in a subfolder. The executable is not required.
-    </p>
+    <div id="how-dev" class="how" hidden>
+      <p>
+        Game files were not found under JO_GAME_DIR. JO_GAME_DIR is an environment variable: set it to the folder that
+        contains the game files, then start the dev server again. You can also load a ZIP of the game directory. Pack that
+        directory as it is: the assets may sit in a subfolder. The executable is not required.
+      </p>
+    </div>
+    <div id="how-prod" class="how" hidden>
+      <p>
+        Choose a ZIP file containing the game directory. Pack that directory as it is: the assets may sit in a subfolder.
+        The executable is not required.
+      </p>
+    </div>
+    <p id="info" hidden></p>
     <div id="zip-box" hidden>
       <input id="zip" type="file" accept=".zip,application/zip" />
       <p id="zip-progress" hidden><progress max="100" value="0"></progress> <span></span></p>

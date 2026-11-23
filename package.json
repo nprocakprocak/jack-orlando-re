@@ -17,6 +17,7 @@
     "test:zip": "npm run test:zip -w jack-orlando-re",
     "play:node": "npm run play:node -w jack-orlando-re --",
     "play:desktop": "npm run play -w jack-orlando-desktop --",
+    "build:web": "npm run build -w jack-orlando-play",
     "dev": "npm run dev -w jack-orlando-play",
     "dev:embed": "npm run dev -w jack-orlando-embed"
   },

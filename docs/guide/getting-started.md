@@ -137,6 +137,8 @@ npm run dev
 
 The dev server root is that package, so the page is `/`, not `/examples/play.html`. The same `npm run dev` and the same `JO_GAME_DIR` variable work on Windows, macOS, and Linux. If `JO_GAME_DIR` was set when the server started, the page loads files from `/game/` after a successful `HEAD` of `/game/Global.pak`. The server finds that file even when the on-disk name differs by case. Otherwise the page says the files were not found and offers a ZIP field. Choosing a ZIP replaces that source. The variable has no default. Set it in the same shell that starts the server, and restart the server after you change it. See [Assets](assets.md).
 
+`npm run build:web` writes that page to `examples/play/dist`. The production build does not serve `JO_GAME_DIR`; the ZIP field is how a hosted site loads the game. `vercel.json` publishes that directory.
+
 PowerShell:
 
 ```powershell

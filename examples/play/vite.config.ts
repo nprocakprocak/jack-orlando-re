@@ -1,9 +1,12 @@
-// Dev server for this page. `npm run dev` at the repo root runs it.
+// Dev server and production build for this page. `npm run dev` at the repo
+// root runs the server. `npm run build:web` writes static files to dist/.
+// Vercel publishes that directory. See vercel.json.
 //
 // JO_GAME_DIR, when set in the environment, is a directory of game files.
 // The middleware exposes that directory at /game/ so main.ts can fetch
 // Global.pak without a ZIP. The directory is not inside this repository.
 // Leave the variable unset and the middleware does nothing; use the ZIP field.
+// `vite build` never serves that directory: a hosted site uses the ZIP field.
 // What that ZIP contains: README.md.
 //
 // The aliases point package imports at TypeScript source. A consumer who

@@ -2,9 +2,11 @@
 
 An engine that plays Jack Orlando game from files you supply. The name "Jack Orlando" only identifies which game those files belong to. This project has no connection with the rights holder.
 
-Currently only Polish version is supported, sorry. Working on English version as well (in progress).
+Jack Orlando was developed by Toontraxx Studios and published by TopWare Interactive. The reverse engineering was made from the original Jack Orlando Director's Cut engine, sold as <a href="https://store.steampowered.com/app/253960/Jack_Orlando_Directors_Cut/" target="_blank" rel="noopener noreferrer">Jack Orlando: Director's Cut</a>.
 
-Jack Orlando was developed by Toontraxx Studios and published by TopWare Interactive. The reverse engineering was made from the original Jack Orlando Director's Cut engine, sold as [Jack Orlando: Director's Cut](https://store.steampowered.com/app/253960/Jack_Orlando_Directors_Cut/).
+The engine runs inside a web browser or you can launch it as a desktop app on any operating system.
+
+Currently only Polish version is supported, sorry. Working on English version as well (in progress).
 
 Running this engine requires assets from a legally acquired copy of the game. Those assets are not published in this repository. It has no archives, no executable, and no pictures of the game.
 
