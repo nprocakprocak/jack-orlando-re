@@ -243,9 +243,9 @@ describe("StartScreen", () => {
     expect(STATE.pauseOnBlur).toBe(true);
   });
 
-  it("the title asks for a mode, and a line under Start names F11", () => {
+  it("the title asks for a mode, and a line under Start names the fullscreen key", () => {
     expect(START_TEXTS_PL.title).toBe("/2- Wybierz tryb gry -");
-    expect(START_TEXTS_PL.fullscreenHint).toBe("Użyj F11 by przełączać tryb pełnoekranowy");
+    expect(START_TEXTS_PL.fullscreenHint).toBe("Naciśnij F, aby przełączać tryb pełnoekranowy");
     expect(fills(screen(), COLOR_YELLOW, 0, START_Y)).toBeGreaterThan(0);
     expect(fills(screen(MODE_PENDING, { ...START_TEXTS_PL, title: "" }), COLOR_YELLOW, 0, START_Y)).toBe(0);
     expect(fills(screen(), COLOR_WHITE, HINT_Y, HINT_Y + 8)).toBeGreaterThan(0);

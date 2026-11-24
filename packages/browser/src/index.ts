@@ -50,6 +50,7 @@ import {
   type StartAssets,
 } from "jack-orlando-re/start";
 import { WebAudioMovieSink, type MoviePlayer } from "jack-orlando-re/video";
+import { holdSlotKey } from "./slot-key";
 
 export interface MountOptions {
   canvas: HTMLCanvasElement;
@@ -363,42 +364,56 @@ export function mountPlayer(options: MountOptions): PlayerHandle {
     { passive: false },
   );
   listen(canvas, "auxclick", (e) => e.preventDefault());
-  listen(window, "keydown", (ev) => {
-    const e = ev as KeyboardEvent;
-    if (startScreen) {
-      if (!e.repeat && !(e.target instanceof HTMLInputElement)) onStartActions(startScreen.keyDown(e.key));
-      return;
-    }
-    if (e.key === "Escape") {
-      if (launchFx) launchFx.skip();
-      input.escape = true;
-    }
-    const m = menuInput();
-    if (m) {
-      if (!e.repeat && !(e.target instanceof HTMLInputElement) && (e.key === "Enter" || e.key === "Escape")) {
-        e.preventDefault();
-        m.keyDown(e.key);
+  // Capture runs before a host's bubble listener. holdSlotKey stops the key
+  // while a slot description is being typed.
+  listen(
+    window,
+    "keydown",
+    (ev) => {
+      const e = ev as KeyboardEvent;
+      holdSlotKey(game?.slotUi?.win.editingSlot ?? -1, e);
+      if (startScreen) {
+        if (!e.repeat && !(e.target instanceof HTMLInputElement)) onStartActions(startScreen.keyDown(e.key));
+        return;
       }
-      return;
-    }
-    if (e.code === "ControlLeft") input.ctrl = leftCtrl = true;
-    if (e.target instanceof HTMLInputElement) return;
-    if (game && !launchFx && game.keyDown(e.key, e.repeat)) {
-      e.preventDefault();
-      return;
-    }
-  });
-  listen(window, "keyup", (ev) => {
-    const e = ev as KeyboardEvent;
-    if (startScreen) {
-      if (!(e.target instanceof HTMLInputElement)) onStartActions(startScreen.keyUp(e.key));
-      return;
-    }
-    if (e.key === "Escape") input.escape = false;
-    if (e.code === "ControlLeft") input.ctrl = leftCtrl = false;
-    menuInput()?.keyUp(e.key);
-    if (!(e.target instanceof HTMLInputElement)) game?.keyUp(e.key);
-  });
+      if (e.key === "Escape") {
+        if (launchFx) launchFx.skip();
+        input.escape = true;
+      }
+      const m = menuInput();
+      if (m) {
+        if (!e.repeat && !(e.target instanceof HTMLInputElement) && (e.key === "Enter" || e.key === "Escape")) {
+          e.preventDefault();
+          m.keyDown(e.key);
+        }
+        return;
+      }
+      if (e.code === "ControlLeft") input.ctrl = leftCtrl = true;
+      if (e.target instanceof HTMLInputElement) return;
+      if (game && !launchFx && game.keyDown(e.key, e.repeat)) {
+        e.preventDefault();
+        return;
+      }
+    },
+    true,
+  );
+  listen(
+    window,
+    "keyup",
+    (ev) => {
+      const e = ev as KeyboardEvent;
+      holdSlotKey(game?.slotUi?.win.editingSlot ?? -1, e);
+      if (startScreen) {
+        if (!(e.target instanceof HTMLInputElement)) onStartActions(startScreen.keyUp(e.key));
+        return;
+      }
+      if (e.key === "Escape") input.escape = false;
+      if (e.code === "ControlLeft") input.ctrl = leftCtrl = false;
+      menuInput()?.keyUp(e.key);
+      if (!(e.target instanceof HTMLInputElement)) game?.keyUp(e.key);
+    },
+    true,
+  );
 
   async function buildGame(scene: string, gen: number): Promise<PlayGame> {
     const sound = backend;

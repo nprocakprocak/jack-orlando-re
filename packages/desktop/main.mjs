@@ -249,6 +249,20 @@ function handle(req, res) {
     return;
   }
 
+  // The page asks for this when F is pressed. A slot description stops that key
+  // before the page sees it, so typing F does not leave fullscreen.
+  if (segments.length === 1 && head === "fullscreen") {
+    if (method !== "POST") {
+      text(res, 405, "Method not allowed", method);
+      return;
+    }
+    const w = gameWindow;
+    if (w && !w.isDestroyed()) w.setFullScreen(!w.isFullScreen());
+    res.statusCode = 204;
+    res.end();
+    return;
+  }
+
   if (segments.length === 1 && head === "source.json") {
     if (method !== "GET" && method !== "HEAD") {
       text(res, 405, "Method not allowed", method);
@@ -306,6 +320,7 @@ function listen() {
 }
 
 let server;
+let gameWindow = null;
 
 function closeServer() {
   if (!server) return;
@@ -352,7 +367,9 @@ app.whenReady().then(async () => {
       sandbox: true,
     },
   });
+  gameWindow = win;
   win.on("closed", () => {
+    gameWindow = null;
     closeServer();
     app.quit();
   });

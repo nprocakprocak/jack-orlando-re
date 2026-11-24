@@ -2,15 +2,17 @@
 //
 // A canvas, a status line, and — only when the dev server has no game files —
 // a ZIP field. What that ZIP contains: README.md. mountPlayer runs the game.
-// This file only obtains files and hands them over.
+// This file obtains files, hands them to mountPlayer, and binds F.
 //
 // - JO_GAME_DIR, set before `npm run dev`, is served at /game/.
+// - F toggles browser fullscreen (fullscreen.ts). The canvas keeps its aspect.
 // - When that directory has no game files, zip.ts shows #how-dev and the ZIP field.
 // - A production build shows #how-prod instead. That text does not name JO_GAME_DIR.
 // - The query string is read in query.ts.
 
 import { httpGameFiles, mountPlayer, type PlayerHandle } from "jack-orlando-browser";
 import type { GameFiles } from "jack-orlando-re";
+import { bindFullscreen } from "./fullscreen";
 import { mountOptionsFromQuery } from "./query";
 import { showZipFallback } from "./zip";
 
@@ -21,6 +23,10 @@ const $ = <T extends HTMLElement>(id: string) => {
 };
 
 const canvas = $<HTMLCanvasElement>("screen");
+const stage = $<HTMLElement>("stage");
+
+// F enters and leaves browser fullscreen. The game still receives the key.
+bindFullscreen(stage, canvas);
 
 let player: PlayerHandle | null = null;
 

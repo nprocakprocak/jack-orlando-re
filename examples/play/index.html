@@ -44,23 +44,44 @@
       body.start canvas {
         cursor: default;
       }
+      /* Fullscreen box for the canvas. --fs-w / --fs-h come from fullscreen.ts. */
+      #stage:fullscreen {
+        background: #000;
+        cursor: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0;
+        overflow: hidden;
+      }
+      #stage:fullscreen canvas {
+        flex: none;
+        width: var(--fs-w) !important;
+        height: var(--fs-h) !important;
+        max-width: none !important;
+        margin: 0 !important;
+        border: none !important;
+        image-rendering: var(--fs-render, pixelated) !important;
+      }
     </style>
   </head>
   <body>
     <h1>Jack Orlando Reverse Engineered</h1>
     <p>Plays Jack Orlando from files you supply.</p>
-    <canvas id="screen" width="640" height="480"></canvas>
+    <div id="stage">
+      <canvas id="screen" width="640" height="480"></canvas>
+    </div>
     <div id="how-dev" class="how" hidden>
       <p>
         Game files were not found under JO_GAME_DIR. JO_GAME_DIR is an environment variable: set it to the folder that
-        contains the game files, then start the dev server again. You can also load a ZIP of the game directory. Pack that
-        directory as it is: the assets may sit in a subfolder. The executable is not required.
+        contains the game files, then start the dev server again. You can also load a ZIP of the game directory. Pack
+        that directory as it is: the assets may sit in a subfolder. The executable is not required.
       </p>
     </div>
     <div id="how-prod" class="how" hidden>
       <p>
-        Choose a ZIP file containing the game directory. Pack that directory as it is: the assets may sit in a subfolder.
-        The executable is not required.
+        Choose a ZIP file containing the game directory. Pack that directory as it is: the assets may sit in a
+        subfolder. The executable is not required.
       </p>
     </div>
     <p id="info" hidden></p>

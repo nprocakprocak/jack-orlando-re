@@ -52,7 +52,7 @@ export const START_TEXTS_PL: StartTexts = {
   saveSlots: "Sloty w grze",
   pauseOnBlur: "Pauza poza oknem gry",
   pendingNote: "Przyciemnione: jeszcze nie działa w grze",
-  fullscreenHint: "Użyj F11 by przełączać tryb pełnoekranowy",
+  fullscreenHint: "Naciśnij F, aby przełączać tryb pełnoekranowy",
 };
 
 export const WINDOW_W = 560;

@@ -20,6 +20,14 @@ function quitApp(): void {
   void fetch("/quit", { method: "POST" }).catch(() => undefined);
 }
 
+// F toggles the window the same way F11 does. The listener is on the bubble,
+// so a slot description, which stops the key on the way down, leaves fullscreen alone.
+window.addEventListener("keydown", (ev) => {
+  if (ev.code !== "KeyF" || ev.repeat) return;
+  if (ev.ctrlKey || ev.altKey || ev.metaKey || ev.shiftKey) return;
+  void fetch("/fullscreen", { method: "POST" }).catch(() => undefined);
+});
+
 type Source = { type?: string };
 
 async function start(): Promise<void> {
