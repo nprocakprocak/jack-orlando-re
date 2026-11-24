@@ -22,6 +22,47 @@
         max-width: 100%;
         margin-top: 12px;
       }
+      #layout {
+        display: flex;
+        align-items: flex-start;
+        gap: 28px;
+        flex-wrap: wrap;
+      }
+      #keys {
+        margin: 12px 0 0;
+        padding: 0;
+        list-style: none;
+        width: 280px;
+        max-width: 100%;
+      }
+      #keys li {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: baseline;
+        gap: 6px 8px;
+        margin: 0 0 8px;
+      }
+      #keys li.nav {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+      }
+      #keys .combo {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+        max-width: 100%;
+      }
+      #keys kbd {
+        font-family: ui-monospace, Consolas, monospace;
+        font-size: 12px;
+        line-height: 1.4;
+        color: #eee;
+        background: #1c1c1c;
+        border: 1px solid #444;
+        border-radius: 3px;
+        padding: 0 5px;
+      }
       p {
         margin: 6px 0;
       }
@@ -68,8 +109,28 @@
   <body>
     <h1>Jack Orlando Reverse Engineered</h1>
     <p>Plays Jack Orlando from files you supply.</p>
-    <div id="stage">
-      <canvas id="screen" width="640" height="480"></canvas>
+    <div id="layout">
+      <div id="stage">
+        <canvas id="screen" width="640" height="480"></canvas>
+      </div>
+      <ul id="keys" hidden>
+        <li><kbd>F1</kbd> Toggle coat</li>
+        <li><kbd>F2</kbd> Save game</li>
+        <li><kbd>F3</kbd> Load game</li>
+        <li><kbd>F4</kbd> Game options</li>
+        <li><kbd>F5</kbd> Quick save</li>
+        <li><kbd>F6</kbd> Quick load</li>
+        <li><kbd>F10</kbd> Quit game</li>
+        <li><kbd>M</kbd> Toggle mini map</li>
+        <li><kbd>F</kbd> Toggle fullscreen</li>
+        <li><kbd>Mouse wheel</kbd> Scroll upper belt inventory</li>
+        <li class="nav">
+          <span>Scroll coat inventory</span>
+          <span class="combo">
+            <kbd>↑</kbd><kbd>↓</kbd><kbd>Page Up</kbd><kbd>Page Down</kbd><kbd>Home</kbd><kbd>End</kbd><kbd>Mouse wheel</kbd>
+          </span>
+        </li>
+      </ul>
     </div>
     <div id="how-dev" class="how" hidden>
       <p>

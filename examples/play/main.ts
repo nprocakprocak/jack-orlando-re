@@ -1,6 +1,6 @@
 // Dev page for the engine.
 //
-// A canvas, a status line, and — only when the dev server has no game files —
+// A canvas, a key list beside it, a status line, and — only when the dev server has no game files —
 // a ZIP field. What that ZIP contains: README.md. mountPlayer runs the game.
 // This file obtains files, hands them to mountPlayer, and binds F.
 //
@@ -25,6 +25,7 @@ const $ = <T extends HTMLElement>(id: string) => {
 
 const canvas = $<HTMLCanvasElement>("screen");
 const stage = $<HTMLElement>("stage");
+const keys = $<HTMLElement>("keys");
 
 // F enters and leaves browser fullscreen. The game still receives the key.
 // A short Esc stays with the game. Holding Esc leaves fullscreen.
@@ -32,8 +33,11 @@ bindFullscreen(stage, canvas);
 
 let player: PlayerHandle | null = null;
 
+// An empty status is the start screen. The player clears the line only after
+// that screen is up. The key list stays hidden until then, and through a failed load.
 function setInfo(text: string): void {
   $("info").textContent = text;
+  if (text === "") keys.hidden = false;
 }
 
 // The dev server answers unknown /game/ URLs with its HTML page. That page
@@ -54,6 +58,7 @@ async function directoryAvailable(): Promise<boolean> {
 // The first call may skip the start screen when the query says so.
 // A call that replaces a session already on screen shows the start screen again.
 async function adopt(files: GameFiles): Promise<void> {
+  keys.hidden = true;
   const remount = player !== null;
   if (player) {
     await player.stop();
