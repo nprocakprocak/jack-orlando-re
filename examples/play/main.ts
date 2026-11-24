@@ -5,7 +5,8 @@
 // This file obtains files, hands them to mountPlayer, and binds F.
 //
 // - JO_GAME_DIR, set before `npm run dev`, is served at /game/.
-// - F toggles browser fullscreen (fullscreen.ts). The canvas keeps its aspect.
+// - F toggles browser fullscreen (fullscreen.ts). A short Esc stays in the game.
+//   Holding Esc leaves fullscreen. The canvas keeps its aspect.
 // - When that directory has no game files, zip.ts shows #how-dev and the ZIP field.
 // - A production build shows #how-prod instead. That text does not name JO_GAME_DIR.
 // - The query string is read in query.ts.
@@ -26,6 +27,7 @@ const canvas = $<HTMLCanvasElement>("screen");
 const stage = $<HTMLElement>("stage");
 
 // F enters and leaves browser fullscreen. The game still receives the key.
+// A short Esc stays with the game. Holding Esc leaves fullscreen.
 bindFullscreen(stage, canvas);
 
 let player: PlayerHandle | null = null;
